@@ -31,18 +31,18 @@ export default function Sidebar({ history, onSelect, onDelete, onClear }) {
                                 onClick={() => onSelect(item)}
                                 className="w-full text-left p-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-gray-700 transition-all pr-10"
                             >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium text-gray-300 text-sm line-clamp-2 hover:text-blue-400">
-                                            {item.policy_metadata.policy_name || "Unknown Policy"}
-                                        </h3>
-                                        <span className="text-xs text-gray-500 mt-1 block">
-                                            {item.policy_metadata.issuing_authority}
-                                        </span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-gray-600 opacity-0 group-hover:opacity-100 flex-shrink-0 ml-2" />
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-medium text-gray-300 text-sm line-clamp-2 hover:text-blue-400">
+                                        {item.policy_metadata.policy_name || "Unknown Policy"}
+                                    </h3>
+                                    <span className="text-xs text-gray-500 mt-1 block">
+                                        {item.policy_metadata.issuing_authority}
+                                    </span>
                                 </div>
                             </button>
+                            {/* Arrow */}
+                            <ChevronRight size={16} className="absolute right-2 top-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-all pointer-events-none" />
+
                             {/* Delete Button */}
                             <button
                                 onClick={(e) => {
@@ -56,8 +56,9 @@ export default function Sidebar({ history, onSelect, onDelete, onClear }) {
                             </button>
                         </div>
                     ))
-                )}
-            </div>
-        </div>
+                )
+                }
+            </div >
+        </div >
     );
 }
