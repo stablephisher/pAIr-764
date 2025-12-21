@@ -7,8 +7,10 @@ import Sidebar from './components/Sidebar';
 
 // CONFIGURATION
 // CONFIGURATION
+// CONFIGURATION
 // Public URL from serveo (valid while terminal process runs)
-const API_BASE_URL = "https://311eadd9f44d4d4b-119-235-52-57.serveousercontent.com";
+const API_BASE_URL = "https://3a42e584b951e76b-119-235-52-57.serveousercontent.com";
+
 
 
 
