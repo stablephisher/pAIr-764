@@ -5,6 +5,11 @@ import ResultsView from './components/ResultsView';
 import ProcessingEngine from './components/ProcessingEngine';
 import Sidebar from './components/Sidebar';
 
+// CONFIGURATION
+// Public URL from localtunnel (valid while terminal process runs)
+const API_BASE_URL = "https://tasty-zebras-try.loca.lt";
+
+
 function App() {
     const [file, setFile] = useState(null);
     const [status, setStatus] = useState('IDLE'); // IDLE, UPLOADING, PROCESSING, SUCCESS, ERROR
@@ -34,7 +39,7 @@ function App() {
 
     const fetchHistory = async (silent = false) => {
         try {
-            const res = await axios.get('http://localhost:8000/api/history');
+            const res = await axios.get(`${API_BASE_URL}/api/history`);
             const newHistory = res.data;
 
             setHistory(prev => {
@@ -82,7 +87,7 @@ function App() {
         try {
             addLog("Sending POST request to /api/analyze...");
             // Point to Fast API Backend
-            const response = await axios.post('http://localhost:8000/api/analyze', formData, {
+            const response = await axios.post(`${API_BASE_URL}/api/analyze`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -202,7 +207,7 @@ function App() {
                     onClear={async () => {
                         if (confirm("Are you sure you want to clear all history?")) {
                             try {
-                                await axios.delete('http://localhost:8000/api/history');
+                                await axios.delete(`${API_BASE_URL}/api/history`);
                                 setHistory([]);
                                 addLog("History cleared.");
                             } catch (e) {
@@ -214,7 +219,7 @@ function App() {
                     onDelete={async (id) => {
                         if (!id) return;
                         try {
-                            await axios.delete(`http://localhost:8000/api/history/${id}`);
+                            await axios.delete(`${API_BASE_URL}/api/history/${id}`);
                             setHistory(prev => prev.filter(item => item.id !== id));
                             addLog(`Deleted history item ${id}`);
                         } catch (e) {
