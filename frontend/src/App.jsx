@@ -6,8 +6,10 @@ import ProcessingEngine from './components/ProcessingEngine';
 import Sidebar from './components/Sidebar';
 
 // CONFIGURATION
-// Public URL from localtunnel (valid while terminal process runs)
-const API_BASE_URL = "https://tasty-zebras-try.loca.lt";
+// CONFIGURATION
+// Public URL from serveo (valid while terminal process runs)
+const API_BASE_URL = "https://311eadd9f44d4d4b-119-235-52-57.serveousercontent.com";
+
 
 
 function App() {
