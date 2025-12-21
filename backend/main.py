@@ -298,8 +298,13 @@ if not os.path.exists(MONITOR_DIR):
 async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
     """Core logic: Text -> AI Analysis -> Compliance Plan -> Validation -> History"""
     
-    # Using Flash-Lite for "Turbo" performance, with 1.5 Flash as stable fallback
-    models_to_try = ["models/gemini-2.0-flash-lite-preview-02-05", "models/gemini-2.0-flash", "models/gemini-1.5-flash"]
+    # Using Flash-Lite for "Turbo" performance, with multiple stable fallbacks
+    models_to_try = [
+        "models/gemini-2.0-flash-lite-preview-02-05", 
+        "models/gemini-2.0-flash", 
+        "models/gemini-1.5-flash-002", 
+        "models/gemini-1.5-flash-001"
+    ]
 
     # --- Step 1: Policy Analysis ---
     start_time = time.time()
