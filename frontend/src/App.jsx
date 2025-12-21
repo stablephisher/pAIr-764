@@ -28,6 +28,13 @@ function App() {
         console.log(`[${timestamp}] ${msg}`);
     };
 
+    // Axios Config for Localtunnel
+    const axiosConfig = {
+        headers: {
+            "Bypass-Tunnel-Reminder": "true"
+        }
+    };
+
     // Poll history for updates (Simulating Real-Time Monitoring)
     React.useEffect(() => {
         fetchHistory(); // Initial fetch
@@ -39,7 +46,7 @@ function App() {
 
     const fetchHistory = async (silent = false) => {
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/history`);
+            const res = await axios.get(`${API_BASE_URL}/api/history`, axiosConfig);
             const newHistory = res.data;
 
             setHistory(prev => {
@@ -90,6 +97,7 @@ function App() {
             const response = await axios.post(`${API_BASE_URL}/api/analyze`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    "Bypass-Tunnel-Reminder": "true"
                 },
                 signal: controller.signal
             });
@@ -207,7 +215,7 @@ function App() {
                     onClear={async () => {
                         if (confirm("Are you sure you want to clear all history?")) {
                             try {
-                                await axios.delete(`${API_BASE_URL}/api/history`);
+                                await axios.delete(`${API_BASE_URL}/api/history`, axiosConfig);
                                 setHistory([]);
                                 addLog("History cleared.");
                             } catch (e) {
@@ -219,7 +227,7 @@ function App() {
                     onDelete={async (id) => {
                         if (!id) return;
                         try {
-                            await axios.delete(`${API_BASE_URL}/api/history/${id}`);
+                            await axios.delete(`${API_BASE_URL}/api/history/${id}`, axiosConfig);
                             setHistory(prev => prev.filter(item => item.id !== id));
                             addLog(`Deleted history item ${id}`);
                         } catch (e) {
