@@ -19,7 +19,7 @@ app.add_middleware(
     allow_origins=["*"],  # Allow all for development
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "Bypass-Tunnel-Reminder", "bypass-tunnel-reminder"],
 )
 
 # Configure Gemini
