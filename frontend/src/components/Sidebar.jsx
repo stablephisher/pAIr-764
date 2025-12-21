@@ -46,13 +46,15 @@ export default function Sidebar({ history, onSelect, onDelete, onClear }) {
                             {/* Delete Button */}
                             <button
                                 onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
+                                    console.log("Delete clicked for ID:", item.id); // Debug Log
                                     onDelete(item.id);
                                 }}
-                                className="absolute right-2 bottom-2 p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-900/20 rounded opacity-0 group-hover:opacity-100 transition-all z-20"
-                                title="Delete"
+                                className="absolute right-2 bottom-2 p-2 text-gray-500 hover:text-red-400 hover:bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-all z-50 cursor-pointer"
+                                title="Delete Item"
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={16} />
                             </button>
                         </div>
                     ))

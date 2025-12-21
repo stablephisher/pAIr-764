@@ -136,7 +136,22 @@ def save_to_history(data: PolicyAnalysis):
 
 @app.get("/api/history")
 def get_history():
-    return load_history()
+    history = load_history()
+    dirty = False
+    for item in history:
+        if 'id' not in item:
+            item['id'] = str(uuid.uuid4())
+            dirty = True
+        # Also ensure timestamp exists
+        if 'timestamp' not in item:
+            item['timestamp'] = time.time()
+            dirty = True
+            
+    if dirty:
+        with open(HISTORY_FILE, "w") as f:
+            json.dump(history, f, indent=2)
+            
+    return history
 
 @app.delete("/api/history")
 def clear_history():
