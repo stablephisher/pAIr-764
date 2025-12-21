@@ -103,6 +103,7 @@ function App() {
                     'Content-Type': 'multipart/form-data',
                     "Bypass-Tunnel-Reminder": "true"
                 },
+                timeout: 300000, // 5 minute timeout
                 signal: controller.signal
             });
 

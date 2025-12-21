@@ -255,16 +255,27 @@ def generate_compliance_plan(analysis_data: dict, models_to_try: list) -> dict:
         try:
             print(f"Trying Model (Planning): {model_name}")
             model = genai.GenerativeModel(model_name)
-            response = model.generate_content(
-                f"{PLANNING_AGENT_PROMPT}\n\nINPUT POLICY INTELLIGENCE:\n{analysis_json_str}",
-                generation_config={"response_mime_type": "application/json"}
-            )
-            
-            plan_text = response.text
-            if plan_text.startswith("```json"): plan_text = plan_text[7:-3]
-            elif plan_text.startswith("```"): plan_text = plan_text[3:-3]
-            
-            return json.loads(plan_text)
+            # Rate Limit Retry Loop (Planning)
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = model.generate_content(
+                        f"{PLANNING_AGENT_PROMPT}\n\nINPUT POLICY INTELLIGENCE:\n{analysis_json_str}",
+                        generation_config={"response_mime_type": "application/json"}
+                    )
+                    
+                    plan_text = response.text
+                    if plan_text.startswith("```json"): plan_text = plan_text[7:-3]
+                    elif plan_text.startswith("```"): plan_text = plan_text[3:-3]
+                    
+                    return json.loads(plan_text)
+                    
+                except Exception as inner_e:
+                    if "429" in str(inner_e):
+                        print(f"⚠️ Quota exceeded for {model_name} (Planning). Waiting 20s... (Attempt {attempt+1}/{max_retries})")
+                        await asyncio.sleep(20)
+                    else:
+                        raise inner_e # Re-raise to try next model
 
         except Exception as e:
             print(f"Model {model_name} failed (Planning): {e}")
@@ -298,12 +309,12 @@ if not os.path.exists(MONITOR_DIR):
 async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
     """Core logic: Text -> AI Analysis -> Compliance Plan -> Validation -> History"""
     
-    # Using Flash-Lite for "Turbo" performance, with multiple stable fallbacks
+    # Using Flash-Lite for "Turbo" performance, with verified stable fallbacks
     models_to_try = [
         "models/gemini-2.0-flash-lite-preview-02-05", 
-        "models/gemini-2.0-flash", 
-        "models/gemini-1.5-flash-002", 
-        "models/gemini-1.5-flash-001"
+        "models/gemini-2.5-flash", 
+        "models/gemini-2.0-flash",
+        "models/gemini-flash-latest"
     ]
 
     # --- Step 1: Policy Analysis ---
@@ -321,12 +332,28 @@ async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
         try:
             print(f"Trying Model: {model_name}")
             model = genai.GenerativeModel(model_name)
-            response = model.generate_content(
-                f"{SYSTEM_PROMPT}\n\nINPUT POLICY TEXT:\n{policy_text}",
-                generation_config={"response_mime_type": "application/json"}
-            )
-            used_models.append(model_name)
-            break 
+            
+            # Rate Limit Retry Loop
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = model.generate_content(
+                        f"{SYSTEM_PROMPT}\n\nINPUT POLICY TEXT:\n{policy_text}",
+                        generation_config={"response_mime_type": "application/json"}
+                    )
+                    used_models.append(model_name)
+                    break # Success, exit retry loop
+                    
+                except Exception as inner_e:
+                    if "429" in str(inner_e):
+                        print(f"⚠️ Quota exceeded for {model_name}. Waiting 20s... (Attempt {attempt+1}/{max_retries})")
+                        await asyncio.sleep(20) # Non-blocking sleep
+                    else:
+                        raise inner_e # Re-raise other errors to move to next model
+
+            if response:
+                break # Success, exit model loop
+
         except Exception as e:
             print(f"Model {model_name} failed (Analysis): {e}")
             last_exception = e
@@ -415,6 +442,10 @@ async def monitor_policies_task():
 
 @app.on_event("startup")
 async def startup_event():
+    print("\n" + "="*50)
+    print("✅ BACKEND RESTARTED SUCCESSFULLY")
+    print("✅ ACTIVE MODELS: Gemini 2.5 Flash, 2.0 Flash-Lite")
+    print("="*50 + "\n")
     asyncio.create_task(monitor_policies_task())
 
 @app.post("/api/analyze", response_model=PolicyAnalysis)
