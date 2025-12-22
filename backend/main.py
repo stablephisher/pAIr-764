@@ -5,10 +5,19 @@ import uvicorn
 import time
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import ValidationError
+from pydantic import ValidationError, BaseModel
 import google.generativeai as genai
 from pypdf import PdfReader
 from schemas import PolicyAnalysis
+
+# Request Models
+class SourceRequest(BaseModel):
+    name: str
+    url: str
+
+class TranslateRequest(BaseModel):
+    data: dict
+    target_language: str  # e.g., "Hindi", "Tamil", "Telugu"
 
 # Initialize App
 app = FastAPI(title="Policy Ingestion Agent API")
@@ -19,12 +28,12 @@ app.add_middleware(
     allow_origins=["*"],  # Allow all for development
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*", "Bypass-Tunnel-Reminder", "bypass-tunnel-reminder"],
+    allow_headers=["*"],
 )
 
 # Configure Gemini
 # NOTE: In a real scenario, use python-dotenv. 
-# Here we assume the key is in the environment or set it explicitly.
+# Here we assume the key is in the environment.
 api_key = os.getenv("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
@@ -121,12 +130,14 @@ import uuid
 
 # ... (Previous code)
 
-def save_to_history(data: PolicyAnalysis):
+def save_to_history(data: PolicyAnalysis, source: str = "uploaded"):
+    """Save analysis to history with source tracking."""
     history = load_history()
     # Prepend new item with ID
     record = data.dict()
     record['id'] = str(uuid.uuid4())
     record['timestamp'] = time.time()
+    record['source'] = source  # 'uploaded' or 'auto-fetched'
     
     history.insert(0, record)
     # Limit to last 50 items
@@ -170,6 +181,116 @@ def delete_history_item(item_id: str):
     with open(HISTORY_FILE, "w") as f:
         json.dump(new_history, f, indent=2)
     return {"message": "Item deleted"}
+
+
+# ===== URL SOURCES API =====
+SOURCES_FILE = "custom_sources.json"
+
+def load_sources():
+    if os.path.exists(SOURCES_FILE):
+        try:
+            with open(SOURCES_FILE, "r") as f:
+                return json.load(f)
+        except:
+            pass
+    return []
+
+def save_sources(sources):
+    with open(SOURCES_FILE, "w") as f:
+        json.dump(sources, f, indent=2)
+
+@app.get("/api/sources")
+def get_sources():
+    """Get all configured URL sources."""
+    return load_sources()
+
+@app.post("/api/sources")
+def add_source(source: SourceRequest):
+    """Add a new URL source."""
+    sources = load_sources()
+    sources.append({
+        "name": source.name,
+        "url": source.url,
+        "enabled": True
+    })
+    save_sources(sources)
+    return {"message": "Source added", "sources": sources}
+
+@app.delete("/api/sources/{name}")
+def delete_source(name: str):
+    """Remove a URL source by name."""
+    sources = load_sources()
+    new_sources = [s for s in sources if s.get("name") != name]
+    
+    if len(new_sources) == len(sources):
+        raise HTTPException(status_code=404, detail="Source not found")
+    
+    save_sources(new_sources)
+    return {"message": "Source removed"}
+
+
+# ===== TRANSLATION API =====
+TRANSLATION_PROMPT = """
+You are a professional translator. Translate ALL text content in the following JSON to {language}.
+
+RULES:
+1. Translate EVERY text value to {language}
+2. Keep the JSON structure EXACTLY the same
+3. Keep all keys in English (don't translate keys)
+4. Translate values like policy names, descriptions, actions, obligations, penalties etc.
+5. Keep numbers, dates, and technical terms as-is
+6. Output ONLY valid JSON - no markdown, no explanation
+7. Maintain the meaning accurately
+
+JSON to translate:
+{json_content}
+
+Respond with ONLY the translated JSON:
+"""
+
+@app.post("/api/translate")
+async def translate_content(request: TranslateRequest):
+    """Translate analysis content to target language using Gemini."""
+    try:
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        target_lang = request.target_language
+        if target_lang.lower() == 'en' or target_lang.lower() == 'english':
+            return request.data  # No translation needed
+        
+        # Language name mapping
+        lang_names = {
+            'hi': 'Hindi', 'ta': 'Tamil', 'te': 'Telugu', 'kn': 'Kannada',
+            'ml': 'Malayalam', 'bn': 'Bengali', 'mr': 'Marathi', 'gu': 'Gujarati',
+            'pa': 'Punjabi', 'or': 'Odia', 'as': 'Assamese', 'ur': 'Urdu',
+            'sa': 'Sanskrit', 'ne': 'Nepali', 'kok': 'Konkani'
+        }
+        language_name = lang_names.get(target_lang.lower(), target_lang)
+        
+        json_content = json.dumps(request.data, indent=2, ensure_ascii=False)
+        prompt = TRANSLATION_PROMPT.format(language=language_name, json_content=json_content)
+        
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(prompt)
+        
+        # Clean and parse response
+        response_text = response.text.strip()
+        if response_text.startswith("```"):
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+        response_text = response_text.strip()
+        
+        translated_data = json.loads(response_text)
+        return translated_data
+        
+    except json.JSONDecodeError as e:
+        print(f"Translation JSON parse error: {e}")
+        raise HTTPException(status_code=500, detail="Translation failed - invalid response format")
+    except Exception as e:
+        print(f"Translation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")
 
 
 
@@ -243,7 +364,7 @@ Your output will be shown directly to business owners and hackathon judges.
 Write like incorrect advice could cause financial loss.
 """
 
-def generate_compliance_plan(analysis_data: dict, models_to_try: list) -> dict:
+async def generate_compliance_plan(analysis_data: dict, models_to_try: list) -> dict:
     """
     Compliance Planner Agent
     Converts policy intelligence into actionable steps for MSME owners
@@ -271,9 +392,10 @@ def generate_compliance_plan(analysis_data: dict, models_to_try: list) -> dict:
                     return json.loads(plan_text)
                     
                 except Exception as inner_e:
+                    last_exception = inner_e # Capture error
                     if "429" in str(inner_e):
-                        print(f"⚠️ Quota exceeded for {model_name} (Planning). Waiting 20s... (Attempt {attempt+1}/{max_retries})")
-                        await asyncio.sleep(20)
+                        print(f"⚠️ Quota exceeded for {model_name} (Planning). Waiting 30s... (Attempt {attempt+1}/{max_retries})")
+                        await asyncio.sleep(30)
                     else:
                         raise inner_e # Re-raise to try next model
 
@@ -306,15 +428,11 @@ MONITOR_DIR = "monitored_policies"
 if not os.path.exists(MONITOR_DIR):
     os.makedirs(MONITOR_DIR)
 
-async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
+async def run_policy_analysis_pipeline(policy_text: str, source: str = "uploaded") -> PolicyAnalysis:
     """Core logic: Text -> AI Analysis -> Compliance Plan -> Validation -> History"""
     
-    # Using Flash-Lite for "Turbo" performance, with verified stable fallbacks
     models_to_try = [
-        "models/gemini-2.0-flash-lite-preview-02-05", 
-        "models/gemini-2.5-flash", 
-        "models/gemini-2.0-flash",
-        "models/gemini-flash-latest"
+        "models/gemini-2.5-flash"
     ]
 
     # --- Step 1: Policy Analysis ---
@@ -337,6 +455,10 @@ async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
             max_retries = 3
             for attempt in range(max_retries):
                 try:
+                    # DEBUG: Reveal and FORCE the key
+                    print(f"🕵️ DEBUG: Active Key for {model_name}: {api_key[:10]}...{api_key[-5:]}")
+                    genai.configure(api_key=api_key) # FORCE CONFIGURATION
+
                     response = model.generate_content(
                         f"{SYSTEM_PROMPT}\n\nINPUT POLICY TEXT:\n{policy_text}",
                         generation_config={"response_mime_type": "application/json"}
@@ -345,9 +467,10 @@ async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
                     break # Success, exit retry loop
                     
                 except Exception as inner_e:
+                    last_exception = inner_e # Capture error
                     if "429" in str(inner_e):
-                        print(f"⚠️ Quota exceeded for {model_name}. Waiting 20s... (Attempt {attempt+1}/{max_retries})")
-                        await asyncio.sleep(20) # Non-blocking sleep
+                        print(f"⚠️ Quota exceeded for {model_name}. Waiting 30s... (Attempt {attempt+1}/{max_retries})")
+                        await asyncio.sleep(30) # Non-blocking sleep
                     else:
                         raise inner_e # Re-raise other errors to move to next model
 
@@ -378,7 +501,7 @@ async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
         print("--- [START] Step 2: Compliance Planning ---")
         st2_start = time.time()
         
-        compliance_plan = generate_compliance_plan(analysis_data, models_to_try)
+        compliance_plan = await generate_compliance_plan(analysis_data, models_to_try)
         
         if compliance_plan:
              analysis_data["compliance_plan"] = compliance_plan
@@ -402,7 +525,7 @@ async def run_policy_analysis_pipeline(policy_text: str) -> PolicyAnalysis:
 
     # Validate & Save
     validated_data = PolicyAnalysis(**analysis_data)
-    save_to_history(validated_data)
+    save_to_history(validated_data, source)
     return validated_data
 
 
@@ -444,12 +567,15 @@ async def monitor_policies_task():
 async def startup_event():
     print("\n" + "="*50)
     print("✅ BACKEND RESTARTED SUCCESSFULLY")
+    masked_key = f"******{api_key[-4:]}" if api_key else "NONE"
+    print(f"🔑 LOADED API KEY: {masked_key}")
     print("✅ ACTIVE MODELS: Gemini 2.5 Flash, 2.0 Flash-Lite")
     print("="*50 + "\n")
     asyncio.create_task(monitor_policies_task())
 
 @app.post("/api/analyze", response_model=PolicyAnalysis)
 async def analyze_policy(file: UploadFile = File(...)):
+    print(f"📥 REQUEST RECEIVED: Analyzing {file.filename}...")
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     

@@ -1,73 +1,267 @@
-# Policy Ingestion Agent: Autonomous Compliance Intelligence
+# pAIr - MSME Compliance & Grant Navigator
 
-**An Agentic AI System for Indian MSMEs**
+**Agentathon 2025 Entry**
 
-This system serves as an intelligent compliance officer for small businesses. It continuously monitors policy sources, autonomously analyzes complex government regulations, and generates instant, actionable compliance plans—without requiring user intervention.
+**Team Name:** pAIr
+
+**Team Members:**
+- Shiva Ganesh Talikota (Team Lead) - matriXO India
+- Chandra Bose Pechetti - Skynet
+- Karthik Chinthakindi - matriXO
 
 ---
 
-## 🤖 System Architecture: The Multi-Agent Swarm
+## 🎯 Problem Statement
 
-This project is not a simple wrapper; it is a multi-agent system where four distinct AI agents collaborate to solve the compliance problem:
+**MSME Compliance & Grant Navigator**
 
-### 1. Ingestion Agent
-- **Role**: The Gateway
-- **Function**: Monitors file streams and uploads. It handles PDF parsing, OCR text extraction, and prepares raw data for analysis.
-- **Capability**: Handles complex government gazettes and notifications.
+Small and Medium Enterprises (MSMEs) in India often struggle to navigate the complex landscape of government schemes, subsidies, and compliance requirements. This autonomous agentic system solves this by:
 
-### 2. Policy Analyst Agent (Powered by Gemini 2.0 Flash)
-- **Role**: The Legal Expert
-- **Function**: Reads the raw policy text and performs deep semantic reasoning.
-- **Output**: Structured JSON intelligence identifying:
-    - Legal Obligations
-    - Penalties & Risks
-    - Applicability Criteria
-    - Deadlines
+- 📄 **Ingesting** business documents and descriptions
+- 🧠 **Reasoning** about eligibility for various government schemes (e.g., CGTMSE, PMEGP)
+- 📋 **Planning** a compliance roadmap
+- ✍️ **Executing** application drafts or compliance checks
+- ✅ **Verifying** results for accuracy
+- 💬 **Explaining** everything in simple, jargon-free language
 
-### 3. Compliance Planning Agent (Powered by Gemini 2.0 Flash-Lite)
-- **Role**: The Strategist
-- **Function**: Takes the *structured intelligence* from the Analyst and reasons about *implications* for a business owner.
-- **Output**: A prioritized, step-by-step **Action Plan** (e.g., "Do this first," "Risk is High," "file form X by date Y").
-- **Key Feature**: It speaks business language, not legal jargon.
+---
 
-### 4. Background Monitoring Agent (Autonomous Watchdog)
-- **Role**: The Automator
-- **Function**: A persistent background service that watches designated policy sources (e.g., local directories simulating government portals).
-- **Behavior**:
-    - 📡 **Detects**: Instantly notices new policy documents.
-    - ⚡ **Triggers**: Automatically launches the analysis pipeline.
-    - 💾 **Saves**: Pushes results to the system history.
-    - **Zero-Touch**: No human click is needed. The dashboard updates live.
+## 🏗️ Architecture
+
+The system uses a **multi-agent architecture** orchestrated by "Antigravity":
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ORCHESTRATOR AGENT                           │
+│                   (Antigravity Core)                            │
+│            Manages state and agent delegation                   │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+    ┌────────────────────┼────────────────────┐
+    │                    │                    │
+    ▼                    ▼                    ▼
+┌────────┐         ┌──────────┐         ┌──────────┐
+│INGEST  │────────▶│ REASON   │────────▶│  PLAN    │
+│ Agent  │         │  Agent   │         │  Agent   │
+└────────┘         │(Gemini)  │         └────┬─────┘
+                   └──────────┘              │
+    ┌────────────────────┼────────────────────┐
+    │                    │                    │
+    ▼                    ▼                    ▼
+┌────────┐         ┌──────────┐         ┌──────────┐
+│EXECUTE │────────▶│ VERIFY   │────────▶│ EXPLAIN  │
+│ Agent  │         │  Agent   │         │  Agent   │
+└────────┘         └──────────┘         └──────────┘
+```
+
+### Agent Roles
+
+| Agent | Role | Function |
+|-------|------|----------|
+| **Orchestrator** | Core | Manages state and agent delegation |
+| **Ingestion** | Gateway | Handles PDF parsing, OCR, data intake |
+| **Reasoning** | Legal Expert | Semantic understanding with Gemini 2.5 |
+| **Planning** | Strategist | Generates compliance roadmaps |
+| **Execution** | Preparer | Creates forms, drafts, checklists |
+| **Verification** | QA | Validates results, confidence scoring |
+| **Explanation** | Translator | Simple, jargon-free summaries |
+
+---
+
+## 🚀 Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Language** | Python (FastAPI) |
+| **AI Model** | Google Gemini 2.5 Flash |
+| **Frontend** | React + Vite |
+| **Orchestration** | Custom Antigravity Core |
+| **Deployment** | Docker / Google Cloud Run |
+
+---
+
+## 📦 Supported Government Schemes
+
+- **CGTMSE** - Credit Guarantee Fund Trust for MSMEs
+- **PMEGP** - Prime Minister's Employment Generation Programme
+- **MUDRA** - Pradhan Mantri MUDRA Yojana
+- **Stand Up India** - For SC/ST/Women entrepreneurs
+- **Udyam Registration** - MSME registration portal
+
+---
+
+## 🏃 How to Run
+
+### Local Demo (Quickest)
+
+```bash
+# Install dependencies and run demo
+run_demo.bat
+```
+
+This will:
+1. Install Python dependencies
+2. Start the backend server
+3. Run the test client with demo output
+
+### Manual Run
+
+**Terminal 1 - Start the server:**
+```bash
+cd backend
+pip install -r requirements.txt
+python main.py
+```
+
+**Terminal 2 - Send a request:**
+```bash
+python src/test_client.py
+```
+
+### Frontend (Optional)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 in your browser.
+
+---
+
+## 🐳 Deployment
+
+### Docker
+
+```bash
+# Build image
+docker build -t pair-msme .
+
+# Run with demo mode
+docker run -p 8000:8000 -e DEMO_MODE=TRUE pair-msme
+
+# Run with real API
+docker run -p 8000:8000 -e GEMINI_API_KEY=your_key pair-msme
+```
+
+### Docker Compose (Full Stack)
+
+```bash
+GEMINI_API_KEY=your_key docker-compose up
+```
+
+### Google Cloud Run
+
+**Linux/Mac:**
+```bash
+export GCP_PROJECT_ID=your-project
+export GEMINI_API_KEY=your-key
+./deploy.sh
+```
+
+**Windows PowerShell:**
+```powershell
+$env:GCP_PROJECT_ID="your-project"
+$env:GEMINI_API_KEY="your-key"
+./deploy_to_cloud_run.ps1
+```
+
+---
+
+## 🎮 Demo Mode
+
+Set `DEMO_MODE=TRUE` to see a deterministic walkthrough of the system's capabilities without needing a Gemini API key.
+
+Demo mode showcases:
+- Sample MSME business profile (Women-owned Micro Enterprise)
+- CGTMSE policy analysis
+- Eligibility determination
+- Compliance roadmap generation
+- Multi-language support
+
+**This is enabled by default in Docker.**
 
 ---
 
 ## 🔄 Modes of Operation
 
-The system demonstrates true flexibility by operating in two distinct modes:
-
 ### Mode 1: Interactive (User-Driven)
-*Best for: Ad-hoc analysis of specific documents.*
-1. User uploads a PDF via the Premium UI.
-2. The agent swarm executes sequentially (Ingest → Analyze → Plan).
-3. Results are displayed immediately with a "Check AI Logic" debug view.
+1. User uploads a PDF via the UI
+2. Agent swarm processes: Ingest → Reason → Plan → Execute
+3. Results displayed with "Check AI Logic" debug view
 
 ### Mode 2: Autonomous (Agent-Driven)
-*Best for: "Set and Forget" continuous compliance.*
-1. The **Monitoring Agent** runs silently in the background.
-2. When a new policy drops (e.g., into `backend/monitored_policies`), the agent wakes up.
-3. It autonomously orchestrates the Analyst and Planner agents.
-4. The Frontend UI auto-refreshes to alert the user: *"New Policy Analyze: [Policy Name]"*.
+1. Monitoring Agent watches `backend/monitored_policies/`
+2. New PDF detected → Auto-triggers analysis
+3. Results pushed to history (no user action needed)
+4. Frontend auto-refreshes with new results
 
 ---
 
-## 🚀 Key Technologies
-- **Orchestration**: Python (FastAPI + AsyncIO background tasks)
-- **Intelligence**: Google Gemini 2.0 Flash & Flash-Lite (via `google-generativeai`)
-- **Interface**: React + Vite (Modern, responsive dashboard)
-- **State Management**: JSON-based persistent history
+## 🌐 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/analyze` | POST | Upload PDF for analysis |
+| `/api/history` | GET | Get analysis history |
+| `/api/history/{id}` | DELETE | Delete history item |
+| `/api/translate` | POST | Translate analysis to regional language |
+| `/api/sources` | GET/POST | Manage URL sources |
+
+---
+
+## 🗣️ Supported Languages
+
+The system supports 15+ Indian languages:
+
+Hindi • Tamil • Telugu • Kannada • Malayalam • Bengali • Marathi • Gujarati • Punjabi • Odia • Assamese • Urdu • Sanskrit • Nepali • Konkani
+
+---
+
+## 📁 Project Structure
+
+```
+pAIr-AG/
+├── backend/
+│   ├── agents/           # Multi-agent system
+│   │   ├── orchestrator.py
+│   │   ├── ingestion_agent.py
+│   │   ├── reasoning_agent.py
+│   │   ├── planning_agent.py
+│   │   ├── execution_agent.py
+│   │   ├── verification_agent.py
+│   │   └── explanation_agent.py
+│   ├── main.py           # FastAPI server
+│   ├── schemas.py        # Pydantic models
+│   ├── schemes.py        # Government schemes DB
+│   ├── demo_data.py      # Demo mode data
+│   └── requirements.txt
+├── frontend/             # React + Vite UI
+├── src/
+│   └── test_client.py    # API test client
+├── Dockerfile
+├── docker-compose.yml
+├── deploy.sh             # Cloud Run (Linux)
+├── deploy_to_cloud_run.ps1  # Cloud Run (Windows)
+├── run_demo.bat          # Local demo launcher
+└── README.md
+```
 
 ---
 
 ## 🎯 Final Goal
+
 To empower non-legal MSME owners to say:
+
 > *"This system continuously monitors policy sources and automatically triggers analysis and compliance planning without user input."*
+
+---
+
+## 📄 License
+
+MIT License - Built for Agentathon 2025
+
+---
+
+**Made with ❤️ by Team pAIr**

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.log
+automation_state.json
+compliance_history.json
+artifacts.json
