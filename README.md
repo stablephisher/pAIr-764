@@ -1,13 +1,27 @@
 # pAIr - MSME Compliance & Grant Navigator
 
-**Agentathon 2025 Entry**
+<div align="center">
 
-**Team Name:** pAIr
+**🏆 Agentathon 2025 Entry**
 
-**Team Members:**
-- Shiva Ganesh Talikota (Team Lead) - matriXO India
-- Chandra Bose Pechetti - Skynet
-- Karthik Chinthakindi - matriXO
+*An Autonomous Agentic AI System for Indian MSMEs*
+
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
+[![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-orange.svg)](https://ai.google.dev)
+[![React](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://reactjs.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+</div>
+
+---
+
+## 👥 Team pAIr
+
+| Name | Role | Organization |
+|------|------|--------------|
+| **Shiva Ganesh Talikota** | Team Lead | matriXO India |
+| **Chandra Bose Pechetti** | Developer | Skynet |
+| **Karthik Chinthakindi** | Developer | matriXO |
 
 ---
 
@@ -17,18 +31,20 @@
 
 Small and Medium Enterprises (MSMEs) in India often struggle to navigate the complex landscape of government schemes, subsidies, and compliance requirements. This autonomous agentic system solves this by:
 
-- 📄 **Ingesting** business documents and descriptions
-- 🧠 **Reasoning** about eligibility for various government schemes (e.g., CGTMSE, PMEGP)
-- 📋 **Planning** a compliance roadmap
-- ✍️ **Executing** application drafts or compliance checks
-- ✅ **Verifying** results for accuracy
-- 💬 **Explaining** everything in simple, jargon-free language
+| Feature | Description |
+|---------|-------------|
+| 📄 **Ingesting** | Business documents and policy PDFs |
+| 🧠 **Reasoning** | Eligibility for schemes (CGTMSE, PMEGP, MUDRA) |
+| 📋 **Planning** | Compliance roadmaps with deadlines |
+| ✍️ **Executing** | Application drafts and checklists |
+| ✅ **Verifying** | Results for accuracy and confidence |
+| 💬 **Explaining** | Everything in simple, jargon-free language |
 
 ---
 
 ## 🏗️ Architecture
 
-The system uses a **multi-agent architecture** orchestrated by "Antigravity":
+### Multi-Agent System (Antigravity Core)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -56,15 +72,15 @@ The system uses a **multi-agent architecture** orchestrated by "Antigravity":
 
 ### Agent Roles
 
-| Agent | Role | Function |
+| Agent | File | Function |
 |-------|------|----------|
-| **Orchestrator** | Core | Manages state and agent delegation |
-| **Ingestion** | Gateway | Handles PDF parsing, OCR, data intake |
-| **Reasoning** | Legal Expert | Semantic understanding with Gemini 2.5 |
-| **Planning** | Strategist | Generates compliance roadmaps |
-| **Execution** | Preparer | Creates forms, drafts, checklists |
-| **Verification** | QA | Validates results, confidence scoring |
-| **Explanation** | Translator | Simple, jargon-free summaries |
+| **Orchestrator** | `orchestrator.py` | Central state management and delegation |
+| **Ingestion** | `ingestion_agent.py` | PDF parsing, OCR, data intake |
+| **Reasoning** | `reasoning_agent.py` | Gemini 2.5 semantic analysis |
+| **Planning** | `planning_agent.py` | Compliance roadmaps, timelines |
+| **Execution** | `execution_agent.py` | Forms, drafts, checklists |
+| **Verification** | `verification_agent.py` | Quality assurance, confidence scoring |
+| **Explanation** | `explanation_agent.py` | Plain English summaries |
 
 ---
 
@@ -72,150 +88,214 @@ The system uses a **multi-agent architecture** orchestrated by "Antigravity":
 
 | Component | Technology |
 |-----------|------------|
-| **Language** | Python (FastAPI) |
+| **Backend** | Python 3.11 + FastAPI |
 | **AI Model** | Google Gemini 2.5 Flash |
-| **Frontend** | React + Vite |
-| **Orchestration** | Custom Antigravity Core |
+| **Frontend** | React 18 + Vite |
+| **Styling** | TailwindCSS |
 | **Deployment** | Docker / Google Cloud Run |
 
 ---
 
 ## 📦 Supported Government Schemes
 
-- **CGTMSE** - Credit Guarantee Fund Trust for MSMEs
-- **PMEGP** - Prime Minister's Employment Generation Programme
-- **MUDRA** - Pradhan Mantri MUDRA Yojana
-- **Stand Up India** - For SC/ST/Women entrepreneurs
-- **Udyam Registration** - MSME registration portal
+| Scheme | Full Name | Benefit |
+|--------|-----------|---------|
+| **CGTMSE** | Credit Guarantee Fund Trust | Collateral-free loans up to ₹5 crore |
+| **PMEGP** | PM Employment Generation Programme | Up to 35% subsidy for new units |
+| **MUDRA** | Pradhan Mantri MUDRA Yojana | Micro credit up to ₹10 lakhs |
+| **Stand Up India** | For SC/ST/Women | Loans ₹10 lakh - ₹1 crore |
+| **Udyam** | MSME Registration | Free registration, gateway to schemes |
 
 ---
 
-## 🏃 How to Run
+## 🏃 Quick Start Guide
 
-### Local Demo (Quickest)
+### Prerequisites
+
+- **Python 3.11+** - [Download](https://python.org)
+- **Node.js 18+** - [Download](https://nodejs.org)
+- **Gemini API Key** - [Get free key](https://aistudio.google.com/app/apikey)
+
+### Step 1: Clone the Repository
 
 ```bash
-# Install dependencies and run demo
-run_demo.bat
+git clone https://github.com/shivaganesht/pAIr-764.git
+cd pAIr-764
 ```
 
-This will:
-1. Install Python dependencies
-2. Start the backend server
-3. Run the test client with demo output
+### Step 2: Set Up Backend
 
-### Manual Run
-
-**Terminal 1 - Start the server:**
-```bash
+```powershell
+# Navigate to backend
 cd backend
+
+# Install Python dependencies
 pip install -r requirements.txt
+
+# Set your Gemini API Key (PowerShell)
+$env:GEMINI_API_KEY="your-api-key-here"
+
+# Start the backend server
 python main.py
 ```
 
-**Terminal 2 - Send a request:**
-```bash
-python src/test_client.py
+**Expected output:**
+```
+==================================================
+✅ BACKEND RESTARTED SUCCESSFULLY
+🔑 LOADED API KEY: ******your-key
+✅ ACTIVE MODELS: Gemini 2.5 Flash, 2.0 Flash-Lite
+==================================================
+📡 Monitoring started in: backend/monitored_policies
+INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
-### Frontend (Optional)
+### Step 3: Set Up Frontend (New Terminal)
 
-```bash
+```powershell
+# Navigate to frontend
 cd frontend
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+**Expected output:**
+```
+VITE v5.4.21  ready in 994 ms
+
+➜  Local:   http://localhost:5173/
+➜  Network: use --host to expose
+```
+
+### Step 4: Open the Application
+
+🌐 **Open your browser:** http://localhost:5173
 
 ---
 
-## 🐳 Deployment
+## 📋 How to Use
 
-### Docker
+### 1. Upload a Policy Document
+
+1. Click **"Select PDF File"** or drag & drop a PDF
+2. Click **"🚀 Analyze Policy"**
+3. Wait for the multi-agent pipeline to process
+
+### 2. View Analysis Results
+
+The system will display:
+- **Policy Metadata** - Name, authority, dates
+- **Risk Assessment** - HIGH / MEDIUM / LOW
+- **Obligations** - What you must do
+- **Penalties** - What happens if you don't comply
+- **Action Plan** - Step-by-step compliance roadmap
+
+### 3. Translate to Regional Languages
+
+Click the 🌍 language toggle to translate results to:
+- Hindi, Tamil, Telugu, Kannada, Malayalam
+- Bengali, Marathi, Gujarati, Punjabi
+- And 6 more Indian languages
+
+### 4. Autonomous Monitoring
+
+Drop PDFs into `backend/monitored_policies/` folder:
+- The system **automatically detects** new files
+- **Triggers analysis** without user action
+- Results appear in the history sidebar
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `GEMINI_API_KEY` | Your Gemini API key | ✅ Yes |
+| `DEMO_MODE` | Set to `TRUE` for demo without API | Optional |
+| `PORT` | Backend port (default: 8000) | Optional |
+
+### Setting API Key
+
+**PowerShell:**
+```powershell
+$env:GEMINI_API_KEY="your-key-here"
+```
+
+**Command Prompt:**
+```cmd
+set GEMINI_API_KEY=your-key-here
+```
+
+**Linux/Mac:**
+```bash
+export GEMINI_API_KEY="your-key-here"
+```
+
+---
+
+## 🐳 Docker Deployment
+
+### Build and Run
 
 ```bash
 # Build image
 docker build -t pair-msme .
 
-# Run with demo mode
-docker run -p 8000:8000 -e DEMO_MODE=TRUE pair-msme
+# Run with API key
+docker run -p 8000:8000 -e GEMINI_API_KEY=your-key pair-msme
 
-# Run with real API
-docker run -p 8000:8000 -e GEMINI_API_KEY=your_key pair-msme
+# Run in demo mode (no API key needed)
+docker run -p 8000:8000 -e DEMO_MODE=TRUE pair-msme
 ```
 
 ### Docker Compose (Full Stack)
 
 ```bash
-GEMINI_API_KEY=your_key docker-compose up
+GEMINI_API_KEY=your-key docker-compose up
 ```
 
-### Google Cloud Run
+---
 
-**Linux/Mac:**
+## ☁️ Google Cloud Run Deployment
+
+### Windows PowerShell
+
+```powershell
+$env:GCP_PROJECT_ID="your-project"
+$env:GEMINI_API_KEY="your-key"
+.\deploy_to_cloud_run.ps1
+```
+
+### Linux/Mac
+
 ```bash
 export GCP_PROJECT_ID=your-project
 export GEMINI_API_KEY=your-key
 ./deploy.sh
 ```
 
-**Windows PowerShell:**
-```powershell
-$env:GCP_PROJECT_ID="your-project"
-$env:GEMINI_API_KEY="your-key"
-./deploy_to_cloud_run.ps1
-```
-
 ---
 
 ## 🎮 Demo Mode
 
-Set `DEMO_MODE=TRUE` to see a deterministic walkthrough of the system's capabilities without needing a Gemini API key.
+Run without a Gemini API key to see a deterministic walkthrough:
 
-Demo mode showcases:
-- Sample MSME business profile (Women-owned Micro Enterprise)
+```powershell
+$env:DEMO_MODE="TRUE"
+python backend/main.py
+```
+
+Demo showcases:
+- Women-owned Micro Enterprise profile
 - CGTMSE policy analysis
-- Eligibility determination
-- Compliance roadmap generation
-- Multi-language support
-
-**This is enabled by default in Docker.**
-
----
-
-## 🔄 Modes of Operation
-
-### Mode 1: Interactive (User-Driven)
-1. User uploads a PDF via the UI
-2. Agent swarm processes: Ingest → Reason → Plan → Execute
-3. Results displayed with "Check AI Logic" debug view
-
-### Mode 2: Autonomous (Agent-Driven)
-1. Monitoring Agent watches `backend/monitored_policies/`
-2. New PDF detected → Auto-triggers analysis
-3. Results pushed to history (no user action needed)
-4. Frontend auto-refreshes with new results
-
----
-
-## 🌐 API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/analyze` | POST | Upload PDF for analysis |
-| `/api/history` | GET | Get analysis history |
-| `/api/history/{id}` | DELETE | Delete history item |
-| `/api/translate` | POST | Translate analysis to regional language |
-| `/api/sources` | GET/POST | Manage URL sources |
-
----
-
-## 🗣️ Supported Languages
-
-The system supports 15+ Indian languages:
-
-Hindi • Tamil • Telugu • Kannada • Malayalam • Bengali • Marathi • Gujarati • Punjabi • Odia • Assamese • Urdu • Sanskrit • Nepali • Konkani
+- Eligibility for 4 schemes
+- Full compliance roadmap
 
 ---
 
@@ -224,29 +304,113 @@ Hindi • Tamil • Telugu • Kannada • Malayalam • Bengali • Marathi •
 ```
 pAIr-AG/
 ├── backend/
-│   ├── agents/           # Multi-agent system
-│   │   ├── orchestrator.py
-│   │   ├── ingestion_agent.py
-│   │   ├── reasoning_agent.py
-│   │   ├── planning_agent.py
-│   │   ├── execution_agent.py
-│   │   ├── verification_agent.py
-│   │   └── explanation_agent.py
-│   ├── main.py           # FastAPI server
-│   ├── schemas.py        # Pydantic models
-│   ├── schemes.py        # Government schemes DB
-│   ├── demo_data.py      # Demo mode data
+│   ├── agents/                 # Multi-agent system
+│   │   ├── __init__.py
+│   │   ├── orchestrator.py     # Central coordinator
+│   │   ├── ingestion_agent.py  # PDF → Text
+│   │   ├── reasoning_agent.py  # Gemini analysis
+│   │   ├── planning_agent.py   # Roadmap generation
+│   │   ├── execution_agent.py  # Forms & drafts
+│   │   ├── verification_agent.py # QA & confidence
+│   │   └── explanation_agent.py  # Plain English
+│   ├── main.py                 # FastAPI server
+│   ├── schemas.py              # Pydantic models
+│   ├── schemes.py              # Government schemes DB
+│   ├── demo_data.py            # Demo mode data
+│   ├── monitored_policies/     # Auto-detection folder
 │   └── requirements.txt
-├── frontend/             # React + Vite UI
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx             # Main application
+│   │   └── components/
+│   │       ├── Sidebar.jsx     # History panel
+│   │       ├── ResultsView.jsx # Analysis display
+│   │       └── ProcessingEngine.jsx
+│   ├── package.json
+│   └── vite.config.js
 ├── src/
-│   └── test_client.py    # API test client
+│   └── test_client.py          # API test client
 ├── Dockerfile
 ├── docker-compose.yml
-├── deploy.sh             # Cloud Run (Linux)
-├── deploy_to_cloud_run.ps1  # Cloud Run (Windows)
-├── run_demo.bat          # Local demo launcher
+├── deploy.sh                   # Cloud Run (Linux)
+├── deploy_to_cloud_run.ps1     # Cloud Run (Windows)
+├── run_demo.bat                # Local demo launcher
 └── README.md
 ```
+
+---
+
+## 🔌 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/analyze` | POST | Upload PDF for analysis |
+| `/api/history` | GET | Get analysis history |
+| `/api/history/{id}` | DELETE | Delete history item |
+| `/api/translate` | POST | Translate to regional language |
+| `/api/sources` | GET/POST/DELETE | Manage URL sources |
+
+### Example: Upload and Analyze
+
+```python
+import requests
+
+files = {'file': open('policy.pdf', 'rb')}
+response = requests.post('http://localhost:8000/api/analyze', files=files)
+print(response.json())
+```
+
+---
+
+## 🔄 Modes of Operation
+
+### Mode 1: Interactive (User-Driven)
+1. User uploads PDF via UI
+2. Agent swarm processes: Ingest → Reason → Plan → Execute → Verify → Explain
+3. Results displayed with debug view
+
+### Mode 2: Autonomous (Agent-Driven)
+1. Monitoring Agent watches `backend/monitored_policies/`
+2. New PDF detected → Auto-triggers pipeline
+3. Results appear in history (zero user action)
+
+---
+
+## 🗣️ Supported Languages
+
+| Language | Code | Native |
+|----------|------|--------|
+| English | en | English |
+| Hindi | hi | हिंदी |
+| Tamil | ta | தமிழ் |
+| Telugu | te | తెలుగు |
+| Kannada | kn | ಕನ್ನಡ |
+| Malayalam | ml | മലയാളം |
+| Bengali | bn | বাংলা |
+| Marathi | mr | मराठी |
+| Gujarati | gu | ગુજરાતી |
+| Punjabi | pa | ਪੰਜਾਬੀ |
+| Odia | or | ଓଡ଼ିଆ |
+| Assamese | as | অসমীয়া |
+| Urdu | ur | اردو |
+| Sanskrit | sa | संस्कृतम् |
+| Nepali | ne | नेपाली |
+| Konkani | kok | कोंकणी |
+
+---
+
+## 🎯 Key Features
+
+✅ **Multi-Agent Architecture** - 7 specialized AI agents working together  
+✅ **Gemini 2.5 Flash** - Latest Google AI for semantic understanding  
+✅ **Autonomous Operation** - Zero-touch policy monitoring  
+✅ **15+ Languages** - Regional language support for accessibility  
+✅ **MSME-Focused** - Built specifically for Indian small businesses  
+✅ **Scheme Database** - CGTMSE, PMEGP, MUDRA, Stand Up India  
+✅ **Compliance Roadmaps** - Prioritized action plans with deadlines  
+✅ **Dark/Light Mode** - Modern UI with theme support  
+✅ **Docker Ready** - One-command deployment  
+✅ **Cloud Run** - Scalable serverless deployment  
 
 ---
 
@@ -264,4 +428,10 @@ MIT License - Built for Agentathon 2025
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Team pAIr**
+
+*Empowering Indian MSMEs with AI-powered compliance intelligence*
+
+</div>
