@@ -49,43 +49,61 @@ pAIr solves this real-world challenge by deploying an autonomous multi-agent AI 
 
 ## 🏗️ Architecture
 
-### Multi-Agent System (Antigravity Core)
+### Multi-Agent System with Scoring Pipeline (v3.0)
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ORCHESTRATOR AGENT                           │
-│                   (Antigravity Core)                            │
-│            Manages state and agent delegation                   │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-    ┌────────────────────┼────────────────────┐
-    │                    │                    │
-    ▼                    ▼                    ▼
-┌────────┐         ┌──────────┐         ┌──────────┐
-│INGEST  │────────▶│ REASON   │────────▶│  PLAN    │
-│ Agent  │         │  Agent   │         │  Agent   │
-└────────┘         │(Gemini)  │         └────┬─────┘
-                   └──────────┘              │
-    ┌────────────────────┼────────────────────┐
-    │                    │                    │
-    ▼                    ▼                    ▼
-┌────────┐         ┌──────────┐         ┌──────────┐
-│EXECUTE │────────▶│ VERIFY   │────────▶│ EXPLAIN  │
-│ Agent  │         │  Agent   │         │  Agent   │
-└────────┘         └──────────┘         └──────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         FRONTEND (React 18 + Vite)                   │
+│  Firebase Auth → OnboardingWizard → Dashboard (Risk/Sustain/ROI)    │
+│  ResultsView (Full Report) → 15+ Language Translation               │
+└────────────────────────────┬─────────────────────────────────────────┘
+                             │
+┌────────────────────────────▼─────────────────────────────────────────┐
+│                     FastAPI Backend (Python 3.11)                     │
+│  Auth • Onboarding • Analyze • Scoring • History • Translate • DB   │
+└────────────────────────────┬─────────────────────────────────────────┘
+                             │
+┌────────────────────────────▼─────────────────────────────────────────┐
+│                    ORCHESTRATOR (7-Stage Pipeline)                    │
+│                                                                      │
+│   1. INGESTION  ──▶ PDF → text extraction                           │
+│   2. REASONING  ──▶ Gemini: extract obligations, penalties          │
+│   3. PLANNING   ──▶ Gemini: compliance action plan                  │
+│   4. EXECUTION  ──▶ Scheme matching (CGTMSE, PMEGP, MUDRA...)      │
+│   5. VERIFICATION ▶ Quality validation + confidence scoring         │
+│   6. EXPLANATION ──▶ Human-readable summaries                       │
+│   7. SCORING    ──▶ Risk + Sustainability + Profitability + Ethics  │
+└──────────┬──────────────────┬──────────────────┬────────────────────┘
+           │                  │                  │
+┌──────────▼──────┐ ┌────────▼────────┐ ┌───────▼──────────┐
+│  Scoring Suite  │ │ Policy Engine   │ │ Database Layer   │
+│ Risk (0-100)    │ │ Tavily Search   │ │ Firestore        │
+│ Sustainability  │ │ Serper Backup   │ │ (+ JSON fallback)│
+│ ROI / Profit    │ │ FAISS Vectors   │ │ User profiles    │
+│ Ethics & Bias   │ │ Async Scraper   │ │ Analysis history │
+└─────────────────┘ └─────────────────┘ └──────────────────┘
 ```
 
 ### Agent Roles
 
 | Agent | File | Function |
 |-------|------|----------|
-| **Orchestrator** | `orchestrator.py` | Central state management and delegation |
-| **Ingestion** | `ingestion_agent.py` | PDF parsing, OCR, data intake |
-| **Reasoning** | `reasoning_agent.py` | Gemini 2.5 semantic analysis |
-| **Planning** | `planning_agent.py` | Compliance roadmaps, timelines |
-| **Execution** | `execution_agent.py` | Forms, drafts, checklists |
+| **Orchestrator** | `orchestrator.py` | Central state management, 7-stage pipeline coordination |
+| **Ingestion** | `ingestion_agent.py` | PDF parsing (PyPDF2 + pdfplumber fallback) |
+| **Reasoning** | `reasoning_agent.py` | Gemini 2.5 Flash semantic analysis |
+| **Planning** | `planning_agent.py` | Compliance roadmaps with deadlines |
+| **Execution** | `execution_agent.py` | Scheme matching, forms, checklists |
 | **Verification** | `verification_agent.py` | Quality assurance, confidence scoring |
-| **Explanation** | `explanation_agent.py` | Plain English summaries |
+| **Explanation** | `explanation_agent.py` | Plain English / regional language summaries |
+
+### Scoring Engines (v3.0)
+
+| Engine | Output | Key Metrics |
+|--------|--------|-------------|
+| **Compliance Risk** | Score 0-100 | Severity × Penalty × Deadline × Frequency |
+| **Sustainability** | Grade A+ to D | Paper saved, CO₂ reduced, SDG alignment |
+| **Profitability** | ROI Multiplier | Penalty avoidance, scheme benefits, cost savings |
+| **Ethical AI** | Governance Report | Transparency cards, escalation alerts, bias checks |
 
 ---
 
@@ -94,10 +112,15 @@ pAIr solves this real-world challenge by deploying an autonomous multi-agent AI 
 | Component | Technology |
 |-----------|------------|
 | **Backend** | Python 3.11 + FastAPI |
-| **AI Model** | Google Gemini 2.5 Flash |
-| **Frontend** | React 18 + Vite |
-| **Styling** | TailwindCSS |
-| **Deployment** | Docker / Google Cloud Run |
+| **AI Model** | Google Gemini 2.5 Flash (primary), 2.0 Flash Lite (fallback) |
+| **Embeddings** | Gemini text-embedding-004 (768-dim) |
+| **Frontend** | React 18 + Vite + TailwindCSS + Lucide Icons |
+| **Auth** | Firebase Authentication (Google OAuth) |
+| **Database** | Google Cloud Firestore (+ JSON fallback) |
+| **Vector DB** | FAISS (Facebook AI Similarity Search) |
+| **Search APIs** | Tavily API (primary) + Serper.dev (fallback) |
+| **PDF Processing** | PyPDF2, pdfplumber |
+| **Deployment** | Docker (multi-stage) / Google Cloud Run / Vercel |
 
 ---
 
@@ -222,6 +245,10 @@ Drop PDFs into `backend/monitored_policies/` folder:
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `GEMINI_API_KEY` | Your Gemini API key | ✅ Yes |
+| `FIREBASE_CREDENTIALS` | Path to Firebase service account JSON | Optional |
+| `FIREBASE_CREDENTIALS_JSON` | Inline Firebase credentials JSON | Optional |
+| `TAVILY_API_KEY` | Tavily search API key | Optional |
+| `SERPER_API_KEY` | Serper.dev fallback API key | Optional |
 | `DEMO_MODE` | Set to `TRUE` for demo without API | Optional |
 | `PORT` | Backend port (default: 8000) | Optional |
 
@@ -310,15 +337,35 @@ Demo showcases:
 pAIr-AG/
 ├── backend/
 │   ├── agents/                 # Multi-agent system
-│   │   ├── __init__.py
-│   │   ├── orchestrator.py     # Central coordinator
+│   │   ├── orchestrator.py     # 7-stage pipeline coordinator
 │   │   ├── ingestion_agent.py  # PDF → Text
 │   │   ├── reasoning_agent.py  # Gemini analysis
 │   │   ├── planning_agent.py   # Roadmap generation
-│   │   ├── execution_agent.py  # Forms & drafts
+│   │   ├── execution_agent.py  # Scheme matching
 │   │   ├── verification_agent.py # QA & confidence
 │   │   └── explanation_agent.py  # Plain English
-│   ├── main.py                 # FastAPI server
+│   ├── auth/                   # Firebase Authentication
+│   │   ├── firebase_auth.py    # JWT verification, Google-only OAuth
+│   │   └── middleware.py       # Rate limiting, auth headers
+│   ├── onboarding/             # Adaptive Questionnaire
+│   │   ├── questions.json      # 15-node decision tree
+│   │   ├── decision_tree.py    # Stateless onboarding engine
+│   │   └── profile_generator.py # Gemini-powered profile enrichment
+│   ├── scoring/                # Intelligence Engines
+│   │   ├── compliance_risk.py  # Multi-factor risk scoring (0-100)
+│   │   ├── sustainability.py   # Green score + SDG alignment
+│   │   └── profitability.py    # ROI optimizer + scheme benefits
+│   ├── ethics/                 # AI Governance
+│   │   └── framework.py        # Transparency, escalation, bias detection
+│   ├── policy/                 # Real-time Policy Discovery
+│   │   ├── scraper.py          # Async aiohttp scraper
+│   │   ├── search_api.py       # Tavily + Serper integration
+│   │   ├── vector_store.py     # FAISS semantic search
+│   │   └── embeddings.py       # Gemini text-embedding-004
+│   ├── db/                     # Database Layer
+│   │   └── firestore.py        # Firestore + JSON fallback
+│   ├── main.py                 # FastAPI server (v3.0)
+│   ├── config.py               # Centralized configuration
 │   ├── schemas.py              # Pydantic models
 │   ├── schemes.py              # Government schemes DB
 │   ├── demo_data.py            # Demo mode data
@@ -326,13 +373,18 @@ pAIr-AG/
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx             # Main application
+│   │   ├── App.jsx             # Main app with auth + onboarding
+│   │   ├── firebase.js         # Firebase config + Google auth
 │   │   └── components/
+│   │       ├── Dashboard.jsx   # Risk gauge, green score, ROI, ethics
+│   │       ├── OnboardingWizard.jsx # Adaptive questionnaire UI
 │   │       ├── Sidebar.jsx     # History panel
-│   │       ├── ResultsView.jsx # Analysis display
+│   │       ├── ResultsView.jsx # Full analysis report
 │   │       └── ProcessingEngine.jsx
 │   ├── package.json
 │   └── vite.config.js
+├── docs/
+│   └── architecture.md         # Detailed system architecture
 ├── src/
 │   └── test_client.py          # API test client
 ├── Dockerfile
@@ -349,11 +401,19 @@ pAIr-AG/
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/analyze` | POST | Upload PDF for analysis |
-| `/api/history` | GET | Get analysis history |
-| `/api/history/{id}` | DELETE | Delete history item |
-| `/api/translate` | POST | Translate to regional language |
+| `/api/health` | GET | Health check + version info |
+| `/api/auth/verify` | POST | Verify Firebase JWT token |
+| `/api/onboarding/start` | POST | Get first onboarding question |
+| `/api/onboarding/answer` | POST | Submit answer, get next question |
+| `/api/onboarding/profile` | POST | Generate enriched business profile |
+| `/api/analyze` | POST | Full policy analysis pipeline |
+| `/api/scoring/risk` | POST | Standalone compliance risk scoring |
+| `/api/scoring/sustainability` | POST | Standalone sustainability scoring |
+| `/api/scoring/profitability` | POST | Standalone profitability optimization |
+| `/api/history` | GET | Get analysis history (by user) |
+| `/api/translate` | POST | Translate to 15+ Indian languages |
 | `/api/sources` | GET/POST/DELETE | Manage URL sources |
+| `/api/profile/{uid}` | GET/POST | User business profile |
 
 ### Example: Upload and Analyze
 
@@ -406,16 +466,22 @@ print(response.json())
 
 ## 🎯 Key Features
 
-✅ **Multi-Agent Architecture** - 7 specialized AI agents working together  
-✅ **Gemini 2.5 Flash** - Latest Google AI for semantic understanding  
-✅ **Autonomous Operation** - Zero-touch policy monitoring  
+✅ **Multi-Agent Architecture** - 7 specialized AI agents in a coordinated pipeline  
+✅ **Gemini 2.5 Flash** - Latest Google AI with automatic fallback  
+✅ **Firebase Auth** - Secure Google-only OAuth with JWT verification  
+✅ **Adaptive Onboarding** - 15-node decision tree for business profiling  
+✅ **Compliance Risk Scoring** - Multi-factor 0-100 risk assessment with severity bands  
+✅ **Sustainability Engine** - Green score, CO₂ reduction, SDG alignment  
+✅ **Profitability Optimizer** - ROI multiplier, penalty avoidance, scheme benefit estimation  
+✅ **Ethical AI Governance** - Transparency cards, escalation alerts, bias detection  
 ✅ **15+ Languages** - Regional language support for accessibility  
-✅ **MSME-Focused** - Built specifically for Indian small businesses  
-✅ **Scheme Database** - CGTMSE, PMEGP, MUDRA, Stand Up India  
-✅ **Compliance Roadmaps** - Prioritized action plans with deadlines  
-✅ **Dark/Light Mode** - Modern UI with theme support  
-✅ **Docker Ready** - One-command deployment  
-✅ **Cloud Run** - Scalable serverless deployment  
+✅ **MSME-Focused** - Built specifically for India's 63 million small businesses  
+✅ **Scheme Database** - CGTMSE, PMEGP, MUDRA, Stand Up India, Udyam, SFURTI  
+✅ **Real-time Policy Search** - Tavily + Serper APIs for live policy discovery  
+✅ **Vector Search** - FAISS with Gemini embeddings for semantic policy matching  
+✅ **Autonomous Monitoring** - Zero-touch policy file watching  
+✅ **Cloud Firestore** - Persistent storage with graceful JSON fallback  
+✅ **Docker + Cloud Run** - Production-ready containerized deployment  
 
 ---
 

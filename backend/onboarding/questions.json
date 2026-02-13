@@ -1,0 +1,306 @@
+{
+  "version": "3.0",
+  "description": "Adaptive MSME profiling questionnaire — decision-tree driven",
+  "questions": {
+    "Q1": {
+      "id": "Q1",
+      "text": "What is your business type?",
+      "type": "single_choice",
+      "field": "business_type",
+      "options": [
+        {"value": "manufacturing", "label": "Manufacturing"},
+        {"value": "service", "label": "Service / IT / Consulting"},
+        {"value": "trading", "label": "Trading / Retail"},
+        {"value": "agriculture", "label": "Agri-business / Food Processing"},
+        {"value": "handicraft", "label": "Handicraft / Artisan / Traditional"}
+      ],
+      "next": {
+        "manufacturing": "Q2_MFG",
+        "service": "Q2_SVC",
+        "trading": "Q2_TRD",
+        "agriculture": "Q2_MFG",
+        "handicraft": "Q2_CRAFT"
+      }
+    },
+
+    "Q2_MFG": {
+      "id": "Q2_MFG",
+      "text": "What is your total investment in plant & machinery (excluding land/building)?",
+      "type": "single_choice",
+      "field": "investment_range",
+      "options": [
+        {"value": "micro", "label": "Up to ₹1 Crore", "maps_to": "Micro"},
+        {"value": "small", "label": "₹1 Crore – ₹10 Crore", "maps_to": "Small"},
+        {"value": "medium", "label": "₹10 Crore – ₹50 Crore", "maps_to": "Medium"},
+        {"value": "large", "label": "Above ₹50 Crore", "maps_to": "Large (Not MSME)"}
+      ],
+      "next": {
+        "_default": "Q3"
+      }
+    },
+
+    "Q2_SVC": {
+      "id": "Q2_SVC",
+      "text": "What is your total investment in equipment?",
+      "type": "single_choice",
+      "field": "investment_range",
+      "options": [
+        {"value": "micro", "label": "Up to ₹1 Crore", "maps_to": "Micro"},
+        {"value": "small", "label": "₹1 Crore – ₹10 Crore", "maps_to": "Small"},
+        {"value": "medium", "label": "₹10 Crore – ₹50 Crore", "maps_to": "Medium"},
+        {"value": "large", "label": "Above ₹50 Crore", "maps_to": "Large (Not MSME)"}
+      ],
+      "next": {
+        "_default": "Q3"
+      }
+    },
+
+    "Q2_TRD": {
+      "id": "Q2_TRD",
+      "text": "What is your approximate annual trading volume?",
+      "type": "single_choice",
+      "field": "investment_range",
+      "options": [
+        {"value": "micro", "label": "Below ₹50 Lakhs/year", "maps_to": "Micro"},
+        {"value": "small", "label": "₹50 Lakhs – ₹5 Crore/year", "maps_to": "Small"},
+        {"value": "medium", "label": "Above ₹5 Crore/year", "maps_to": "Medium"}
+      ],
+      "next": {
+        "_default": "Q3"
+      }
+    },
+
+    "Q2_CRAFT": {
+      "id": "Q2_CRAFT",
+      "text": "How many artisans/workers are in your cluster?",
+      "type": "single_choice",
+      "field": "cluster_size",
+      "options": [
+        {"value": "individual", "label": "Solo artisan / family unit"},
+        {"value": "small_cluster", "label": "Up to 50 workers"},
+        {"value": "medium_cluster", "label": "50–500 workers"},
+        {"value": "large_cluster", "label": "500+ workers (eligible for SFURTI)"}
+      ],
+      "next": {
+        "_default": "Q3"
+      }
+    },
+
+    "Q3": {
+      "id": "Q3",
+      "text": "What is your annual turnover?",
+      "type": "single_choice",
+      "field": "turnover_range",
+      "options": [
+        {"value": "below_5cr", "label": "Below ₹5 Crore"},
+        {"value": "5_to_50cr", "label": "₹5 Crore – ₹50 Crore"},
+        {"value": "50_to_250cr", "label": "₹50 Crore – ₹250 Crore"},
+        {"value": "above_250cr", "label": "Above ₹250 Crore"}
+      ],
+      "next": {
+        "_default": "Q4"
+      }
+    },
+
+    "Q4": {
+      "id": "Q4",
+      "text": "How many employees does your business have?",
+      "type": "single_choice",
+      "field": "employee_count",
+      "options": [
+        {"value": "1_5", "label": "1–5 (Sole proprietor / family)"},
+        {"value": "6_20", "label": "6–20"},
+        {"value": "21_50", "label": "21–50"},
+        {"value": "51_200", "label": "51–200"},
+        {"value": "200_plus", "label": "200+"}
+      ],
+      "next": {
+        "_default": "Q5"
+      }
+    },
+
+    "Q5": {
+      "id": "Q5",
+      "text": "Where is your business located?",
+      "type": "single_choice",
+      "field": "location_type",
+      "options": [
+        {"value": "rural", "label": "Rural / Village area"},
+        {"value": "semi_urban", "label": "Semi-urban / Town"},
+        {"value": "urban", "label": "Urban / City"},
+        {"value": "ner", "label": "North-East Region"},
+        {"value": "hill_border", "label": "Hill / Border area"}
+      ],
+      "next": {
+        "_default": "Q6"
+      }
+    },
+
+    "Q6": {
+      "id": "Q6",
+      "text": "Which state is your business registered in?",
+      "type": "free_text",
+      "field": "state",
+      "placeholder": "e.g., Telangana, Maharashtra, Tamil Nadu",
+      "next": {
+        "_default": "Q7"
+      }
+    },
+
+    "Q7": {
+      "id": "Q7",
+      "text": "What is the owner/promoter category?",
+      "type": "multi_choice",
+      "field": "owner_category",
+      "options": [
+        {"value": "general", "label": "General"},
+        {"value": "women", "label": "Women-owned"},
+        {"value": "sc", "label": "SC (Scheduled Caste)"},
+        {"value": "st", "label": "ST (Scheduled Tribe)"},
+        {"value": "obc", "label": "OBC"},
+        {"value": "minority", "label": "Minority"},
+        {"value": "ex_servicemen", "label": "Ex-Servicemen"},
+        {"value": "ph", "label": "Physically Handicapped"}
+      ],
+      "next": {
+        "_default": "Q8"
+      }
+    },
+
+    "Q8": {
+      "id": "Q8",
+      "text": "Do you have Udyam Registration?",
+      "type": "single_choice",
+      "field": "has_udyam",
+      "options": [
+        {"value": "yes", "label": "Yes, active Udyam registration"},
+        {"value": "no", "label": "No"},
+        {"value": "expired", "label": "Had one, but it may be expired"}
+      ],
+      "next": {
+        "yes": "Q9",
+        "no": "Q8B",
+        "expired": "Q8B"
+      }
+    },
+
+    "Q8B": {
+      "id": "Q8B",
+      "text": "Would you like us to include Udyam Registration as part of your compliance roadmap?",
+      "type": "single_choice",
+      "field": "wants_udyam_help",
+      "options": [
+        {"value": "yes", "label": "Yes, guide me through it"},
+        {"value": "no", "label": "Not now"}
+      ],
+      "next": {
+        "_default": "Q9"
+      }
+    },
+
+    "Q9": {
+      "id": "Q9",
+      "text": "Is this a new business or an existing one?",
+      "type": "single_choice",
+      "field": "business_age",
+      "options": [
+        {"value": "new", "label": "New / Planning to start (< 1 year)"},
+        {"value": "early", "label": "1–3 years"},
+        {"value": "established", "label": "3–10 years"},
+        {"value": "mature", "label": "10+ years"}
+      ],
+      "next": {
+        "new": "Q10_NEW",
+        "_default": "Q10"
+      }
+    },
+
+    "Q10_NEW": {
+      "id": "Q10_NEW",
+      "text": "Are you looking for funding to start your business?",
+      "type": "single_choice",
+      "field": "needs_funding",
+      "options": [
+        {"value": "yes_below_10L", "label": "Yes, below ₹10 Lakhs (MUDRA eligible)"},
+        {"value": "yes_10L_1Cr", "label": "Yes, ₹10 Lakhs – ₹1 Crore"},
+        {"value": "yes_above_1Cr", "label": "Yes, above ₹1 Crore"},
+        {"value": "no", "label": "No, self-funded"}
+      ],
+      "next": {
+        "_default": "Q11"
+      }
+    },
+
+    "Q10": {
+      "id": "Q10",
+      "text": "Do you currently have any outstanding bank loans?",
+      "type": "single_choice",
+      "field": "has_loans",
+      "options": [
+        {"value": "yes_regular", "label": "Yes, all payments are regular"},
+        {"value": "yes_delayed", "label": "Yes, some payments delayed"},
+        {"value": "no", "label": "No outstanding loans"}
+      ],
+      "next": {
+        "_default": "Q11"
+      }
+    },
+
+    "Q11": {
+      "id": "Q11",
+      "text": "What is your primary environmental impact area?",
+      "type": "multi_choice",
+      "field": "environmental_impact",
+      "options": [
+        {"value": "paper_heavy", "label": "Heavy paper / document usage"},
+        {"value": "energy_intensive", "label": "High energy consumption"},
+        {"value": "water_usage", "label": "Significant water usage"},
+        {"value": "waste_generation", "label": "Industrial waste generation"},
+        {"value": "transport_heavy", "label": "Heavy logistics / transportation"},
+        {"value": "minimal", "label": "Minimal environmental impact"}
+      ],
+      "next": {
+        "_default": "Q12"
+      }
+    },
+
+    "Q12": {
+      "id": "Q12",
+      "text": "How many government compliance filings do you handle per year (approx)?",
+      "type": "single_choice",
+      "field": "annual_filings",
+      "options": [
+        {"value": "1_5", "label": "1–5 filings"},
+        {"value": "6_15", "label": "6–15 filings"},
+        {"value": "16_30", "label": "16–30 filings"},
+        {"value": "30_plus", "label": "30+ filings"}
+      ],
+      "next": {
+        "_default": "Q13"
+      }
+    },
+
+    "Q13": {
+      "id": "Q13",
+      "text": "What is your preferred language for compliance reports?",
+      "type": "single_choice",
+      "field": "preferred_language",
+      "options": [
+        {"value": "en", "label": "English"},
+        {"value": "hi", "label": "Hindi (हिन्दी)"},
+        {"value": "te", "label": "Telugu (తెలుగు)"},
+        {"value": "ta", "label": "Tamil (தமிழ்)"},
+        {"value": "kn", "label": "Kannada (ಕನ್ನಡ)"},
+        {"value": "mr", "label": "Marathi (मराठी)"},
+        {"value": "bn", "label": "Bengali (বাংলা)"},
+        {"value": "gu", "label": "Gujarati (ગુજરાતી)"}
+      ],
+      "next": {
+        "_default": "COMPLETE"
+      }
+    }
+  },
+
+  "start": "Q1",
+  "terminal": "COMPLETE"
+}

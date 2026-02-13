@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, AlertCircle, Sun, Moon, Zap, Globe } from 'lucide-react';
+import { Upload, AlertCircle, Sun, Moon, Zap, Globe, LogIn, LogOut, User } from 'lucide-react';
 import ResultsView from './components/ResultsView';
 import ProcessingEngine from './components/ProcessingEngine';
 import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import OnboardingWizard from './components/OnboardingWizard';
+import { auth, signInWithGoogle, logOut } from './firebase';
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -44,6 +47,63 @@ function App() {
     const [showLanguages, setShowLanguages] = useState(false);
     const [translatedData, setTranslatedData] = useState(null);
     const [isTranslating, setIsTranslating] = useState(false);
+
+    // v3: Auth & Onboarding State
+    const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [businessProfile, setBusinessProfile] = useState(null);
+
+    // Firebase auth listener
+    useEffect(() => {
+        if (auth) {
+            const unsubscribe = auth.onAuthStateChanged((fbUser) => {
+                setUser(fbUser);
+                setAuthLoading(false);
+                if (fbUser) {
+                    // Check if user has completed onboarding
+                    axios.get(`${API_BASE_URL}/api/profile/${fbUser.uid}`)
+                        .then(res => {
+                            if (res.data && res.data.has_profile !== false) {
+                                setBusinessProfile(res.data);
+                            } else {
+                                setShowOnboarding(true);
+                            }
+                        })
+                        .catch(() => setShowOnboarding(true));
+                }
+            });
+            return () => unsubscribe();
+        } else {
+            setAuthLoading(false);
+        }
+    }, []);
+
+    const handleGoogleLogin = async () => {
+        try {
+            await signInWithGoogle();
+        } catch (err) {
+            setError("Login failed: " + err.message);
+        }
+    };
+
+    const handleLogout = async () => {
+        await logOut();
+        setUser(null);
+        setBusinessProfile(null);
+    };
+
+    const handleOnboardingComplete = async (profile) => {
+        setBusinessProfile(profile);
+        setShowOnboarding(false);
+        if (user) {
+            try {
+                await axios.post(`${API_BASE_URL}/api/profile/${user.uid}`, profile);
+            } catch (e) {
+                console.error('Failed to save profile:', e);
+            }
+        }
+    };
 
     // Auto-translate when language changes
     useEffect(() => {
@@ -94,7 +154,8 @@ function App() {
 
     const fetchHistory = async (silent = false) => {
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/history`);
+            const uid = user?.uid || '';
+            const res = await axios.get(`${API_BASE_URL}/api/history${uid ? `?user_uid=${uid}` : ''}`);
             setHistory(res.data);
         } catch (e) {
             if (!silent) console.error("Failed to fetch history", e);
@@ -158,6 +219,8 @@ function App() {
 
         try {
             addLog(`Connecting to ${API_BASE_URL}...`);
+            if (user?.uid) formData.append('user_uid', user.uid);
+            if (businessProfile) formData.append('business_profile', JSON.stringify(businessProfile));
             const response = await axios.post(`${API_BASE_URL}/api/analyze`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 timeout: 300000,
@@ -224,6 +287,28 @@ function App() {
                     </div>
 
                     <div className="header-right">
+                        {/* User Info / Login */}
+                        {user ? (
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src={user.photoURL || ''}
+                                    alt=""
+                                    className="w-7 h-7 rounded-full"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                                <span className="text-xs hidden md:inline" style={{ color: 'var(--text-secondary)' }}>
+                                    {user.displayName?.split(' ')[0] || 'User'}
+                                </span>
+                                <button onClick={handleLogout} className="btn btn-secondary text-xs p-1.5" title="Logout">
+                                    <LogOut size={14} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button onClick={handleGoogleLogin} className="btn btn-primary text-xs flex items-center gap-1">
+                                <LogIn size={14} /> Sign In
+                            </button>
+                        )}
+
                         {/* Language Selector */}
                         <div className="relative">
                             <button
@@ -275,6 +360,14 @@ function App() {
                         </button>
                     </div>
                 </div>
+
+                {/* Onboarding Wizard */}
+                {showOnboarding && (
+                    <OnboardingWizard
+                        onComplete={handleOnboardingComplete}
+                        onSkip={() => setShowOnboarding(false)}
+                    />
+                )}
 
                 {/* Main Area */}
                 <main>
@@ -395,6 +488,16 @@ function App() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* v3 Scoring Dashboard */}
+                            {(translatedData || data) && (
+                                (translatedData || data).risk_report ||
+                                (translatedData || data).sustainability_report ||
+                                (translatedData || data).profitability_report
+                            ) && (
+                                <Dashboard data={translatedData || data} />
+                            )}
+
                             <ResultsView data={translatedData || data} language={language} />
                         </div>
                     )}
