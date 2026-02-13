@@ -1,15 +1,18 @@
-# pAIr - MSME Compliance & Grant Navigator
+# pAIr - AI-Powered MSME Compliance & Government Scheme Navigator
 
 <div align="center">
 
-**🏆 Agentathon 2025 Entry**
+**🏆 Code Unnati Innovation Marathon 4.0**
 
-*An Autonomous Agentic AI System for Indian MSMEs*
+*An Autonomous Agentic AI System Empowering Indian MSMEs with Policy Intelligence*
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-orange.svg)](https://ai.google.dev)
 [![React](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://reactjs.org)
+[![SAP](https://img.shields.io/badge/SAP-Code%20Unnati-0FAAFF.svg)](https://codeunnati.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+*Organized by SAP, Edunet Foundation & Telangana Academy for Skill and Knowledge*
 
 </div>
 
@@ -17,19 +20,21 @@
 
 ## 👥 Team pAIr
 
-| Name | Role | Organization |
-|------|------|--------------|
-| **Shiva Ganesh Talikota** | Team Lead | matriXO India |
-| **Chandra Bose Pechetti** | Developer | Skynet |
-| **Karthik Chinthakindi** | Developer | matriXO |
+| Name | Role |
+|------|------|
+| **Shiva Ganesh Talikota** | Team Lead & AI Architect |
+| **Chandra Bose Pechetti** | Backend & Agent Developer |
+| **Karthik Chinthakindi** | Frontend & Integration Developer |
 
 ---
 
 ## 🎯 Problem Statement
 
-**MSME Compliance & Grant Navigator**
+**AI-Powered MSME Compliance & Government Scheme Navigator**
 
-Small and Medium Enterprises (MSMEs) in India often struggle to navigate the complex landscape of government schemes, subsidies, and compliance requirements. This autonomous agentic system solves this by:
+Micro, Small and Medium Enterprises (MSMEs) are the backbone of India's economy, yet their owners — often non-legal and non-technical — struggle to navigate the overwhelming landscape of government policies, compliance requirements, subsidies, and schemes. Policy documents are written in complex legal language, scattered across multiple government portals, and frequently updated, making it nearly impossible for a small business owner to stay compliant or discover schemes they are eligible for. Missing a compliance deadline can result in heavy penalties, and missing a scheme means losing out on crore-level financial support.
+
+pAIr solves this real-world challenge by deploying an autonomous multi-agent AI system that:
 
 | Feature | Description |
 |---------|-------------|
@@ -119,7 +124,7 @@ Small and Medium Enterprises (MSMEs) in India often struggle to navigate the com
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/shivaganesht/pAIr-764.git
+git clone https://github.com/stablephisher/pAIr-764.git
 cd pAIr-764
 ```
 
@@ -414,17 +419,24 @@ print(response.json())
 
 ---
 
-## 🎯 Final Goal
+## � Social Impact & Innovation
 
-To empower non-legal MSME owners to say:
+> *"India has 6.3 crore MSMEs employing over 11 crore people. Most owners lack legal expertise to navigate compliance. pAIr bridges this gap with AI — making government schemes accessible to every entrepreneur, in their own language."*
 
-> *"This system continuously monitors policy sources and automatically triggers analysis and compliance planning without user input."*
+### Why This Matters
+- **63 million MSMEs** in India struggle with compliance — pAIr automates it
+- **15+ regional languages** ensure no business owner is left behind
+- **Zero-touch monitoring** means policies are tracked automatically
+- **Autonomous AI agents** eliminate the need for expensive legal consultants
+- **Real-world impact** — prevents penalties, unlocks government financial support
 
 ---
 
 ## 📄 License
 
-MIT License - Built for Agentathon 2025
+MIT License — Built for **Code Unnati Innovation Marathon 4.0** (2024-25)
+
+Organized by **SAP** | **Edunet Foundation** | **Telangana Academy for Skill and Knowledge (TASK)**
 
 ---
 
@@ -432,6 +444,8 @@ MIT License - Built for Agentathon 2025
 
 **Made with ❤️ by Team pAIr**
 
-*Empowering Indian MSMEs with AI-powered compliance intelligence*
+*Empowering India's 63 Million MSMEs with AI-Powered Compliance Intelligence*
+
+**Theme:** Data Algorithm in Action — Turning complex government policy data into actionable intelligence for small businesses
 
 </div>

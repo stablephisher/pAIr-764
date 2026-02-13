@@ -360,7 +360,7 @@ QUALITY CHECK (MANDATORY BEFORE RESPONDING):
 - Clarity > completeness
 
 FINAL DIRECTIVE:
-Your output will be shown directly to business owners and hackathon judges.
+Your output will be shown directly to business owners and Code Unnati Innovation Marathon evaluators.
 Write like incorrect advice could cause financial loss.
 """
 
