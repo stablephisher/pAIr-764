@@ -15,6 +15,10 @@ Routes
   Health:      /api/health
 """
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 import io
 import json
