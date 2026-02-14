@@ -1,145 +1,98 @@
 import React from 'react';
-import {
-    ShieldCheck, Leaf, TrendingUp, Scale, AlertTriangle,
-    XCircle, Info, ArrowUpRight, ArrowDownRight
-} from 'lucide-react';
+import { Shield, Leaf, DollarSign, Scale, AlertTriangle, TrendingUp } from 'lucide-react';
 
-function ScoreGauge({ value, label, color, icon: Icon, size = 96 }) {
-    const clamp = Math.max(0, Math.min(100, value || 0));
-    const r = 38;
-    const circumference = 2 * Math.PI * r;
-    const offset = circumference - (clamp / 100) * circumference;
-
+function ScoreCard({ label, value, icon: Icon, color }) {
     return (
-        <div className="flex flex-col items-center gap-3">
-            <div className="relative" style={{ width: size, height: size }}>
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r={r} fill="none"
-                        stroke="var(--bg-elevated)" strokeWidth="7" />
-                    <circle cx="50" cy="50" r={r} fill="none"
-                        stroke={color} strokeWidth="7" strokeLinecap="round"
-                        strokeDasharray={circumference} strokeDashoffset={offset}
-                        className="transition-all duration-1000 ease-out" />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
-                        {clamp}
-                    </span>
+        <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: `${color}15`, color }}>
+                    <Icon size={20} />
                 </div>
+                <span className="text-3xl font-bold" style={{ color }}>{value}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-                <Icon size={12} style={{ color }} />
-                <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{label}</span>
-            </div>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</p>
         </div>
     );
 }
 
-function MetricCard({ icon: Icon, title, value, subtitle, color }) {
+function MetricCard({ label, value, sublabel }) {
     return (
-        <div className="card p-4">
-            <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: `${color}12`, color }}>
-                    <Icon size={15} />
-                </div>
-                <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{title}</span>
-            </div>
-            <div className="text-lg font-bold mb-0.5" style={{ color: 'var(--text-primary)' }}>{value}</div>
-            {subtitle && (
-                <p className="text-[11px] line-clamp-2" style={{ color: 'var(--text-dim)' }}>{subtitle}</p>
-            )}
+        <div className="card p-5">
+            <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>{label}</p>
+            <p className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
+            {sublabel && <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{sublabel}</p>}
         </div>
     );
 }
 
 export default function Dashboard({ data }) {
-    if (!data) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Info size={24} className="mb-3" style={{ color: 'var(--text-dim)' }} />
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No scoring data available</p>
-            </div>
-        );
-    }
+    const scores = data.analysis?.scores || {};
+    const summary = data.analysis?.summary || {};
 
-    const risk = data.risk_score || {};
-    const sustainability = data.sustainability || {};
-    const profitability = data.profitability || {};
-    const ethics = data.ethics || {};
+    const riskScore = scores.risk_score || 0;
+    const greenScore = scores.sustainability_score || 0;
+    const roiScore = scores.profitability_score || 0;
+    const ethicsScore = scores.ethics_score || 0;
 
-    const riskValue = typeof risk === 'number' ? risk : (risk.overall_score || risk.score || 0);
-    const greenScore = sustainability.green_score || sustainability.score || 0;
-    const roi = profitability.roi_percentage || profitability.roi || 0;
-    const ethicsScore = ethics.transparency_score || ethics.score || 0;
-
-    const riskColor = riskValue > 70 ? 'var(--red)' : riskValue > 40 ? 'var(--orange)' : 'var(--green)';
-    const riskLabel = riskValue > 70 ? 'High Risk' : riskValue > 40 ? 'Moderate' : 'Low Risk';
+    const riskColor = riskScore > 70 ? 'var(--red)' : riskScore > 40 ? 'var(--orange)' : 'var(--green)';
 
     return (
-        <div className="space-y-5 fade-in">
-            {/* Score Gauges */}
-            <div className="card card-glow p-6">
-                <div className="flex items-center gap-2 mb-6">
-                    <ShieldCheck size={16} style={{ color: 'var(--accent)' }} />
-                    <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Compliance Scores</h3>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                    <ScoreGauge value={riskValue} label="Risk" color={riskColor} icon={AlertTriangle} />
-                    <ScoreGauge value={greenScore} label="Green" color="var(--green)" icon={Leaf} />
-                    <ScoreGauge value={Math.min(100, roi)} label="ROI" color="var(--accent)" icon={TrendingUp} />
-                    <ScoreGauge value={ethicsScore} label="Ethics" color="var(--orange)" icon={Scale} />
-                </div>
+        <div className="space-y-6 fade-in">
+            {/* Primary Scores */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <ScoreCard label="Risk Score" value={riskScore} icon={Shield} color={riskColor} />
+                <ScoreCard label="Sustainability" value={greenScore} icon={Leaf} color="var(--green)" />
+                <ScoreCard label="Profitability" value={roiScore} icon={TrendingUp} color="var(--accent)" />
+                <ScoreCard label="Ethics Score" value={ethicsScore} icon={Scale} color="var(--accent)" />
             </div>
 
-            {/* Metric Cards */}
-            <div className="grid grid-cols-2 gap-3">
-                <MetricCard icon={AlertTriangle} title="Risk Level" value={riskLabel} color={riskColor}
-                    subtitle={risk.risk_category || risk.category || ''} />
-                <MetricCard icon={Leaf} title="Sustainability"
-                    value={sustainability.grade || sustainability.rating || 'N/A'}
-                    color="var(--green)" subtitle={sustainability.recommendation || ''} />
-                <MetricCard icon={TrendingUp} title="Estimated ROI"
-                    value={`${roi}%`} color="var(--accent)"
-                    subtitle={profitability.recommendation || profitability.summary || ''} />
-                <MetricCard icon={Scale} title="Ethics Status"
-                    value={ethics.status || (ethicsScore > 60 ? 'Compliant' : 'Review')}
-                    color="var(--orange)" subtitle={ethics.recommendation || ''} />
+            {/* Additional Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <MetricCard
+                    label="Compliance Obligations"
+                    value={data.obligations?.length || 0}
+                    sublabel="Action items identified"
+                />
+                <MetricCard
+                    label="Matched Schemes"
+                    value={summary.matched_schemes?.length || 0}
+                    sublabel="Government programs"
+                />
+                <MetricCard
+                    label="Estimated Penalties"
+                    value={summary.potential_penalties ? `₹${summary.potential_penalties}` : 'N/A'}
+                    sublabel="For non-compliance"
+                />
             </div>
 
             {/* Risk Factors */}
-            {risk.factors && risk.factors.length > 0 && (
-                <div className="card p-5">
+            {summary.risk_factors && summary.risk_factors.length > 0 && (
+                <div className="card p-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <AlertTriangle size={14} style={{ color: 'var(--red)' }} />
-                        <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Risk Factors</h3>
+                        <AlertTriangle size={20} style={{ color: 'var(--orange)' }} />
+                        <h3 className="font-semibold">Risk Factors</h3>
                     </div>
                     <div className="space-y-2">
-                        {risk.factors.map((f, i) => (
-                            <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg"
-                                style={{ background: 'var(--bg-elevated)' }}>
-                                <XCircle size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--red)' }} />
-                                <span className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                                    {typeof f === 'string' ? f : f.description || f.name}
-                                </span>
+                        {summary.risk_factors.map((factor, i) => (
+                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg"
+                                style={{ background: 'var(--bg-hover)' }}>
+                                <div className="w-2 h-2 rounded-full mt-1.5" style={{ background: 'var(--orange)' }} />
+                                <p className="text-sm flex-1">{factor}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* SDG */}
-            {sustainability.sdg_alignment && sustainability.sdg_alignment.length > 0 && (
-                <div className="card p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Leaf size={14} style={{ color: 'var(--green)' }} />
-                        <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>SDG Alignment</h3>
-                    </div>
+            {/* SDG Alignment */}
+            {summary.sdg_alignment && summary.sdg_alignment.length > 0 && (
+                <div className="card p-6">
+                    <h3 className="font-semibold mb-4">SDG Alignment</h3>
                     <div className="flex flex-wrap gap-2">
-                        {sustainability.sdg_alignment.map((sdg, i) => (
-                            <span key={i} className="px-3 py-1 rounded-full text-xs font-medium"
-                                style={{ background: 'var(--green-muted)', color: 'var(--green)' }}>
-                                {typeof sdg === 'string' ? sdg : sdg.goal || sdg.name}
+                        {summary.sdg_alignment.map(sdg => (
+                            <span key={sdg} className="badge badge-green">
+                                SDG {sdg}
                             </span>
                         ))}
                     </div>
@@ -147,20 +100,15 @@ export default function Dashboard({ data }) {
             )}
 
             {/* Ethics Flags */}
-            {ethics.escalation_flags && ethics.escalation_flags.length > 0 && (
-                <div className="card p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Scale size={14} style={{ color: 'var(--orange)' }} />
-                        <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Ethical Flags</h3>
-                    </div>
+            {summary.ethics_flags && summary.ethics_flags.length > 0 && (
+                <div className="card p-6">
+                    <h3 className="font-semibold mb-4">Ethics Considerations</h3>
                     <div className="space-y-2">
-                        {ethics.escalation_flags.map((flag, i) => (
-                            <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg"
-                                style={{ background: 'var(--bg-elevated)' }}>
-                                <AlertTriangle size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--orange)' }} />
-                                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                                    {typeof flag === 'string' ? flag : flag.description || flag.reason}
-                                </span>
+                        {summary.ethics_flags.map((flag, i) => (
+                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg"
+                                style={{ background: 'var(--accent-light)' }}>
+                                <Scale size={16} style={{ color: 'var(--accent)' }} className="mt-0.5" />
+                                <p className="text-sm flex-1">{flag}</p>
                             </div>
                         ))}
                     </div>

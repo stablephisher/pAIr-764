@@ -1,296 +1,225 @@
 import React, { useState } from 'react';
-import {
-    FileText, BookOpen, AlertTriangle, CheckCircle2, Clock,
-    ChevronDown, ChevronUp, ClipboardList, Target,
-    Gavel, Shield, Lightbulb, ArrowRight, Globe
-} from 'lucide-react';
+import { FileText, AlertCircle, CheckCircle2, Clock, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 
-function Badge({ label, variant = 'default' }) {
-    const styles = {
-        high: { background: 'var(--red-muted)', color: 'var(--red)' },
-        medium: { background: 'var(--orange-muted)', color: 'var(--orange)' },
-        low: { background: 'var(--green-muted)', color: 'var(--green)' },
-        default: { background: 'var(--bg-elevated)', color: 'var(--text-secondary)' },
-    };
-    const s = styles[variant] || styles.default;
-    return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider" style={s}>{label}</span>;
-}
-
-function Section({ icon: Icon, title, color, children, defaultOpen = true }) {
+function Section({ title, children, defaultOpen = true }) {
     const [open, setOpen] = useState(defaultOpen);
+
     return (
-        <div className="card overflow-hidden">
+        <div className="card mb-4">
             <button onClick={() => setOpen(!open)}
-                className="w-full flex items-center justify-between p-4 transition-all"
-                style={{ background: open ? 'rgba(30,41,59,0.3)' : 'transparent' }}>
-                <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                        style={{ background: `${color}12`, color }}>
-                        <Icon size={14} />
-                    </div>
-                    <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{title}</span>
-                </div>
-                {open ? <ChevronUp size={14} style={{ color: 'var(--text-dim)' }} />
-                    : <ChevronDown size={14} style={{ color: 'var(--text-dim)' }} />}
+                className="w-full flex items-center justify-between p-5 text-left">
+                <h3 className="font-semibold">{title}</h3>
+                {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
-            {open && <div className="px-4 pb-4 pt-1">{children}</div>}
+            {open && <div className="px-5 pb-5">{children}</div>}
         </div>
     );
 }
 
-const severityVariant = (s) => {
-    if (!s) return 'default';
-    const sl = s.toLowerCase();
-    if (sl.includes('high') || sl.includes('critical') || sl.includes('severe')) return 'high';
-    if (sl.includes('med') || sl.includes('moderate')) return 'medium';
-    return 'low';
-};
+function Badge({ children, variant = 'gray' }) {
+    const classNames = {
+        gray: 'badge-gray',
+        red: 'badge-red',
+        orange: 'badge-orange',
+        green: 'badge-green',
+        accent: 'badge-accent',
+    };
 
-export default function ResultsView({ data, onTranslate }) {
-    const [translating, setTranslating] = useState(false);
+    return <span className={`badge ${classNames[variant]}`}>{children}</span>;
+}
+
+export default function ResultsView({ data }) {
     const [activeTab, setActiveTab] = useState('overview');
-
-    if (!data) return null;
-
-    const meta = data.policy_metadata || {};
+    const analysis = data.analysis || {};
+    const summary = analysis.summary || {};
     const obligations = data.obligations || [];
-    const penalties = data.penalties || [];
-    const actions = data.compliance_actions || [];
-    const riskAssess = data.risk_assessment || {};
-    const plan = data.compliance_plan || {};
-    const planSteps = plan.action_plan || plan.steps || [];
-    const applicability = data.applicability || {};
-    const schemes = data.applicable_schemes || data.matched_schemes || [];
 
-    const tabs = [
-        { id: 'overview', label: 'Overview', icon: FileText },
-        { id: 'obligations', label: 'Obligations', icon: ClipboardList, count: obligations.length },
-        { id: 'actions', label: 'Action Plan', icon: Target },
-    ];
+    const getSeverityVariant = (severity) => {
+        if (severity === 'high' || severity === 'critical') return 'red';
+        if (severity === 'medium' || severity === 'moderate') return 'orange';
+        return 'green';
+    };
 
     return (
-        <div className="space-y-4 fade-in">
-            {/* Policy Header Card */}
-            <div className="card card-glow p-5">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                        <h2 className="text-base font-bold mb-1.5 leading-tight" style={{ color: 'var(--text-primary)' }}>
-                            {meta.policy_name || meta.title || 'Policy Analysis'}
-                        </h2>
-                        <p className="text-[11px]" style={{ color: 'var(--text-dim)' }}>
-                            {meta.issuing_authority || meta.authority || 'Unknown Authority'}
-                            {meta.effective_date && ` · ${meta.effective_date}`}
-                        </p>
+        <div className="space-y-6 fade-in">
+            {/* Policy Header */}
+            <div className="card p-6">
+                <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                        style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                        <FileText size={24} />
                     </div>
-                    {onTranslate && (
-                        <button onClick={() => { setTranslating(true); onTranslate().finally(() => setTranslating(false)); }}
-                            disabled={translating}
-                            className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium flex-shrink-0">
-                            <Globe size={12} />
-                            {translating ? 'Translating...' : 'Translate'}
-                        </button>
-                    )}
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                    {meta.sector && <Badge label={meta.sector} />}
-                    {meta.policy_type && <Badge label={meta.policy_type} />}
-                    {applicability.is_applicable !== undefined && (
-                        <Badge label={applicability.is_applicable ? 'Applicable' : 'N/A'}
-                            variant={applicability.is_applicable ? 'low' : 'default'} />
-                    )}
-                    {obligations.length > 0 && <Badge label={`${obligations.length} Obligations`} />}
-                    {penalties.length > 0 && <Badge label={`${penalties.length} Penalties`} variant="high" />}
+                    <div className="flex-1">
+                        <h2 className="text-2xl font-bold mb-2">{data.policy_name || 'Policy Analysis'}</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {summary.sector && <Badge>{summary.sector}</Badge>}
+                            {summary.policy_type && <Badge variant="accent">{summary.policy_type}</Badge>}
+                            {summary.applicable && <Badge variant="green">APPLICABLE</Badge>}
+                            {obligations.length > 0 && <Badge variant="orange">{obligations.length} obligations</Badge>}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Tab Bar */}
-            <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg-card-solid)', border: '1px solid var(--border)' }}>
-                {tabs.map(t => (
-                    <button key={t.id} onClick={() => setActiveTab(t.id)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-semibold transition-all"
-                        style={{
-                            background: activeTab === t.id ? 'linear-gradient(135deg, var(--accent), #818cf8)' : 'transparent',
-                            color: activeTab === t.id ? 'white' : 'var(--text-dim)',
-                        }}>
-                        <t.icon size={12} />
-                        {t.label}
-                        {t.count > 0 && activeTab !== t.id && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full"
-                                style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
-                                {t.count}
-                            </span>
-                        )}
+            {/* Tabs */}
+            <div className="card">
+                <div className="flex border-b" style={{ borderColor: 'var(--border)' }}>
+                    <button onClick={() => setActiveTab('overview')}
+                        className={`px-6 py-4 font-medium text-sm transition-all ${activeTab === 'overview'
+                            ? 'border-b-2 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'}`}
+                        style={{ borderColor: activeTab === 'overview' ? 'var(--accent)' : 'transparent' }}>
+                        Overview
                     </button>
-                ))}
-            </div>
+                    <button onClick={() => setActiveTab('obligations')}
+                        className={`px-6 py-4 font-medium text-sm transition-all ${activeTab === 'obligations'
+                            ? 'border-b-2 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'}`}
+                        style={{ borderColor: activeTab === 'obligations' ? 'var(--accent)' : 'transparent' }}>
+                        Obligations {obligations.length > 0 && `(${obligations.length})`}
+                    </button>
+                    <button onClick={() => setActiveTab('actions')}
+                        className={`px-6 py-4 font-medium text-sm transition-all ${activeTab === 'actions'
+                            ? 'border-b-2 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'}`}
+                        style={{ borderColor: activeTab === 'actions' ? 'var(--accent)' : 'transparent' }}>
+                        Action Plan
+                    </button>
+                </div>
 
-            {/* Overview Tab */}
-            {activeTab === 'overview' && (
-                <div className="space-y-3 stagger">
-                    {(meta.summary || data.summary || applicability.explanation) && (
-                        <div className="card p-5 fade-in" style={{ animationDelay: '0.05s' }}>
-                            <div className="flex items-center gap-2 mb-3">
-                                <BookOpen size={14} style={{ color: 'var(--accent)' }} />
-                                <h4 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>Summary</h4>
-                            </div>
-                            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                                {meta.summary || data.summary || applicability.explanation}
-                            </p>
-                        </div>
-                    )}
-
-                    {(riskAssess.level || riskAssess.risk_level) && (
-                        <Section icon={Shield} title="Risk Assessment" color="var(--red)">
-                            <div className="flex items-center gap-2 mb-3">
-                                <Badge label={riskAssess.level || riskAssess.risk_level}
-                                    variant={severityVariant(riskAssess.level || riskAssess.risk_level)} />
-                                {riskAssess.score && <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>Score: {riskAssess.score}/100</span>}
-                            </div>
-                            {riskAssess.explanation && (
-                                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{riskAssess.explanation}</p>
+                <div className="p-6">
+                    {/* Overview Tab */}
+                    {activeTab === 'overview' && (
+                        <div className="space-y-6">
+                            {summary.summary && (
+                                <Section title="Summary">
+                                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                                        {summary.summary}
+                                    </p>
+                                </Section>
                             )}
-                        </Section>
-                    )}
 
-                    {schemes.length > 0 && (
-                        <Section icon={Lightbulb} title={`Matched Schemes (${schemes.length})`} color="var(--green)">
-                            <div className="space-y-2">
-                                {schemes.map((s, i) => (
-                                    <div key={i} className="p-3 rounded-xl" style={{ background: 'var(--bg-elevated)' }}>
-                                        <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--text-primary)' }}>
-                                            {typeof s === 'string' ? s : s.name || s.scheme_name}
-                                        </p>
-                                        {s.match_reason && (
-                                            <p className="text-[11px]" style={{ color: 'var(--text-dim)' }}>{s.match_reason}</p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                            {summary.risk_assessment && (
+                                <Section title="Risk Assessment">
+                                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                                        {summary.risk_assessment}
+                                    </p>
+                                </Section>
+                            )}
 
-                    {penalties.length > 0 && (
-                        <Section icon={Gavel} title={`Penalties (${penalties.length})`} color="var(--red)" defaultOpen={false}>
-                            <div className="space-y-2">
-                                {penalties.map((p, i) => (
-                                    <div key={i} className="flex items-start gap-2 p-3 rounded-xl"
-                                        style={{ background: 'var(--bg-elevated)' }}>
-                                        <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--red)' }} />
-                                        <div>
-                                            <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
-                                                {typeof p === 'string' ? p : p.penalty || p.description || p.title}
-                                            </p>
-                                            {p.severity && <Badge label={p.severity} variant={severityVariant(p.severity)} />}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
-                </div>
-            )}
-
-            {/* Obligations Tab */}
-            {activeTab === 'obligations' && (
-                <div className="fade-in">
-                    {obligations.length === 0 ? (
-                        <div className="text-center py-12">
-                            <ClipboardList size={24} className="mx-auto mb-3" style={{ color: 'var(--text-dim)' }} />
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No obligations identified</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2 stagger">
-                            {obligations.map((o, i) => (
-                                <div key={i} className="card p-4 fade-in">
-                                    <div className="flex items-start gap-2.5">
-                                        <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--green)' }} />
-                                        <div className="flex-1">
-                                            <p className="text-xs font-medium leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-                                                {typeof o === 'string' ? o : o.obligation || o.description || o.title}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                {o.deadline && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-dim)' }}>
-                                                        <Clock size={10} /> {o.deadline}
-                                                    </span>
+                            {summary.matched_schemes && summary.matched_schemes.length > 0 && (
+                                <Section title="Matched Government Schemes">
+                                    <div className="space-y-3">
+                                        {summary.matched_schemes.map((scheme, i) => (
+                                            <div key={i} className="p-4 rounded-lg" style={{ background: 'var(--bg-hover)' }}>
+                                                <p className="font-medium mb-1">{scheme.name || scheme}</p>
+                                                {scheme.description && (
+                                                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                                        {scheme.description}
+                                                    </p>
                                                 )}
-                                                {o.severity && <Badge label={o.severity} variant={severityVariant(o.severity)} />}
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
+                                </Section>
+                            )}
+
+                            {summary.penalties && (
+                                <Section title="Penalties for Non-Compliance">
+                                    <div className="p-4 rounded-lg" style={{ background: 'var(--red-light)' }}>
+                                        <p className="text-sm" style={{ color: 'var(--red)' }}>{summary.penalties}</p>
+                                    </div>
+                                </Section>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Obligations Tab */}
+                    {activeTab === 'obligations' && (
+                        <div className="space-y-3">
+                            {obligations.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <CheckCircle2 size={48} className="mx-auto mb-3" style={{ color: 'var(--text-tertiary)' }} />
+                                    <p style={{ color: 'var(--text-secondary)' }}>No compliance obligations found</p>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Actions Tab */}
-            {activeTab === 'actions' && (
-                <div className="space-y-3 fade-in">
-                    {actions.length > 0 && (
-                        <div className="card p-5">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Target size={14} style={{ color: 'var(--accent)' }} />
-                                <h4 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>
-                                    Compliance Actions ({actions.length})
-                                </h4>
-                            </div>
-                            <div className="space-y-2">
-                                {actions.map((a, i) => (
-                                    <div key={i} className="flex items-start gap-2.5 py-2">
-                                        <ArrowRight size={12} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
-                                        <span className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                                            {typeof a === 'string' ? a : a.action || a.description || a.title}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {planSteps.length > 0 && (
-                        <div className="card p-5">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Clock size={14} style={{ color: 'var(--green)' }} />
-                                <h4 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>
-                                    Implementation Timeline
-                                </h4>
-                            </div>
-                            <div className="relative pl-5">
-                                <div className="absolute left-[7px] top-2 bottom-2 w-px"
-                                    style={{ background: 'var(--border)' }} />
-                                {planSteps.map((step, i) => (
-                                    <div key={i} className="relative mb-5 last:mb-0">
-                                        <div className="absolute -left-[13px] top-1.5 w-3 h-3 rounded-full border-2"
-                                            style={{ background: 'var(--bg-card-solid)', borderColor: 'var(--accent)' }} />
-                                        <div className="p-3 rounded-xl" style={{ background: 'var(--bg-elevated)' }}>
-                                            <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
-                                                {typeof step === 'string' ? step : step.action || step.step || step.title}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-1.5">
-                                                {step.timeline && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-dim)' }}>
-                                                        <Clock size={9} /> {step.timeline}
-                                                    </span>
+                            ) : (
+                                obligations.map((obl, i) => (
+                                    <div key={i} className="card p-5">
+                                        <div className="flex items-start gap-4">
+                                            <CheckCircle2 size={20} style={{ color: 'var(--accent)', flexShrink: 0 }} className="mt-0.5" />
+                                            <div className="flex-1">
+                                                <p className="font-medium mb-2">{obl.description || obl.text}</p>
+                                                <div className="flex flex-wrap gap-2 mb-2">
+                                                    {obl.severity && (
+                                                        <Badge variant={getSeverityVariant(obl.severity)}>
+                                                            {obl.severity}
+                                                        </Badge>
+                                                    )}
+                                                    {obl.deadline && (
+                                                        <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                                                            <Clock size={12} />
+                                                            {obl.deadline}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {obl.details && (
+                                                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                                        {obl.details}
+                                                    </p>
                                                 )}
-                                                {step.priority && <Badge label={step.priority} variant={severityVariant(step.priority)} />}
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                ))
+                            )}
                         </div>
                     )}
 
-                    {actions.length === 0 && planSteps.length === 0 && (
-                        <div className="text-center py-12">
-                            <Target size={24} className="mx-auto mb-3" style={{ color: 'var(--text-dim)' }} />
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No action items identified</p>
+                    {/* Actions Tab */}
+                    {activeTab === 'actions' && (
+                        <div className="space-y-6">
+                            {summary.compliance_actions && summary.compliance_actions.length > 0 && (
+                                <Section title="Recommended Actions">
+                                    <div className="space-y-2">
+                                        {summary.compliance_actions.map((action, i) => (
+                                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg"
+                                                style={{ background: 'var(--bg-hover)' }}>
+                                                <ArrowRight size={16} style={{ color: 'var(--accent)' }} className="mt-0.5" />
+                                                <p className="text-sm flex-1">{action}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
+
+                            {summary.implementation_timeline && summary.implementation_timeline.length > 0 && (
+                                <Section title="Implementation Timeline">
+                                    <div className="space-y-4 relative pl-6">
+                                        <div className="absolute left-2 top-3 bottom-3 w-0.5" style={{ background: 'var(--border)' }} />
+                                        {summary.implementation_timeline.map((item, i) => (
+                                            <div key={i} className="relative">
+                                                <div className="w-3 h-3 rounded-full absolute -left-6 top-1.5"
+                                                    style={{ background: 'var(--accent)', border: '2px solid var(--bg-surface)' }} />
+                                                <div className="p-4 rounded-lg" style={{ background: 'var(--bg-hover)' }}>
+                                                    <p className="font-medium mb-1">{item.phase || item.title}</p>
+                                                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                                        {item.description || item.details}
+                                                    </p>
+                                                    {item.duration && (
+                                                        <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>
+                                                            {item.duration}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
                         </div>
                     )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }
