@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, signInWithGoogle, logOut } from './firebase';
 import axios from 'axios';
 import {
     Upload, FileText, Sparkles, LogOut, ChevronDown,
-    Languages, X, BarChart3, ClipboardList, AlertCircle, Menu, Zap
+    Languages, X, BarChart3, ClipboardList, AlertCircle,
+    Menu, Zap, Shield, TrendingUp, Brain, ArrowRight, Plus
 } from 'lucide-react';
 
 import Sidebar from './components/Sidebar';
@@ -21,7 +22,9 @@ const LANGUAGES = [
     'Urdu', 'Maithili', 'Sanskrit', 'Nepali'
 ];
 
-// ───── Login Page ─────
+/* ════════════════════════════════════════════
+   LOGIN PAGE
+   ════════════════════════════════════════════ */
 function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -29,86 +32,129 @@ function LoginPage() {
     const login = async () => {
         setLoading(true);
         setError('');
-        try {
-            await signInWithGoogle();
-        } catch (e) {
-            setError(e.message || 'Sign-in failed. Try again.');
-        } finally {
-            setLoading(false);
-        }
+        try { await signInWithGoogle(); }
+        catch (e) { setError(e.message || 'Sign-in failed'); }
+        finally { setLoading(false); }
     };
 
+    const features = [
+        { icon: Shield, label: 'Compliance Analysis', desc: 'AI-powered policy obligation extraction' },
+        { icon: TrendingUp, label: 'Risk Scoring', desc: 'Real-time risk, sustainability & ROI metrics' },
+        { icon: Brain, label: 'Smart Matching', desc: 'Auto-match with government MSME schemes' },
+    ];
+
     return (
-        <div className="min-h-screen w-full flex items-center justify-center p-6"
-            style={{ background: 'var(--bg-primary)' }}>
-            <div className="w-full max-w-sm text-center fade-up">
-                {/* Logo */}
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
-                    style={{ background: 'linear-gradient(135deg, var(--accent), #818cf8)' }}>
-                    <Zap size={28} color="white" />
-                </div>
+        <div className="min-h-screen w-full flex mesh-bg" style={{ background: 'var(--bg-primary)' }}>
+            {/* Left — Hero */}
+            <div className="hidden lg:flex flex-1 flex-col justify-center px-16 xl:px-24">
+                <div className="fade-in">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{ background: 'linear-gradient(135deg, var(--accent), #818cf8)' }}>
+                            <Zap size={20} color="white" />
+                        </div>
+                        <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>pAIr</span>
+                    </div>
 
-                <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                    pAIr
-                </h1>
-                <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
-                    AI-Powered Policy Compliance for Indian MSMEs
-                </p>
-
-                <button onClick={login} disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                        background: 'white',
-                        color: '#1a1a1a',
-                        opacity: loading ? 0.7 : 1,
-                    }}>
-                    <svg width="18" height="18" viewBox="0 0 48 48">
-                        <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.9 33.1 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.6-5.6C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.2-2.6-.4-3.9z"/>
-                        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.5 18.8 12 24 12c3.1 0 5.8 1.2 8 3l5.6-5.6C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-                        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.2 26.7 36 24 36c-5.4 0-9.9-3.5-11.3-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
-                        <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C36.7 39.4 44 34 44 24c0-1.3-.2-2.6-.4-3.9z"/>
-                    </svg>
-                    {loading ? 'Signing in...' : 'Continue with Google'}
-                </button>
-
-                {error && (
-                    <p className="mt-4 text-xs flex items-center justify-center gap-1"
-                        style={{ color: 'var(--red)' }}>
-                        <AlertCircle size={12} /> {error}
+                    <h1 className="text-4xl xl:text-5xl font-extrabold leading-tight mb-4"
+                        style={{ color: 'var(--text-primary)' }}>
+                        Policy Compliance,<br />
+                        <span style={{ color: 'var(--accent)' }}>Made Intelligent.</span>
+                    </h1>
+                    <p className="text-base mb-10 max-w-md" style={{ color: 'var(--text-muted)' }}>
+                        AI-powered regulatory analysis for Indian MSMEs. Upload a policy, get instant compliance guidance.
                     </p>
-                )}
 
-                <p className="mt-6 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    By signing in, you agree to our Terms of Service
-                </p>
+                    <div className="space-y-4 stagger">
+                        {features.map((f, i) => (
+                            <div key={i} className="flex items-center gap-4 fade-in">
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                    style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                                    <f.icon size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{f.label}</p>
+                                    <p className="text-xs" style={{ color: 'var(--text-dim)' }}>{f.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Right — Login Card */}
+            <div className="flex-1 lg:max-w-md xl:max-w-lg flex items-center justify-center p-8">
+                <div className="w-full max-w-sm fade-in">
+                    {/* Mobile logo */}
+                    <div className="lg:hidden text-center mb-10">
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                            style={{ background: 'linear-gradient(135deg, var(--accent), #818cf8)' }}>
+                            <Zap size={24} color="white" />
+                        </div>
+                        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>pAIr</h1>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                            AI Policy Compliance for MSMEs
+                        </p>
+                    </div>
+
+                    <div className="card card-glow p-8">
+                        <h2 className="text-lg font-bold mb-1 text-center lg:text-left" style={{ color: 'var(--text-primary)' }}>
+                            Get Started
+                        </h2>
+                        <p className="text-xs mb-8 text-center lg:text-left" style={{ color: 'var(--text-muted)' }}>
+                            Sign in with your Google account to continue
+                        </p>
+
+                        <button onClick={login} disabled={loading}
+                            className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-xl text-sm font-semibold transition-all"
+                            style={{
+                                background: 'white',
+                                color: '#1f2937',
+                                opacity: loading ? 0.7 : 1,
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            }}>
+                            <svg width="18" height="18" viewBox="0 0 48 48">
+                                <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.9 33.1 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.6-5.6C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.2-2.6-.4-3.9z"/>
+                                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.5 18.8 12 24 12c3.1 0 5.8 1.2 8 3l5.6-5.6C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                                <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.2 26.7 36 24 36c-5.4 0-9.9-3.5-11.3-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+                                <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C36.7 39.4 44 34 44 24c0-1.3-.2-2.6-.4-3.9z"/>
+                            </svg>
+                            {loading ? 'Signing in...' : 'Continue with Google'}
+                        </button>
+
+                        {error && (
+                            <div className="mt-4 flex items-center gap-2 p-3 rounded-lg text-xs"
+                                style={{ background: 'var(--red-muted)', color: 'var(--red)' }}>
+                                <AlertCircle size={13} /> {error}
+                            </div>
+                        )}
+                    </div>
+
+                    <p className="text-center text-[10px] mt-6" style={{ color: 'var(--text-dim)' }}>
+                        Built for Code Unnati Innovation Marathon 4.0
+                    </p>
+                </div>
             </div>
         </div>
     );
 }
 
-// ───── Main App ─────
+/* ════════════════════════════════════════════
+   MAIN APP
+   ════════════════════════════════════════════ */
 export default function App() {
-    // Auth
     const [user, setUser] = useState(null);
     const [authReady, setAuthReady] = useState(false);
-
-    // Onboarding
     const [businessProfile, setBusinessProfile] = useState(null);
     const [showOnboarding, setShowOnboarding] = useState(false);
-
-    // Analysis
     const [file, setFile] = useState(null);
-    const [status, setStatus] = useState('IDLE'); // IDLE | PROCESSING | SUCCESS | ERROR
+    const [status, setStatus] = useState('IDLE');
     const [data, setData] = useState(null);
     const [error, setError] = useState('');
-
-    // History
     const [history, setHistory] = useState([]);
     const [activeId, setActiveId] = useState(null);
-
-    // UI
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [activeView, setActiveView] = useState('results'); // results | dashboard
+    const [activeView, setActiveView] = useState('results');
     const [lang, setLang] = useState('English');
     const [showLangMenu, setShowLangMenu] = useState(false);
     const [dragOver, setDragOver] = useState(false);
@@ -116,222 +162,146 @@ export default function App() {
     const fileInputRef = useRef(null);
     const abortRef = useRef(null);
 
-    // Auth listener
+    // ── Auth ──
     useEffect(() => {
-        if (!auth) {
-            setAuthReady(true);
-            return;
-        }
-        const unsub = onAuthStateChanged(auth, (u) => {
+        if (!auth) { setAuthReady(true); return; }
+        return onAuthStateChanged(auth, (u) => {
             setUser(u);
             setAuthReady(true);
-            if (u) {
-                loadProfile(u.uid);
-                loadHistory(u.uid);
-            }
+            if (u) { loadProfile(u.uid); loadHistory(u.uid); }
         });
-        return unsub;
     }, []);
 
     const loadProfile = async (uid) => {
         try {
-            const res = await axios.get(`${API}/api/profile/${uid}`);
-            if (res.data?.profile) {
-                setBusinessProfile(res.data.profile);
-                setShowOnboarding(false);
-            } else {
-                setShowOnboarding(true);
-            }
-        } catch {
-            setShowOnboarding(true);
-        }
+            const r = await axios.get(`${API}/api/profile/${uid}`);
+            if (r.data?.profile) { setBusinessProfile(r.data.profile); setShowOnboarding(false); }
+            else setShowOnboarding(true);
+        } catch { setShowOnboarding(true); }
     };
 
     const loadHistory = async (uid) => {
         try {
-            const res = await axios.get(`${API}/api/history`, { params: { user_uid: uid } });
-            const records = res.data?.history || res.data || [];
+            const r = await axios.get(`${API}/api/history`, { params: { user_uid: uid } });
+            const records = r.data?.history || r.data || [];
             setHistory(Array.isArray(records) ? records : []);
-        } catch {
-            setHistory([]);
-        }
+        } catch { setHistory([]); }
     };
 
-    // File handling
+    // ── File ──
     const handleFile = (f) => {
         if (!f) return;
         const ext = f.name.split('.').pop().toLowerCase();
         if (!['pdf', 'txt', 'doc', 'docx'].includes(ext)) {
-            setError('Please upload a PDF, TXT, or DOC file.');
+            setError('Unsupported format. Use PDF, TXT, or DOC.');
             return;
         }
         setFile(f);
         setError('');
     };
 
-    const onDrop = (e) => {
-        e.preventDefault();
-        setDragOver(false);
-        const f = e.dataTransfer?.files?.[0];
-        if (f) handleFile(f);
-    };
-
-    // Analysis
+    // ── Analyze ──
     const analyze = async () => {
         if (!file) return;
-        setStatus('PROCESSING');
-        setData(null);
-        setError('');
-
+        setStatus('PROCESSING'); setData(null); setError('');
         const controller = new AbortController();
         abortRef.current = controller;
-
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            if (user?.uid) formData.append('user_uid', user.uid);
-            if (businessProfile) formData.append('business_profile', JSON.stringify(businessProfile));
-
-            const res = await axios.post(`${API}/api/analyze`, formData, {
-                signal: controller.signal,
-                timeout: 120000,
-            });
-
-            const result = res.data?.analysis || res.data;
-            setData(result);
+            const fd = new FormData();
+            fd.append('file', file);
+            if (user?.uid) fd.append('user_uid', user.uid);
+            if (businessProfile) fd.append('business_profile', JSON.stringify(businessProfile));
+            const r = await axios.post(`${API}/api/analyze`, fd, { signal: controller.signal, timeout: 120000 });
+            setData(r.data?.analysis || r.data);
             setStatus('SUCCESS');
             setActiveView('results');
             if (user?.uid) loadHistory(user.uid);
         } catch (e) {
-            if (axios.isCancel(e)) {
-                setStatus('IDLE');
-            } else {
-                setError(e.response?.data?.detail || e.message || 'Analysis failed.');
-                setStatus('ERROR');
-            }
+            if (axios.isCancel(e)) setStatus('IDLE');
+            else { setError(e.response?.data?.detail || e.message || 'Analysis failed.'); setStatus('ERROR'); }
         }
     };
 
-    const cancelAnalysis = () => {
-        abortRef.current?.abort();
-        setStatus('IDLE');
-    };
-
-    // History select
-    const selectHistory = (record) => {
-        const analysis = record.analysis || record;
-        setData(analysis);
+    // ── History ──
+    const selectHistory = (rec) => {
+        setData(rec.analysis || rec);
         setStatus('SUCCESS');
         setActiveView('results');
-        setActiveId(record.id || record.timestamp);
+        setActiveId(rec.id || rec.timestamp);
     };
-
     const deleteHistory = (id) => {
         setHistory(h => h.filter(r => (r.id || r.timestamp) !== id));
-        if (activeId === id) {
-            setData(null);
-            setStatus('IDLE');
-            setActiveId(null);
-        }
+        if (activeId === id) { setData(null); setStatus('IDLE'); setActiveId(null); }
     };
+    const clearHistory = () => { setHistory([]); setData(null); setStatus('IDLE'); setActiveId(null); };
 
-    const clearHistory = () => {
-        setHistory([]);
-        setData(null);
-        setStatus('IDLE');
-        setActiveId(null);
-    };
-
-    // Translation
+    // ── Translation ──
     const handleTranslate = async () => {
         if (!data || lang === 'English') return;
         try {
-            const res = await axios.post(`${API}/api/translate`, {
-                text: JSON.stringify(data),
-                target_language: lang,
-            });
-            if (res.data?.translated) {
-                try { setData(JSON.parse(res.data.translated)); } catch { /* keep original */ }
-            }
-        } catch (e) {
-            console.error('Translation error:', e);
-        }
+            const r = await axios.post(`${API}/api/translate`, { text: JSON.stringify(data), target_language: lang });
+            if (r.data?.translated) { try { setData(JSON.parse(r.data.translated)); } catch {} }
+        } catch (e) { console.error('Translation:', e); }
     };
 
-    // Onboarding handlers
+    // ── Onboarding ──
     const onOnboardingComplete = async (profile) => {
-        setBusinessProfile(profile);
-        setShowOnboarding(false);
-        if (user?.uid) {
-            try {
-                await axios.post(`${API}/api/profile/${user.uid}`, { profile });
-            } catch { /* silent */ }
-        }
+        setBusinessProfile(profile); setShowOnboarding(false);
+        if (user?.uid) { try { await axios.post(`${API}/api/profile/${user.uid}`, { profile }); } catch {} }
     };
 
     const handleLogout = async () => {
         await logOut();
-        setUser(null);
-        setBusinessProfile(null);
-        setData(null);
-        setHistory([]);
-        setStatus('IDLE');
+        setUser(null); setBusinessProfile(null); setData(null); setHistory([]); setStatus('IDLE');
     };
 
-    // ───── RENDER ─────
+    /* ═══ RENDER ═══ */
     if (!authReady) {
         return (
-            <div className="min-h-screen w-full flex items-center justify-center"
-                style={{ background: 'var(--bg-primary)' }}>
+            <div className="min-h-screen w-full flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
                 <div className="w-8 h-8 border-2 rounded-full spin"
                     style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
             </div>
         );
     }
 
-    // Not logged in → Login
     if (!user) return <LoginPage />;
 
-    // Logged in, no profile → Onboarding (full page)
     if (showOnboarding) {
-        return <OnboardingWizard
-            onComplete={onOnboardingComplete}
-            onSkip={() => setShowOnboarding(false)}
-        />;
+        return <OnboardingWizard onComplete={onOnboardingComplete} onSkip={() => setShowOnboarding(false)} />;
     }
 
-    // ───── Main Layout ─────
+    /* ═══ MAIN LAYOUT ═══ */
     return (
         <div className="min-h-screen w-full flex" style={{ background: 'var(--bg-primary)' }}>
             {/* Sidebar */}
-            <div className={`transition-all duration-300 ${sidebarOpen ? 'w-72' : 'w-0'} overflow-hidden flex-shrink-0`}
+            <div className={`transition-all duration-300 flex-shrink-0 ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden`}
                 style={{ borderRight: sidebarOpen ? '1px solid var(--border)' : 'none' }}>
-                <Sidebar
-                    history={history}
-                    onSelect={selectHistory}
-                    onDelete={deleteHistory}
-                    onClear={clearHistory}
-                    activeId={activeId}
-                />
+                <Sidebar history={history} onSelect={selectHistory} onDelete={deleteHistory}
+                    onClear={clearHistory} activeId={activeId} />
             </div>
 
-            {/* Main */}
+            {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
-                {/* Topbar */}
-                <header className="flex items-center justify-between px-5 py-3 flex-shrink-0"
-                    style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                {/* Top Bar */}
+                <header className="flex items-center justify-between px-5 h-14 flex-shrink-0 glass-strong"
+                    style={{ borderBottom: '1px solid var(--border)' }}>
                     <div className="flex items-center gap-3">
                         <button onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="p-1.5 rounded-lg transition-all"
+                            className="p-1.5 rounded-lg transition-all hover:bg-white/5"
                             style={{ color: 'var(--text-muted)' }}>
                             <Menu size={18} />
                         </button>
                         <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                                style={{ background: 'var(--accent)', color: 'white' }}>
-                                <Zap size={14} />
+                                style={{ background: 'linear-gradient(135deg, var(--accent), #818cf8)' }}>
+                                <Zap size={13} color="white" />
                             </div>
-                            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>pAIr</span>
+                            <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>pAIr</span>
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                                style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                                BETA
+                            </span>
                         </div>
                     </div>
 
@@ -339,23 +309,21 @@ export default function App() {
                         {/* Language */}
                         <div className="relative">
                             <button onClick={() => setShowLangMenu(!showLangMenu)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                                style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                                <Languages size={13} />
-                                {lang}
-                                <ChevronDown size={11} />
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium btn-ghost">
+                                <Languages size={13} /> {lang} <ChevronDown size={10} />
                             </button>
                             {showLangMenu && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowLangMenu(false)} />
-                                    <div className="absolute right-0 top-full mt-1 w-40 rounded-xl py-1 z-50 max-h-64 overflow-y-auto"
-                                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                                    <div className="absolute right-0 top-full mt-1 w-44 rounded-xl py-1 z-50 max-h-72 overflow-y-auto glass-strong"
+                                        style={{ boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}>
                                         {LANGUAGES.map(l => (
                                             <button key={l} onClick={() => { setLang(l); setShowLangMenu(false); }}
-                                                className="w-full text-left px-3 py-2 text-xs transition-all"
+                                                className="w-full text-left px-3 py-2 text-[11px] transition-all"
                                                 style={{
                                                     color: l === lang ? 'var(--accent)' : 'var(--text-secondary)',
                                                     background: l === lang ? 'var(--accent-muted)' : 'transparent',
+                                                    fontWeight: l === lang ? 600 : 400,
                                                 }}>
                                                 {l}
                                             </button>
@@ -365,39 +333,38 @@ export default function App() {
                             )}
                         </div>
 
-                        {/* User */}
-                        <div className="flex items-center gap-2 pl-2 ml-1" style={{ borderLeft: '1px solid var(--border)' }}>
+                        {/* User Avatar */}
+                        <div className="flex items-center gap-2 pl-3 ml-1" style={{ borderLeft: '1px solid var(--border)' }}>
                             {user.photoURL ? (
-                                <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
+                                <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full ring-2 ring-white/10" />
                             ) : (
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium"
-                                    style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
-                                    {(user.displayName || 'U')[0]}
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+                                    style={{ background: 'linear-gradient(135deg, var(--accent), #818cf8)', color: 'white' }}>
+                                    {(user.displayName || user.email || 'U')[0].toUpperCase()}
                                 </div>
                             )}
                             <button onClick={handleLogout} title="Sign out"
-                                className="p-1.5 rounded-lg transition-all"
-                                style={{ color: 'var(--text-muted)' }}>
-                                <LogOut size={15} />
+                                className="p-1.5 rounded-lg transition-all hover:bg-white/5"
+                                style={{ color: 'var(--text-dim)' }}>
+                                <LogOut size={14} />
                             </button>
                         </div>
                     </div>
                 </header>
 
-                {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    <div className="max-w-3xl mx-auto">
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto">
+                    <div className="max-w-3xl mx-auto p-6 lg:p-8">
 
-                        {/* STATUS: IDLE → Upload Area */}
+                        {/* ── IDLE: Upload ── */}
                         {status === 'IDLE' && (
-                            <div className="fade-up">
-                                {/* Welcome */}
-                                <div className="text-center mb-6">
-                                    <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                                        {data ? 'Analyze Another Policy' : 'Upload a Policy Document'}
+                            <div className="fade-in">
+                                <div className="text-center mb-8">
+                                    <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                                        {data ? 'Analyze Another Document' : 'Upload a Policy'}
                                     </h2>
-                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        Upload a PDF, TXT, or DOC to get instant AI-powered compliance analysis
+                                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                        Drop a PDF, TXT, or DOC for instant AI compliance analysis
                                     </p>
                                 </div>
 
@@ -405,52 +372,50 @@ export default function App() {
                                 <div
                                     onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                                     onDragLeave={() => setDragOver(false)}
-                                    onDrop={onDrop}
+                                    onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer?.files?.[0]); }}
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="rounded-2xl p-10 text-center cursor-pointer transition-all"
+                                    className="card card-glow rounded-2xl p-12 text-center cursor-pointer transition-all group"
                                     style={{
-                                        border: `2px dashed ${dragOver ? 'var(--accent)' : 'var(--border-light)'}`,
+                                        borderStyle: 'dashed',
+                                        borderWidth: '2px',
+                                        borderColor: dragOver ? 'var(--accent)' : 'var(--border)',
                                         background: dragOver ? 'var(--accent-muted)' : 'var(--bg-card)',
                                     }}>
-                                    <input ref={fileInputRef} type="file" className="hidden"
-                                        accept=".pdf,.txt,.doc,.docx"
+                                    <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.txt,.doc,.docx"
                                         onChange={e => handleFile(e.target.files[0])} />
-                                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 transition-all group-hover:scale-110"
                                         style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
-                                        <Upload size={22} />
+                                        <Upload size={24} />
                                     </div>
-                                    <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-                                        {dragOver ? 'Drop file here' : 'Click or drag file to upload'}
+                                    <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                                        {dragOver ? 'Drop to upload' : 'Click to browse or drag a file'}
                                     </p>
-                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        PDF, TXT, DOC up to 10MB
+                                    <p className="text-[11px]" style={{ color: 'var(--text-dim)' }}>
+                                        PDF, TXT, DOC — max 10 MB
                                     </p>
                                 </div>
 
-                                {/* Selected File */}
+                                {/* Selected File Bar */}
                                 {file && (
-                                    <div className="mt-4 flex items-center justify-between p-3 rounded-xl"
-                                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                                        <div className="flex items-center gap-2.5">
-                                            <FileText size={16} style={{ color: 'var(--accent)' }} />
-                                            <div>
-                                                <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                                    {file.name}
-                                                </div>
-                                                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                                    {(file.size / 1024).toFixed(1)} KB
-                                                </div>
+                                    <div className="mt-4 card p-4 flex items-center justify-between fade-in-scale">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                                                <FileText size={16} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{file.name}</p>
+                                                <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{(file.size / 1024).toFixed(1)} KB</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                                                className="p-1.5 rounded-lg transition-all"
-                                                style={{ color: 'var(--text-muted)' }}>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <button onClick={e => { e.stopPropagation(); setFile(null); }}
+                                                className="p-1.5 rounded-lg transition-all hover:bg-white/5"
+                                                style={{ color: 'var(--text-dim)' }}>
                                                 <X size={14} />
                                             </button>
                                             <button onClick={analyze}
-                                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                                                style={{ background: 'var(--accent)', color: 'white' }}>
+                                                className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm">
                                                 <Sparkles size={14} /> Analyze
                                             </button>
                                         </div>
@@ -466,72 +431,66 @@ export default function App() {
                             </div>
                         )}
 
-                        {/* STATUS: PROCESSING */}
+                        {/* ── PROCESSING ── */}
                         {status === 'PROCESSING' && (
-                            <ProcessingEngine onStop={cancelAnalysis} />
+                            <ProcessingEngine onStop={() => { abortRef.current?.abort(); setStatus('IDLE'); }} />
                         )}
 
-                        {/* STATUS: ERROR */}
+                        {/* ── ERROR ── */}
                         {status === 'ERROR' && (
-                            <div className="fade-up text-center py-12">
-                                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                            <div className="fade-in text-center py-16">
+                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
                                     style={{ background: 'var(--red-muted)', color: 'var(--red)' }}>
-                                    <AlertCircle size={22} />
+                                    <AlertCircle size={24} />
                                 </div>
-                                <h3 className="text-base font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                                    Analysis Failed
-                                </h3>
-                                <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>{error}</p>
+                                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Analysis Failed</h3>
+                                <p className="text-xs mb-6 max-w-xs mx-auto" style={{ color: 'var(--text-muted)' }}>{error}</p>
                                 <button onClick={() => { setStatus('IDLE'); setError(''); }}
-                                    className="px-4 py-2 rounded-lg text-sm font-medium"
-                                    style={{ background: 'var(--accent)', color: 'white' }}>
+                                    className="btn-primary px-6 py-2.5 rounded-xl text-sm">
                                     Try Again
                                 </button>
                             </div>
                         )}
 
-                        {/* STATUS: SUCCESS → Results or Dashboard */}
+                        {/* ── SUCCESS ── */}
                         {status === 'SUCCESS' && data && (
-                            <div className="fade-up">
-                                {/* View Toggle */}
-                                <div className="flex items-center gap-1 mb-5 p-1 rounded-xl w-fit"
-                                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                                    <button onClick={() => setActiveView('results')}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all"
-                                        style={{
-                                            background: activeView === 'results' ? 'var(--accent)' : 'transparent',
-                                            color: activeView === 'results' ? 'white' : 'var(--text-muted)',
-                                        }}>
-                                        <ClipboardList size={13} /> Analysis
-                                    </button>
-                                    <button onClick={() => setActiveView('dashboard')}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all"
-                                        style={{
-                                            background: activeView === 'dashboard' ? 'var(--accent)' : 'transparent',
-                                            color: activeView === 'dashboard' ? 'white' : 'var(--text-muted)',
-                                        }}>
-                                        <BarChart3 size={13} /> Scores
-                                    </button>
-                                </div>
+                            <div className="fade-in">
+                                {/* Controls Bar */}
+                                <div className="flex items-center justify-between mb-6">
+                                    {/* View Toggle */}
+                                    <div className="flex gap-1 p-1 rounded-xl"
+                                        style={{ background: 'var(--bg-card-solid)', border: '1px solid var(--border)' }}>
+                                        <button onClick={() => setActiveView('results')}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-semibold transition-all"
+                                            style={{
+                                                background: activeView === 'results' ? 'linear-gradient(135deg, var(--accent), #818cf8)' : 'transparent',
+                                                color: activeView === 'results' ? 'white' : 'var(--text-dim)',
+                                            }}>
+                                            <ClipboardList size={12} /> Analysis
+                                        </button>
+                                        <button onClick={() => setActiveView('dashboard')}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-semibold transition-all"
+                                            style={{
+                                                background: activeView === 'dashboard' ? 'linear-gradient(135deg, var(--accent), #818cf8)' : 'transparent',
+                                                color: activeView === 'dashboard' ? 'white' : 'var(--text-dim)',
+                                            }}>
+                                            <BarChart3 size={12} /> Scores
+                                        </button>
+                                    </div>
 
-                                {/* New Analysis Button */}
-                                <div className="flex justify-end mb-4">
                                     <button onClick={() => { setStatus('IDLE'); setFile(null); setActiveId(null); }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                                        style={{ background: 'var(--bg-card)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
-                                        <Upload size={12} /> New Analysis
+                                        className="btn-ghost flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-medium">
+                                        <Plus size={12} /> New
                                     </button>
                                 </div>
 
                                 {activeView === 'results' ? (
-                                    <ResultsView data={data}
-                                        onTranslate={lang !== 'English' ? handleTranslate : null} />
+                                    <ResultsView data={data} onTranslate={lang !== 'English' ? handleTranslate : null} />
                                 ) : (
                                     <Dashboard data={data} />
                                 )}
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
