@@ -4,12 +4,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "pair-msme-navigator",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  apiKey: "AIzaSyA0OKSXa6_Ou4ZA5XK6ANN-NfjTmR9BXEo",
+  authDomain: "codeunnati-im-proj.firebaseapp.com",
+  projectId: "codeunnati-im-proj",
+  storageBucket: "codeunnati-im-proj.firebasestorage.app",
+  messagingSenderId: "909462033616",
+  appId: "1:909462033616:web:52dd1ec22299e08012fad5",
+  measurementId: "G-EM3797X3KC",
 };
 
 let app = null;

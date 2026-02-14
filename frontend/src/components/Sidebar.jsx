@@ -1,158 +1,118 @@
-import React, { useState } from 'react';
-import { FileText, ChevronRight, Trash2, X, Upload, Globe, Layers } from 'lucide-react';
+import React from 'react';
+import { FileText, Globe, Upload, Trash2, X, Layers } from 'lucide-react';
 
-export default function Sidebar({ history, onSelect, onDelete, onClear }) {
-    const [activeTab, setActiveTab] = useState('all');
-
-    // Detect source with fallback for legacy items
-    const isAutoFetched = (item) => {
-        if (item.source === 'auto-fetched') return true;
-        const authority = item.policy_metadata?.issuing_authority?.toLowerCase() || '';
-        return authority.includes('msme') || authority.includes('ministry');
-    };
-
-    const userUploads = history.filter(item => !isAutoFetched(item));
-    const autoFetched = history.filter(item => isAutoFetched(item));
-
-    const displayHistory = activeTab === 'all' ? history
-        : activeTab === 'uploads' ? userUploads
-            : autoFetched;
-
-    return (
-        <div className="sidebar">
-            {/* Header */}
-            <div className="sidebar-header">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <Layers size={18} className="text-white" />
-                        </div>
-                        <div>
-                            <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
-                                Analysis Hub
-                            </h2>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                {history.length} policies
-                            </p>
-                        </div>
+export default function Sidebar({ history, onSelect, onDelete, onClear, activeId }) {
+    if (!history || history.length === 0) {
+        return (
+            <div className="w-[260px] min-w-[260px] h-screen sticky top-0 flex flex-col border-r"
+                style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <div className="flex items-center gap-2">
+                        <Layers size={18} style={{ color: 'var(--accent)' }} />
+                        <span className="font-semibold text-sm">Policies</span>
                     </div>
-                    {history.length > 0 && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onClear(); }}
-                            className="p-2 rounded-lg hover:bg-red-500/10 text-red-500 transition-all"
-                            title="Clear All"
-                        >
-                            <X size={16} />
-                        </button>
-                    )}
                 </div>
-
-                {/* Tabs */}
-                <div className="tabs">
-                    <button
-                        className={`tab ${activeTab === 'all' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('all')}
-                    >
-                        All ({history.length})
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'uploads' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('uploads')}
-                    >
-                        <Upload size={12} className="inline mr-1" />
-                        Uploads
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'fetched' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('fetched')}
-                    >
-                        <Globe size={12} className="inline mr-1" />
-                        Auto
-                    </button>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="sidebar-content">
-                {displayHistory.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <div
-                            className="w-14 h-14 rounded-full flex items-center justify-center mb-4"
-                            style={{ backgroundColor: 'var(--bg-tertiary)' }}
-                        >
-                            <FileText size={22} style={{ color: 'var(--text-muted)' }} />
-                        </div>
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                            {activeTab === 'fetched' ? 'No auto-fetched policies'
-                                : activeTab === 'uploads' ? 'No uploaded policies'
-                                    : 'No policies analyzed yet'}
+                <div className="flex-1 flex items-center justify-center p-6">
+                    <div className="text-center">
+                        <FileText size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            No policies analyzed yet.<br/>Upload a PDF to get started.
                         </p>
                     </div>
-                ) : (
-                    displayHistory.map((item, idx) => (
-                        <HistoryItem
-                            key={item.id || idx}
-                            item={item}
-                            isAuto={isAutoFetched(item)}
-                            onSelect={onSelect}
-                            onDelete={onDelete}
-                        />
-                    ))
-                )}
+                </div>
             </div>
+        );
+    }
 
-            {/* Footer */}
-            <div className="sidebar-footer flex justify-between">
-                <span>{userUploads.length} uploaded</span>
-                <span style={{ color: 'var(--success)' }}>{autoFetched.length} auto-fetched</span>
-            </div>
-        </div>
-    );
-}
-
-function HistoryItem({ item, isAuto, onSelect, onDelete }) {
     return (
-        <div className="history-item group animate-fadeIn" onClick={() => onSelect(item)}>
-            {/* Badge */}
-            <span className={`badge ${isAuto ? 'badge-auto' : 'badge-uploaded'}`}>
-                {isAuto ? (
-                    <><Globe size={10} /> Auto-Fetched</>
-                ) : (
-                    <><Upload size={10} /> Uploaded</>
-                )}
-            </span>
+        <div className="w-[260px] min-w-[260px] h-screen sticky top-0 flex flex-col border-r"
+            style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+            {/* Header */}
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center gap-2">
+                    <Layers size={18} style={{ color: 'var(--accent)' }} />
+                    <span className="font-semibold text-sm">Policies</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded-md"
+                        style={{ background: 'var(--accent-muted)', color: 'var(--accent)', fontSize: 11 }}>
+                        {history.length}
+                    </span>
+                </div>
+                <button onClick={onClear} className="p-1.5 rounded-md hover:bg-red-500/10 text-red-400 transition-all" title="Clear all">
+                    <X size={14} />
+                </button>
+            </div>
 
-            {/* Title */}
-            <h3
-                className="font-medium text-sm line-clamp-2 mb-1 group-hover:text-blue-500 transition-colors"
-                style={{ color: 'var(--text-primary)' }}
-            >
-                {item.policy_metadata?.policy_name || "Unknown Policy"}
-            </h3>
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {history.map((item, idx) => {
+                    const name = item.policy_metadata?.policy_name || 'Untitled Policy';
+                    const authority = item.policy_metadata?.issuing_authority || '';
+                    const isAuto = item.source === 'auto-fetched';
+                    const isActive = item.id === activeId;
+                    const risk = item.risk_assessment?.overall_risk_level || item.risk_score?.overall_band;
 
-            {/* Authority */}
-            <p className="text-xs line-clamp-1" style={{ color: 'var(--text-muted)' }}>
-                {item.policy_metadata?.issuing_authority || "Unknown Authority"}
-            </p>
+                    return (
+                        <div
+                            key={item.id || idx}
+                            onClick={() => onSelect(item)}
+                            className="group p-3 rounded-lg cursor-pointer transition-all relative"
+                            style={{
+                                background: isActive ? 'var(--accent-muted)' : 'transparent',
+                                border: isActive ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+                            }}
+                            onMouseEnter={e => !isActive && (e.currentTarget.style.background = 'var(--bg-hover)')}
+                            onMouseLeave={e => !isActive && (e.currentTarget.style.background = 'transparent')}
+                        >
+                            {/* Badge row */}
+                            <div className="flex items-center gap-2 mb-1.5">
+                                {isAuto ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                        style={{ background: 'var(--green-muted)', color: 'var(--green)' }}>
+                                        <Globe size={9} /> Auto
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                        style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                                        <Upload size={9} /> Uploaded
+                                    </span>
+                                )}
+                                {risk && (
+                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                        style={{
+                                            background: risk === 'HIGH' || risk === 'CRITICAL' ? 'var(--red-muted)' :
+                                                       risk === 'MEDIUM' ? 'var(--orange-muted)' : 'var(--green-muted)',
+                                            color: risk === 'HIGH' || risk === 'CRITICAL' ? 'var(--red)' :
+                                                  risk === 'MEDIUM' ? 'var(--orange)' : 'var(--green)',
+                                        }}>
+                                        {risk}
+                                    </span>
+                                )}
+                            </div>
 
-            {/* Delete Button (on hover) */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(item.id);
-                }}
-                className="absolute right-2 bottom-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-500 transition-all"
-                title="Delete"
-            >
-                <Trash2 size={14} />
-            </button>
+                            {/* Title */}
+                            <p className="text-[13px] font-medium leading-tight line-clamp-2"
+                                style={{ color: 'var(--text-primary)' }}>
+                                {name}
+                            </p>
 
-            {/* Arrow */}
-            <ChevronRight
-                size={16}
-                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all"
-                style={{ color: 'var(--text-muted)' }}
-            />
+                            {/* Authority */}
+                            {authority && (
+                                <p className="text-[11px] mt-1 truncate" style={{ color: 'var(--text-muted)' }}>
+                                    {authority}
+                                </p>
+                            )}
+
+                            {/* Delete */}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+                                className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-red-400 transition-all"
+                                title="Delete">
+                                <Trash2 size={12} />
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }

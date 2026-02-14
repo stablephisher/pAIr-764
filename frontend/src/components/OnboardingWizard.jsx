@@ -1,218 +1,179 @@
-// pAIr v3 — Onboarding Wizard Component
-// Adaptive decision-tree questionnaire for business profiling
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ChevronRight, Building2, CheckCircle2, Loader2 } from 'lucide-react';
+import { Building2, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
 
-const API_BASE_URL = "http://localhost:8000";
+const API = "http://localhost:8000";
 
 export default function OnboardingWizard({ onComplete, onSkip }) {
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [answers, setAnswers] = useState({});
-  const [selectedAnswer, setSelectedAnswer] = useState('');
-  const [freeTextInput, setFreeTextInput] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [questionCount, setQuestionCount] = useState(0);
-  const [error, setError] = useState(null);
+    const [question, setQuestion] = useState(null);
+    const [answers, setAnswers] = useState({});
+    const [selected, setSelected] = useState('');
+    const [freeText, setFreeText] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [step, setStep] = useState(0);
+    const [totalSteps, setTotalSteps] = useState(13);
+    const [error, setError] = useState(null);
 
-  // Start the onboarding
-  useEffect(() => {
-    startOnboarding();
-  }, []);
+    useEffect(() => { loadFirst(); }, []);
 
-  const startOnboarding = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/api/onboarding/start`);
-      setCurrentQuestion(res.data.question);
-      setQuestionCount(1);
-      setLoading(false);
-    } catch (e) {
-      setError("Failed to load onboarding questions");
-      setLoading(false);
-    }
-  };
-
-  const submitAnswer = async () => {
-    if (!currentQuestion) return;
-
-    const answer = currentQuestion.type === 'free_text' ? freeTextInput : selectedAnswer;
-    if (!answer) return;
-
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/onboarding/answer`, {
-        current_question_id: currentQuestion.id,
-        answer: answer,
-        answers_so_far: { ...answers, [currentQuestion.id]: answer },
-      });
-
-      const newAnswers = { ...answers, [currentQuestion.id]: answer };
-      setAnswers(newAnswers);
-
-      if (res.data.is_complete) {
-        // Onboarding complete — generate profile
-        setProgress(100);
-        if (res.data.profile) {
-          onComplete(res.data.profile);
-        } else {
-          // Generate profile separately
-          const profileRes = await axios.post(`${API_BASE_URL}/api/onboarding/profile`, {
-            answers: newAnswers,
-          });
-          onComplete(profileRes.data.profile);
+    const loadFirst = async () => {
+        try {
+            const res = await axios.get(`${API}/api/onboarding/start`);
+            setQuestion(res.data.question);
+            if (res.data.total_questions) setTotalSteps(res.data.total_questions);
+            setStep(1);
+        } catch (e) {
+            setError("Could not load questions. Backend may be offline.");
+        } finally {
+            setLoading(false);
         }
-      } else {
-        setCurrentQuestion(res.data.question);
-        setSelectedAnswer('');
-        setFreeTextInput('');
-        setQuestionCount(prev => prev + 1);
-        setProgress(Math.min(90, questionCount * 8));
-      }
-    } catch (e) {
-      setError("Failed to submit answer. Please try again.");
-    } finally {
-      setSubmitting(false);
+    };
+
+    const submit = async () => {
+        if (!question) return;
+        const answer = question.type === 'free_text' ? freeText : selected;
+        if (!answer) return;
+
+        setSubmitting(true);
+        setError(null);
+
+        try {
+            const res = await axios.post(`${API}/api/onboarding/answer`, {
+                current_question_id: question.id,
+                answer,
+                answers_so_far: { ...answers, [question.id]: answer },
+            });
+
+            const newAnswers = { ...answers, [question.id]: answer };
+            setAnswers(newAnswers);
+
+            if (res.data.is_complete) {
+                if (res.data.profile) {
+                    onComplete(res.data.profile);
+                } else {
+                    const profileRes = await axios.post(`${API}/api/onboarding/profile`, { answers: newAnswers });
+                    onComplete(profileRes.data.profile);
+                }
+            } else {
+                setQuestion(res.data.question);
+                setSelected('');
+                setFreeText('');
+                setStep(s => s + 1);
+            }
+        } catch (e) {
+            console.error('Onboarding error:', e.response?.data || e.message);
+            setError("Something went wrong. Try again.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+                <Loader2 size={28} className="spin" style={{ color: 'var(--accent)' }} />
+            </div>
+        );
     }
-  };
 
-  if (loading) {
+    const progress = Math.min(95, (step / totalSteps) * 100);
+    const answer = question?.type === 'free_text' ? freeText : selected;
+
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 size={40} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />
-        <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>Loading questionnaire...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto animate-fadeIn">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}>
-          <Building2 size={28} />
-        </div>
-        <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-          Tell us about your business
-        </h2>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Answer a few questions so we can find the best policies and schemes for you
-        </p>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="w-full h-2 rounded-full mb-8" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-        <div className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${progress}%`, backgroundColor: 'var(--accent-primary)' }} />
-      </div>
-
-      {/* Question Card */}
-      {currentQuestion && (
-        <div className="card p-6 mb-6">
-          <div className="flex items-start gap-3 mb-6">
-            <span className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}>
-              {questionCount}
-            </span>
-            <div>
-              <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {currentQuestion.question || currentQuestion.text}
-              </h3>
-              {currentQuestion.description && (
-                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                  {currentQuestion.description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Options */}
-          {currentQuestion.type === 'free_text' ? (
-            <div className="mt-4">
-              <input
-                type="text"
-                value={freeTextInput}
-                onChange={(e) => setFreeTextInput(e.target.value)}
-                placeholder={currentQuestion.placeholder || "Type your answer..."}
-                className="w-full p-3 rounded-lg text-sm"
-                style={{
-                  backgroundColor: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && freeTextInput && submitAnswer()}
-              />
-            </div>
-          ) : (
-            <div className="grid gap-3 mt-4">
-              {(currentQuestion.options || []).map((opt) => {
-                const value = typeof opt === 'string' ? opt : opt.value || opt.label;
-                const label = typeof opt === 'string' ? opt : opt.label;
-                const desc = typeof opt === 'object' ? opt.description : null;
-                const isSelected = selectedAnswer === value;
-
-                return (
-                  <button
-                    key={value}
-                    onClick={() => setSelectedAnswer(value)}
-                    className="w-full text-left p-4 rounded-xl transition-all border"
-                    style={{
-                      backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-tertiary)',
-                      borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-color)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                        style={{ borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-color)' }}>
-                        {isSelected && (
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }} />
-                        )}
-                      </div>
-                      <div>
-                        <span className="font-medium text-sm">{label}</span>
-                        {desc && <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{desc}</p>}
-                      </div>
+        <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg-primary)' }}>
+            <div className="w-full max-w-lg fade-up">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                        style={{ background: 'var(--accent)', color: 'white' }}>
+                        <Building2 size={22} />
                     </div>
-                  </button>
-                );
-              })}
+                    <h1 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                        Tell us about your business
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        Step {step} — We'll match you with the right schemes & policies
+                    </p>
+                </div>
+
+                {/* Progress */}
+                <div className="h-1 rounded-full mb-6" style={{ background: 'var(--bg-elevated)' }}>
+                    <div className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%`, background: 'var(--accent)' }} />
+                </div>
+
+                {/* Question */}
+                {question && (
+                    <div className="rounded-2xl p-6 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                        <p className="text-base font-semibold mb-5" style={{ color: 'var(--text-primary)' }}>
+                            {question.text}
+                        </p>
+
+                        {question.type === 'free_text' ? (
+                            <input
+                                type="text"
+                                value={freeText}
+                                onChange={e => setFreeText(e.target.value)}
+                                placeholder={question.placeholder || "Type your answer..."}
+                                onKeyDown={e => e.key === 'Enter' && freeText && submit()}
+                                className="w-full p-3 rounded-lg text-sm outline-none transition-all"
+                                style={{
+                                    background: 'var(--bg-elevated)',
+                                    border: '1px solid var(--border-light)',
+                                    color: 'var(--text-primary)',
+                                }}
+                                autoFocus
+                            />
+                        ) : (
+                            <div className="space-y-2">
+                                {(question.options || []).map(opt => {
+                                    const val = typeof opt === 'string' ? opt : (opt.value || opt.label);
+                                    const label = typeof opt === 'string' ? opt : opt.label;
+                                    const isSelected = selected === val;
+
+                                    return (
+                                        <button key={val} onClick={() => setSelected(val)}
+                                            className={`w-full text-left p-3.5 rounded-xl transition-all flex items-center gap-3 ${isSelected ? 'selected' : ''}`}
+                                            style={{
+                                                background: isSelected ? 'var(--accent-muted)' : 'var(--bg-elevated)',
+                                                border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                                                color: 'var(--text-primary)',
+                                            }}>
+                                            <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                                                style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--border-light)' }}>
+                                                {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />}
+                                            </div>
+                                            <span className="text-sm">{label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {error && <p className="text-xs mt-3" style={{ color: 'var(--red)' }}>{error}</p>}
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                    <button onClick={onSkip} className="text-sm px-4 py-2 rounded-lg transition-all"
+                        style={{ color: 'var(--text-muted)', background: 'var(--bg-card)' }}>
+                        Skip for now
+                    </button>
+                    <button onClick={submit} disabled={submitting || !answer}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
+                        style={{
+                            background: (!answer || submitting) ? 'var(--bg-elevated)' : 'var(--accent)',
+                            color: (!answer || submitting) ? 'var(--text-muted)' : 'white',
+                            opacity: (!answer || submitting) ? 0.5 : 1,
+                            cursor: (!answer || submitting) ? 'not-allowed' : 'pointer',
+                        }}>
+                        {submitting ? <><Loader2 size={14} className="spin" /> Processing...</> :
+                            <>Next <ArrowRight size={14} /></>}
+                    </button>
+                </div>
             </div>
-          )}
-
-          {error && (
-            <p className="text-sm mt-3" style={{ color: 'var(--danger)' }}>{error}</p>
-          )}
         </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex justify-between items-center">
-        <button onClick={onSkip} className="btn btn-secondary text-sm">
-          Skip for now
-        </button>
-        <button
-          onClick={submitAnswer}
-          disabled={submitting || (!selectedAnswer && !freeTextInput)}
-          className="btn btn-primary flex items-center gap-2"
-        >
-          {submitting ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              Next <ChevronRight size={16} />
-            </>
-          )}
-        </button>
-      </div>
-    </div>
-  );
+    );
 }

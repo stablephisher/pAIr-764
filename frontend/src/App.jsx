@@ -1,89 +1,271 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Upload, AlertCircle, Sun, Moon, Zap, Globe, LogIn, LogOut, User } from 'lucide-react';
-import ResultsView from './components/ResultsView';
-import ProcessingEngine from './components/ProcessingEngine';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import OnboardingWizard from './components/OnboardingWizard';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth, signInWithGoogle, logOut } from './firebase';
+import axios from 'axios';
+import {
+    Upload, FileText, Sparkles, LogOut, ChevronDown,
+    Languages, X, BarChart3, ClipboardList, AlertCircle, Menu, Zap
+} from 'lucide-react';
 
-const API_BASE_URL = "http://localhost:8000";
+import Sidebar from './components/Sidebar';
+import ProcessingEngine from './components/ProcessingEngine';
+import OnboardingWizard from './components/OnboardingWizard';
+import ResultsView from './components/ResultsView';
+import Dashboard from './components/Dashboard';
 
-// 15+ Indian Languages
+const API = "http://localhost:8000";
+
 const LANGUAGES = [
-    { code: 'en', name: 'English', native: 'English' },
-    { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
-    { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
-    { code: 'te', name: 'Telugu', native: 'తెలుగు' },
-    { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
-    { code: 'ml', name: 'Malayalam', native: 'മലയാളം' },
-    { code: 'bn', name: 'Bengali', native: 'বাংলা' },
-    { code: 'mr', name: 'Marathi', native: 'मराठी' },
-    { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
-    { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
-    { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ' },
-    { code: 'as', name: 'Assamese', native: 'অসমীয়া' },
-    { code: 'ur', name: 'Urdu', native: 'اردو' },
-    { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' },
-    { code: 'ne', name: 'Nepali', native: 'नेपाली' },
-    { code: 'kok', name: 'Konkani', native: 'कोंकणी' },
+    'English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam',
+    'Bengali', 'Marathi', 'Gujarati', 'Punjabi', 'Odia', 'Assamese',
+    'Urdu', 'Maithili', 'Sanskrit', 'Nepali'
 ];
 
-function App() {
-    const [file, setFile] = useState(null);
-    const [status, setStatus] = useState('IDLE');
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(null);
-    const [history, setHistory] = useState([]);
-    const [showSidebar, setShowSidebar] = useState(true);
-    const [showDebug, setShowDebug] = useState(false);
-    const [showSources, setShowSources] = useState(false);
-    const [abortController, setAbortController] = useState(null);
-    const [debugLogs, setDebugLogs] = useState([]);
-    const [theme, setTheme] = useState('dark');
-    const [isDragging, setIsDragging] = useState(false);
-    const [language, setLanguage] = useState('en');
-    const [showLanguages, setShowLanguages] = useState(false);
-    const [translatedData, setTranslatedData] = useState(null);
-    const [isTranslating, setIsTranslating] = useState(false);
+// ───── Login Page ─────
+function LoginPage() {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    // v3: Auth & Onboarding State
-    const [user, setUser] = useState(null);
-    const [authLoading, setAuthLoading] = useState(true);
-    const [showOnboarding, setShowOnboarding] = useState(false);
-    const [businessProfile, setBusinessProfile] = useState(null);
-
-    // Firebase auth listener
-    useEffect(() => {
-        if (auth) {
-            const unsubscribe = auth.onAuthStateChanged((fbUser) => {
-                setUser(fbUser);
-                setAuthLoading(false);
-                if (fbUser) {
-                    // Check if user has completed onboarding
-                    axios.get(`${API_BASE_URL}/api/profile/${fbUser.uid}`)
-                        .then(res => {
-                            if (res.data && res.data.has_profile !== false) {
-                                setBusinessProfile(res.data);
-                            } else {
-                                setShowOnboarding(true);
-                            }
-                        })
-                        .catch(() => setShowOnboarding(true));
-                }
-            });
-            return () => unsubscribe();
-        } else {
-            setAuthLoading(false);
-        }
-    }, []);
-
-    const handleGoogleLogin = async () => {
+    const login = async () => {
+        setLoading(true);
+        setError('');
         try {
             await signInWithGoogle();
-        } catch (err) {
-            setError("Login failed: " + err.message);
+        } catch (e) {
+            setError(e.message || 'Sign-in failed. Try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen w-full flex items-center justify-center p-6"
+            style={{ background: 'var(--bg-primary)' }}>
+            <div className="w-full max-w-sm text-center fade-up">
+                {/* Logo */}
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                    style={{ background: 'linear-gradient(135deg, var(--accent), #818cf8)' }}>
+                    <Zap size={28} color="white" />
+                </div>
+
+                <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                    pAIr
+                </h1>
+                <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
+                    AI-Powered Policy Compliance for Indian MSMEs
+                </p>
+
+                <button onClick={login} disabled={loading}
+                    className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                        background: 'white',
+                        color: '#1a1a1a',
+                        opacity: loading ? 0.7 : 1,
+                    }}>
+                    <svg width="18" height="18" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.9 33.1 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.6-5.6C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.2-2.6-.4-3.9z"/>
+                        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.5 18.8 12 24 12c3.1 0 5.8 1.2 8 3l5.6-5.6C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.2 26.7 36 24 36c-5.4 0-9.9-3.5-11.3-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+                        <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C36.7 39.4 44 34 44 24c0-1.3-.2-2.6-.4-3.9z"/>
+                    </svg>
+                    {loading ? 'Signing in...' : 'Continue with Google'}
+                </button>
+
+                {error && (
+                    <p className="mt-4 text-xs flex items-center justify-center gap-1"
+                        style={{ color: 'var(--red)' }}>
+                        <AlertCircle size={12} /> {error}
+                    </p>
+                )}
+
+                <p className="mt-6 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    By signing in, you agree to our Terms of Service
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// ───── Main App ─────
+export default function App() {
+    // Auth
+    const [user, setUser] = useState(null);
+    const [authReady, setAuthReady] = useState(false);
+
+    // Onboarding
+    const [businessProfile, setBusinessProfile] = useState(null);
+    const [showOnboarding, setShowOnboarding] = useState(false);
+
+    // Analysis
+    const [file, setFile] = useState(null);
+    const [status, setStatus] = useState('IDLE'); // IDLE | PROCESSING | SUCCESS | ERROR
+    const [data, setData] = useState(null);
+    const [error, setError] = useState('');
+
+    // History
+    const [history, setHistory] = useState([]);
+    const [activeId, setActiveId] = useState(null);
+
+    // UI
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [activeView, setActiveView] = useState('results'); // results | dashboard
+    const [lang, setLang] = useState('English');
+    const [showLangMenu, setShowLangMenu] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
+
+    const fileInputRef = useRef(null);
+    const abortRef = useRef(null);
+
+    // Auth listener
+    useEffect(() => {
+        if (!auth) {
+            setAuthReady(true);
+            return;
+        }
+        const unsub = onAuthStateChanged(auth, (u) => {
+            setUser(u);
+            setAuthReady(true);
+            if (u) {
+                loadProfile(u.uid);
+                loadHistory(u.uid);
+            }
+        });
+        return unsub;
+    }, []);
+
+    const loadProfile = async (uid) => {
+        try {
+            const res = await axios.get(`${API}/api/profile/${uid}`);
+            if (res.data?.profile) {
+                setBusinessProfile(res.data.profile);
+                setShowOnboarding(false);
+            } else {
+                setShowOnboarding(true);
+            }
+        } catch {
+            setShowOnboarding(true);
+        }
+    };
+
+    const loadHistory = async (uid) => {
+        try {
+            const res = await axios.get(`${API}/api/history`, { params: { user_uid: uid } });
+            const records = res.data?.history || res.data || [];
+            setHistory(Array.isArray(records) ? records : []);
+        } catch {
+            setHistory([]);
+        }
+    };
+
+    // File handling
+    const handleFile = (f) => {
+        if (!f) return;
+        const ext = f.name.split('.').pop().toLowerCase();
+        if (!['pdf', 'txt', 'doc', 'docx'].includes(ext)) {
+            setError('Please upload a PDF, TXT, or DOC file.');
+            return;
+        }
+        setFile(f);
+        setError('');
+    };
+
+    const onDrop = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const f = e.dataTransfer?.files?.[0];
+        if (f) handleFile(f);
+    };
+
+    // Analysis
+    const analyze = async () => {
+        if (!file) return;
+        setStatus('PROCESSING');
+        setData(null);
+        setError('');
+
+        const controller = new AbortController();
+        abortRef.current = controller;
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            if (user?.uid) formData.append('user_uid', user.uid);
+            if (businessProfile) formData.append('business_profile', JSON.stringify(businessProfile));
+
+            const res = await axios.post(`${API}/api/analyze`, formData, {
+                signal: controller.signal,
+                timeout: 120000,
+            });
+
+            const result = res.data?.analysis || res.data;
+            setData(result);
+            setStatus('SUCCESS');
+            setActiveView('results');
+            if (user?.uid) loadHistory(user.uid);
+        } catch (e) {
+            if (axios.isCancel(e)) {
+                setStatus('IDLE');
+            } else {
+                setError(e.response?.data?.detail || e.message || 'Analysis failed.');
+                setStatus('ERROR');
+            }
+        }
+    };
+
+    const cancelAnalysis = () => {
+        abortRef.current?.abort();
+        setStatus('IDLE');
+    };
+
+    // History select
+    const selectHistory = (record) => {
+        const analysis = record.analysis || record;
+        setData(analysis);
+        setStatus('SUCCESS');
+        setActiveView('results');
+        setActiveId(record.id || record.timestamp);
+    };
+
+    const deleteHistory = (id) => {
+        setHistory(h => h.filter(r => (r.id || r.timestamp) !== id));
+        if (activeId === id) {
+            setData(null);
+            setStatus('IDLE');
+            setActiveId(null);
+        }
+    };
+
+    const clearHistory = () => {
+        setHistory([]);
+        setData(null);
+        setStatus('IDLE');
+        setActiveId(null);
+    };
+
+    // Translation
+    const handleTranslate = async () => {
+        if (!data || lang === 'English') return;
+        try {
+            const res = await axios.post(`${API}/api/translate`, {
+                text: JSON.stringify(data),
+                target_language: lang,
+            });
+            if (res.data?.translated) {
+                try { setData(JSON.parse(res.data.translated)); } catch { /* keep original */ }
+            }
+        } catch (e) {
+            console.error('Translation error:', e);
+        }
+    };
+
+    // Onboarding handlers
+    const onOnboardingComplete = async (profile) => {
+        setBusinessProfile(profile);
+        setShowOnboarding(false);
+        if (user?.uid) {
+            try {
+                await axios.post(`${API}/api/profile/${user.uid}`, { profile });
+            } catch { /* silent */ }
         }
     };
 
@@ -91,621 +273,268 @@ function App() {
         await logOut();
         setUser(null);
         setBusinessProfile(null);
-    };
-
-    const handleOnboardingComplete = async (profile) => {
-        setBusinessProfile(profile);
-        setShowOnboarding(false);
-        if (user) {
-            try {
-                await axios.post(`${API_BASE_URL}/api/profile/${user.uid}`, profile);
-            } catch (e) {
-                console.error('Failed to save profile:', e);
-            }
-        }
-    };
-
-    // Auto-translate when language changes
-    useEffect(() => {
-        const translateData = async () => {
-            if (!data || language === 'en') {
-                setTranslatedData(null);
-                return;
-            }
-
-            setIsTranslating(true);
-            try {
-                const response = await axios.post(`${API_BASE_URL}/api/translate`, {
-                    data: data,
-                    target_language: language
-                });
-                setTranslatedData(response.data);
-            } catch (err) {
-                console.error('Translation failed:', err);
-                setTranslatedData(null);
-            } finally {
-                setIsTranslating(false);
-            }
-        };
-
-        translateData();
-    }, [language, data]);
-
-    // Theme Effect
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    };
-
-    const addLog = (msg) => {
-        const timestamp = new Date().toLocaleTimeString();
-        setDebugLogs(prev => [`[${timestamp}] ${msg}`, ...prev]);
-    };
-
-    // Poll history
-    useEffect(() => {
-        fetchHistory();
-        const interval = setInterval(() => fetchHistory(true), 3000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchHistory = async (silent = false) => {
-        try {
-            const uid = user?.uid || '';
-            const res = await axios.get(`${API_BASE_URL}/api/history${uid ? `?user_uid=${uid}` : ''}`);
-            setHistory(res.data);
-        } catch (e) {
-            if (!silent) console.error("Failed to fetch history", e);
-        }
-    };
-
-    const handleFileChange = (e) => {
-        if (e.target.files?.[0]) {
-            setFile(e.target.files[0]);
-            setError(null);
-        }
-    };
-
-    // Drag and Drop Handlers
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-
-        const droppedFile = e.dataTransfer.files?.[0];
-        if (droppedFile && droppedFile.type === 'application/pdf') {
-            setFile(droppedFile);
-            setError(null);
-        } else {
-            setError('Please drop a PDF file.');
-        }
-    };
-
-    const handleStop = () => {
-        abortController?.abort();
-        setAbortController(null);
+        setData(null);
+        setHistory([]);
         setStatus('IDLE');
-        setError("Analysis stopped by user.");
     };
 
-    const handleUpload = async () => {
-        if (!file) return;
+    // ───── RENDER ─────
+    if (!authReady) {
+        return (
+            <div className="min-h-screen w-full flex items-center justify-center"
+                style={{ background: 'var(--bg-primary)' }}>
+                <div className="w-8 h-8 border-2 rounded-full spin"
+                    style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+            </div>
+        );
+    }
 
-        setStatus('PROCESSING');
-        setError(null);
-        setDebugLogs([]);
-        addLog("Starting upload...");
+    // Not logged in → Login
+    if (!user) return <LoginPage />;
 
-        const controller = new AbortController();
-        setAbortController(controller);
+    // Logged in, no profile → Onboarding (full page)
+    if (showOnboarding) {
+        return <OnboardingWizard
+            onComplete={onOnboardingComplete}
+            onSkip={() => setShowOnboarding(false)}
+        />;
+    }
 
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            addLog(`Connecting to ${API_BASE_URL}...`);
-            if (user?.uid) formData.append('user_uid', user.uid);
-            if (businessProfile) formData.append('business_profile', JSON.stringify(businessProfile));
-            const response = await axios.post(`${API_BASE_URL}/api/analyze`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 300000,
-                signal: controller.signal
-            });
-
-            setData(response.data);
-            setStatus('SUCCESS');
-            fetchHistory();
-            addLog("Analysis complete!");
-
-        } catch (err) {
-            if (axios.isCancel(err)) {
-                addLog('Canceled by user.');
-            } else {
-                const errMsg = err.response?.data?.detail || err.message || "An error occurred";
-                addLog(`ERROR: ${errMsg}`);
-                setError(errMsg);
-                setStatus('ERROR');
-            }
-        } finally {
-            setAbortController(null);
-        }
-    };
-
+    // ───── Main Layout ─────
     return (
-        <div className="min-h-screen flex" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="min-h-screen w-full flex" style={{ background: 'var(--bg-primary)' }}>
             {/* Sidebar */}
-            {showSidebar && (
+            <div className={`transition-all duration-300 ${sidebarOpen ? 'w-72' : 'w-0'} overflow-hidden flex-shrink-0`}
+                style={{ borderRight: sidebarOpen ? '1px solid var(--border)' : 'none' }}>
                 <Sidebar
                     history={history}
-                    onSelect={(item) => { setData(item); setStatus('SUCCESS'); }}
-                    onClear={async () => {
-                        if (confirm("Clear all history?")) {
-                            await axios.delete(`${API_BASE_URL}/api/history`);
-                            setHistory([]);
-                        }
-                    }}
-                    onDelete={async (id) => {
-                        await axios.delete(`${API_BASE_URL}/api/history/${id}`);
-                        setHistory(prev => prev.filter(item => item.id !== id));
-                    }}
+                    onSelect={selectHistory}
+                    onDelete={deleteHistory}
+                    onClear={clearHistory}
+                    activeId={activeId}
                 />
-            )}
+            </div>
 
-            {/* Main Content */}
-            <div className={`main-content ${showSidebar ? 'sidebar-open' : ''}`}>
-                {/* Header */}
-                <div className="app-header">
-                    <div className="header-left">
-                        <button
-                            onClick={() => setShowSidebar(!showSidebar)}
-                            className="btn btn-secondary text-sm"
-                        >
-                            {showSidebar ? '← Hide' : '→ History'}
+            {/* Main */}
+            <div className="flex-1 flex flex-col min-w-0">
+                {/* Topbar */}
+                <header className="flex items-center justify-between px-5 py-3 flex-shrink-0"
+                    style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)}
+                            className="p-1.5 rounded-lg transition-all"
+                            style={{ color: 'var(--text-muted)' }}>
+                            <Menu size={18} />
                         </button>
-                    </div>
-
-                    <div className="text-center">
-                        <h1 className="title">Policy Ingestion Agent</h1>
-                        <p className="subtitle" style={{ marginBottom: 0 }}>
-                            AI-Powered Compliance Intelligence
-                        </p>
-                    </div>
-
-                    <div className="header-right">
-                        {/* User Info / Login */}
-                        {user ? (
-                            <div className="flex items-center gap-2">
-                                <img
-                                    src={user.photoURL || ''}
-                                    alt=""
-                                    className="w-7 h-7 rounded-full"
-                                    onError={(e) => e.target.style.display = 'none'}
-                                />
-                                <span className="text-xs hidden md:inline" style={{ color: 'var(--text-secondary)' }}>
-                                    {user.displayName?.split(' ')[0] || 'User'}
-                                </span>
-                                <button onClick={handleLogout} className="btn btn-secondary text-xs p-1.5" title="Logout">
-                                    <LogOut size={14} />
-                                </button>
+                        <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                                style={{ background: 'var(--accent)', color: 'white' }}>
+                                <Zap size={14} />
                             </div>
-                        ) : (
-                            <button onClick={handleGoogleLogin} className="btn btn-primary text-xs flex items-center gap-1">
-                                <LogIn size={14} /> Sign In
-                            </button>
-                        )}
+                            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>pAIr</span>
+                        </div>
+                    </div>
 
-                        {/* Language Selector */}
+                    <div className="flex items-center gap-2">
+                        {/* Language */}
                         <div className="relative">
-                            <button
-                                onClick={() => setShowLanguages(!showLanguages)}
-                                className="theme-toggle"
-                                title="Change Language"
-                            >
-                                🌍
+                            <button onClick={() => setShowLangMenu(!showLangMenu)}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                                style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                                <Languages size={13} />
+                                {lang}
+                                <ChevronDown size={11} />
                             </button>
-                            {showLanguages && (
-                                <div
-                                    className="absolute right-0 top-12 w-48 max-h-64 overflow-y-auto rounded-xl shadow-xl z-50"
-                                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                                >
-                                    {LANGUAGES.map(lang => (
-                                        <button
-                                            key={lang.code}
-                                            onClick={() => { setLanguage(lang.code); setShowLanguages(false); }}
-                                            className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-500/10 flex justify-between items-center ${language === lang.code ? 'bg-blue-500/20' : ''}`}
-                                            style={{ color: 'var(--text-primary)' }}
-                                        >
-                                            <span>{lang.name}</span>
-                                            <span style={{ color: 'var(--text-muted)' }}>{lang.native}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                            {showLangMenu && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowLangMenu(false)} />
+                                    <div className="absolute right-0 top-full mt-1 w-40 rounded-xl py-1 z-50 max-h-64 overflow-y-auto"
+                                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                                        {LANGUAGES.map(l => (
+                                            <button key={l} onClick={() => { setLang(l); setShowLangMenu(false); }}
+                                                className="w-full text-left px-3 py-2 text-xs transition-all"
+                                                style={{
+                                                    color: l === lang ? 'var(--accent)' : 'var(--text-secondary)',
+                                                    background: l === lang ? 'var(--accent-muted)' : 'transparent',
+                                                }}>
+                                                {l}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
 
-                        <button
-                            onClick={toggleTheme}
-                            className="theme-toggle"
-                            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                        >
-                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                        </button>
-                        <button
-                            onClick={() => setShowSources(true)}
-                            className="btn btn-secondary text-sm"
-                            title="Manage URL Sources"
-                        >
-                            🌐 Sources
-                        </button>
-                        <button
-                            onClick={() => setShowDebug(true)}
-                            className="btn btn-secondary text-sm"
-                        >
-                            <Zap size={16} /> AI Logic
-                        </button>
+                        {/* User */}
+                        <div className="flex items-center gap-2 pl-2 ml-1" style={{ borderLeft: '1px solid var(--border)' }}>
+                            {user.photoURL ? (
+                                <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
+                            ) : (
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium"
+                                    style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                                    {(user.displayName || 'U')[0]}
+                                </div>
+                            )}
+                            <button onClick={handleLogout} title="Sign out"
+                                className="p-1.5 rounded-lg transition-all"
+                                style={{ color: 'var(--text-muted)' }}>
+                                <LogOut size={15} />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </header>
 
-                {/* Onboarding Wizard */}
-                {showOnboarding && (
-                    <OnboardingWizard
-                        onComplete={handleOnboardingComplete}
-                        onSkip={() => setShowOnboarding(false)}
-                    />
-                )}
+                {/* Content Area */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    <div className="max-w-3xl mx-auto">
 
-                {/* Main Area */}
-                <main>
-                    {status === 'IDLE' || status === 'ERROR' ? (
-                        <div className="upload-area animate-fadeIn">
-                            <div
-                                className={`upload-box ${isDragging ? 'dragging' : ''}`}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                                style={isDragging ? {
-                                    borderColor: 'var(--accent-primary)',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.05)'
-                                } : {}}
-                            >
-                                <div
-                                    className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-                                    style={{ backgroundColor: 'var(--bg-tertiary)' }}
-                                >
-                                    <Upload size={28} style={{ color: isDragging ? 'var(--accent-primary)' : 'var(--text-secondary)' }} />
+                        {/* STATUS: IDLE → Upload Area */}
+                        {status === 'IDLE' && (
+                            <div className="fade-up">
+                                {/* Welcome */}
+                                <div className="text-center mb-6">
+                                    <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                                        {data ? 'Analyze Another Policy' : 'Upload a Policy Document'}
+                                    </h2>
+                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                        Upload a PDF, TXT, or DOC to get instant AI-powered compliance analysis
+                                    </p>
                                 </div>
 
-                                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-                                    {isDragging ? 'Drop PDF Here' : 'Upload Policy Document'}
-                                </h3>
-                                <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-                                    {isDragging ? 'Release to upload' : 'Drag & drop or click to browse'}
-                                </p>
+                                {/* Drop Zone */}
+                                <div
+                                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                                    onDragLeave={() => setDragOver(false)}
+                                    onDrop={onDrop}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="rounded-2xl p-10 text-center cursor-pointer transition-all"
+                                    style={{
+                                        border: `2px dashed ${dragOver ? 'var(--accent)' : 'var(--border-light)'}`,
+                                        background: dragOver ? 'var(--accent-muted)' : 'var(--bg-card)',
+                                    }}>
+                                    <input ref={fileInputRef} type="file" className="hidden"
+                                        accept=".pdf,.txt,.doc,.docx"
+                                        onChange={e => handleFile(e.target.files[0])} />
+                                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                                        style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                                        <Upload size={22} />
+                                    </div>
+                                    <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+                                        {dragOver ? 'Drop file here' : 'Click or drag file to upload'}
+                                    </p>
+                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                        PDF, TXT, DOC up to 10MB
+                                    </p>
+                                </div>
 
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                    id="file-upload"
-                                />
-
-                                <div className="flex flex-col gap-3 w-full max-w-sm mx-auto">
-                                    {file ? (
-                                        <div
-                                            className="flex items-center justify-between p-3 rounded-lg"
-                                            style={{ backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}
-                                        >
-                                            <span className="text-sm truncate flex-1" style={{ color: 'var(--text-primary)' }}>
-                                                📄 {file.name}
-                                            </span>
-                                            <button
-                                                onClick={() => setFile(null)}
-                                                className="ml-2 p-1.5 rounded-lg hover:bg-red-500/20 text-red-500 transition-all"
-                                                title="Remove file"
-                                            >
-                                                ✕
+                                {/* Selected File */}
+                                {file && (
+                                    <div className="mt-4 flex items-center justify-between p-3 rounded-xl"
+                                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                                        <div className="flex items-center gap-2.5">
+                                            <FileText size={16} style={{ color: 'var(--accent)' }} />
+                                            <div>
+                                                <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                                                    {file.name}
+                                                </div>
+                                                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                                    {(file.size / 1024).toFixed(1)} KB
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                                                className="p-1.5 rounded-lg transition-all"
+                                                style={{ color: 'var(--text-muted)' }}>
+                                                <X size={14} />
+                                            </button>
+                                            <button onClick={analyze}
+                                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                                                style={{ background: 'var(--accent)', color: 'white' }}>
+                                                <Sparkles size={14} /> Analyze
                                             </button>
                                         </div>
-                                    ) : (
-                                        <label
-                                            htmlFor="file-upload"
-                                            className="btn btn-secondary cursor-pointer w-full"
-                                        >
-                                            📁 Select PDF File
-                                        </label>
-                                    )}
+                                    </div>
+                                )}
 
-                                    <button
-                                        onClick={handleUpload}
-                                        disabled={!file}
-                                        className="btn btn-primary w-full"
-                                    >
-                                        🚀 Analyze Policy
-                                    </button>
-                                </div>
-                            </div>
-
-                            {status === 'ERROR' && (
-                                <div
-                                    className="mt-4 p-4 rounded-lg flex items-center gap-3"
-                                    style={{
-                                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                        border: '1px solid rgba(239, 68, 68, 0.2)',
-                                        color: 'var(--danger)'
-                                    }}
-                                >
-                                    <AlertCircle size={20} />
-                                    {error}
-                                </div>
-                            )}
-                        </div>
-                    ) : status === 'PROCESSING' ? (
-                        <div className="text-center animate-fadeIn">
-                            <ProcessingEngine />
-                            <button
-                                onClick={handleStop}
-                                className="mt-6 btn"
-                                style={{
-                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                    color: 'var(--danger)',
-                                    border: '1px solid rgba(239, 68, 68, 0.2)'
-                                }}
-                            >
-                                Stop Analysis
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="animate-fadeIn">
-                            <div className="flex items-center justify-between mb-6">
-                                <button
-                                    onClick={() => { setStatus('IDLE'); setFile(null); setData(null); setTranslatedData(null); }}
-                                    className="btn btn-secondary"
-                                >
-                                    ← Analyze Another
-                                </button>
-                                {isTranslating && (
-                                    <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                                        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                            Translating to {LANGUAGES.find(l => l.code === language)?.name || language}...
-                                        </span>
+                                {error && (
+                                    <div className="mt-4 flex items-center gap-2 p-3 rounded-xl text-xs"
+                                        style={{ background: 'var(--red-muted)', color: 'var(--red)' }}>
+                                        <AlertCircle size={14} /> {error}
                                     </div>
                                 )}
                             </div>
+                        )}
 
-                            {/* v3 Scoring Dashboard */}
-                            {(translatedData || data) && (
-                                (translatedData || data).risk_report ||
-                                (translatedData || data).sustainability_report ||
-                                (translatedData || data).profitability_report
-                            ) && (
-                                <Dashboard data={translatedData || data} />
-                            )}
+                        {/* STATUS: PROCESSING */}
+                        {status === 'PROCESSING' && (
+                            <ProcessingEngine onStop={cancelAnalysis} />
+                        )}
 
-                            <ResultsView data={translatedData || data} language={language} />
-                        </div>
-                    )}
-                </main>
-            </div>
-
-            {/* Debug Modal */}
-            {showDebug && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-                    onClick={() => setShowDebug(false)}
-                >
-                    <div
-                        className="card max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">AI Pipeline Info</h2>
-                            <button onClick={() => setShowDebug(false)} className="text-gray-400 hover:text-red-500">
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                                <h3 className="font-medium text-green-500 mb-2">Step 1: Analyst</h3>
-                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                    Gemini 2.5 Flash extracts structured legal obligations from the PDF.
-                                </p>
-                            </div>
-                            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                                <h3 className="font-medium text-purple-500 mb-2">Step 2: Planner</h3>
-                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                    A second AI agent creates actionable compliance steps for MSME owners.
-                                </p>
-                            </div>
-                        </div>
-
-                        {data?.debug_metadata && (
-                            <div className="p-4 rounded-lg mb-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                                <h3 className="font-medium mb-3">Last Execution</h3>
-                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>Models: <span className="text-blue-400">{data.debug_metadata.models_used?.join(', ')}</span></div>
-                                    <div>Step 1: <span className="text-green-400">{data.debug_metadata.step_1_time?.toFixed(1)}s</span></div>
-                                    <div>Step 2: <span className="text-purple-400">{data.debug_metadata.step_2_time?.toFixed(1)}s</span></div>
-                                    <div>Total: <span className="text-orange-400">{(data.debug_metadata.step_1_time + data.debug_metadata.step_2_time)?.toFixed(1)}s</span></div>
+                        {/* STATUS: ERROR */}
+                        {status === 'ERROR' && (
+                            <div className="fade-up text-center py-12">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                                    style={{ background: 'var(--red-muted)', color: 'var(--red)' }}>
+                                    <AlertCircle size={22} />
                                 </div>
+                                <h3 className="text-base font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                                    Analysis Failed
+                                </h3>
+                                <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>{error}</p>
+                                <button onClick={() => { setStatus('IDLE'); setError(''); }}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium"
+                                    style={{ background: 'var(--accent)', color: 'white' }}>
+                                    Try Again
+                                </button>
                             </div>
                         )}
 
-                        <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                            <h3 className="font-medium mb-2">Debug Log</h3>
-                            <div className="text-xs font-mono max-h-40 overflow-y-auto" style={{ color: 'var(--text-muted)' }}>
-                                {debugLogs.length === 0 ? 'No logs yet...' : debugLogs.map((log, i) => (
-                                    <div key={i} className="py-1 border-b border-gray-700/50">{log}</div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Sources Modal */}
-            {showSources && (
-                <SourcesModal onClose={() => setShowSources(false)} />
-            )}
-        </div>
-    );
-}
-
-// Sources Modal Component
-function SourcesModal({ onClose }) {
-    const [sources, setSources] = useState([]);
-    const [newUrl, setNewUrl] = useState('');
-    const [newName, setNewName] = useState('');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetchSources();
-    }, []);
-
-    const fetchSources = async () => {
-        try {
-            const res = await axios.get('http://localhost:8000/api/sources');
-            setSources(res.data);
-        } catch (e) {
-            console.error('Failed to fetch sources', e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const addSource = async () => {
-        if (!newUrl || !newName) return;
-        try {
-            await axios.post('http://localhost:8000/api/sources', {
-                name: newName,
-                url: newUrl
-            });
-            setNewUrl('');
-            setNewName('');
-            fetchSources();
-        } catch (e) {
-            console.error('Failed to add source', e);
-        }
-    };
-
-    const removeSource = async (name) => {
-        try {
-            await axios.delete(`http://localhost:8000/api/sources/${encodeURIComponent(name)}`);
-            fetchSources();
-        } catch (e) {
-            console.error('Failed to remove source', e);
-        }
-    };
-
-    return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-            onClick={onClose}
-        >
-            <div
-                className="card max-w-lg w-full max-h-[80vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">🌐 URL Sources</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-red-500">✕</button>
-                </div>
-
-                <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                    Add government portal URLs to automatically fetch new policy PDFs.
-                </p>
-
-                {/* Add New Source */}
-                <div className="p-4 rounded-lg mb-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                    <h3 className="font-medium text-sm mb-3">Add New Source</h3>
-                    <div className="flex flex-col gap-2">
-                        <input
-                            type="text"
-                            placeholder="Source Name (e.g. MSME Ministry)"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            className="w-full p-2 rounded-lg text-sm"
-                            style={{
-                                backgroundColor: 'var(--bg-primary)',
-                                border: '1px solid var(--border-color)',
-                                color: 'var(--text-primary)'
-                            }}
-                        />
-                        <input
-                            type="url"
-                            placeholder="URL (e.g. https://msme.gov.in/notifications)"
-                            value={newUrl}
-                            onChange={(e) => setNewUrl(e.target.value)}
-                            className="w-full p-2 rounded-lg text-sm"
-                            style={{
-                                backgroundColor: 'var(--bg-primary)',
-                                border: '1px solid var(--border-color)',
-                                color: 'var(--text-primary)'
-                            }}
-                        />
-                        <button
-                            onClick={addSource}
-                            disabled={!newUrl || !newName}
-                            className="btn btn-primary text-sm"
-                        >
-                            + Add Source
-                        </button>
-                    </div>
-                </div>
-
-                {/* Sources List */}
-                <div className="space-y-2">
-                    <h3 className="font-medium text-sm mb-2">Active Sources</h3>
-                    {loading ? (
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</p>
-                    ) : sources.length === 0 ? (
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No sources configured.</p>
-                    ) : (
-                        sources.map((source, idx) => (
-                            <div
-                                key={idx}
-                                className="flex items-center justify-between p-3 rounded-lg"
-                                style={{ backgroundColor: 'var(--bg-tertiary)' }}
-                            >
-                                <div>
-                                    <p className="font-medium text-sm">{source.name}</p>
-                                    <p className="text-xs truncate max-w-xs" style={{ color: 'var(--text-muted)' }}>
-                                        {source.url}
-                                    </p>
+                        {/* STATUS: SUCCESS → Results or Dashboard */}
+                        {status === 'SUCCESS' && data && (
+                            <div className="fade-up">
+                                {/* View Toggle */}
+                                <div className="flex items-center gap-1 mb-5 p-1 rounded-xl w-fit"
+                                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                                    <button onClick={() => setActiveView('results')}
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all"
+                                        style={{
+                                            background: activeView === 'results' ? 'var(--accent)' : 'transparent',
+                                            color: activeView === 'results' ? 'white' : 'var(--text-muted)',
+                                        }}>
+                                        <ClipboardList size={13} /> Analysis
+                                    </button>
+                                    <button onClick={() => setActiveView('dashboard')}
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all"
+                                        style={{
+                                            background: activeView === 'dashboard' ? 'var(--accent)' : 'transparent',
+                                            color: activeView === 'dashboard' ? 'white' : 'var(--text-muted)',
+                                        }}>
+                                        <BarChart3 size={13} /> Scores
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => removeSource(source.name)}
-                                    className="p-2 hover:bg-red-500/10 rounded-lg text-red-500"
-                                    title="Remove"
-                                >
-                                    ✕
-                                </button>
+
+                                {/* New Analysis Button */}
+                                <div className="flex justify-end mb-4">
+                                    <button onClick={() => { setStatus('IDLE'); setFile(null); setActiveId(null); }}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+                                        style={{ background: 'var(--bg-card)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
+                                        <Upload size={12} /> New Analysis
+                                    </button>
+                                </div>
+
+                                {activeView === 'results' ? (
+                                    <ResultsView data={data}
+                                        onTranslate={lang !== 'English' ? handleTranslate : null} />
+                                ) : (
+                                    <Dashboard data={data} />
+                                )}
                             </div>
-                        ))
-                    )}
+                        )}
+
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
-
-export default App;

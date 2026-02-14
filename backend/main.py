@@ -448,34 +448,40 @@ async def run_policy_analysis_pipeline(
 
 
 # ═══════════════════════════════════════════════════════════════════
-#  POLICY MONITORING
+#  POLICY MONITORING (with deduplication)
 # ═══════════════════════════════════════════════════════════════════
 
 MONITOR_DIR = config.policy.monitor_dir
 if not os.path.exists(MONITOR_DIR):
     os.makedirs(MONITOR_DIR)
 
+_processed_policies = set()  # Track by content hash to prevent duplicates
+
 async def monitor_policies_task():
     """Background task to watch for new PDFs in monitored_policies/."""
+    import hashlib
     print(f"📡 Monitoring started in: {os.path.abspath(MONITOR_DIR)}")
-    processed_files = set()
 
     while True:
         try:
             for filename in os.listdir(MONITOR_DIR):
-                if filename.endswith(".pdf") and filename not in processed_files:
-                    filepath = os.path.join(MONITOR_DIR, filename)
+                if not filename.endswith(".pdf"):
+                    continue
+                filepath = os.path.join(MONITOR_DIR, filename)
+                try:
+                    with open(filepath, "rb") as f:
+                        content = f.read()
+                    content_hash = hashlib.md5(content).hexdigest()
+                    if content_hash in _processed_policies:
+                        continue
+                    _processed_policies.add(content_hash)
                     print(f"🚨 NEW POLICY DETECTED: {filename}")
-                    try:
-                        with open(filepath, "rb") as f:
-                            content = f.read()
-                        text = extract_text_from_pdf(content)
-                        if text.strip():
-                            await run_policy_analysis_pipeline(text, source="auto-fetched")
-                            print(f"✅ Auto-Analysis Complete for {filename}")
-                        processed_files.add(filename)
-                    except Exception as e:
-                        print(f"❌ Failed to auto-process {filename}: {e}")
+                    text = extract_text_from_pdf(content)
+                    if text.strip():
+                        await run_policy_analysis_pipeline(text, source="auto-fetched")
+                        print(f"✅ Auto-Analysis Complete for {filename}")
+                except Exception as e:
+                    print(f"❌ Failed to auto-process {filename}: {e}")
             await asyncio.sleep(config.policy.monitor_interval_seconds)
         except Exception as e:
             print(f"Monitor Error: {e}")
@@ -517,15 +523,17 @@ async def verify_auth(token: Optional[str] = None):
 
 # ── Onboarding ───────────────────────────────────────────────────────
 
-@app.get("/api/onboarding/start")
+@app.api_route("/api/onboarding/start", methods=["GET", "POST"])
 def onboarding_start():
     """Get the first onboarding question."""
     try:
         from onboarding.decision_tree import AdaptiveOnboardingEngine
         engine = AdaptiveOnboardingEngine()
         question = engine.get_first_question()
-        return {"question": question, "is_complete": False}
+        return {"question": question, "is_complete": False, "total_questions": engine.get_total_questions()}
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -535,9 +543,10 @@ def onboarding_answer(request: OnboardingAnswerRequest):
     try:
         from onboarding.decision_tree import AdaptiveOnboardingEngine
         engine = AdaptiveOnboardingEngine()
-        question, is_complete = engine.get_next_question(
+        result = engine.get_next_question(
             request.current_question_id, request.answer
         )
+        question, is_complete = result
         response = {"is_complete": is_complete}
         if is_complete:
             all_answers = {**request.answers_so_far, request.current_question_id: request.answer}
@@ -547,6 +556,8 @@ def onboarding_answer(request: OnboardingAnswerRequest):
             response["question"] = question
         return response
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -686,10 +697,34 @@ def score_profitability(request: ScoringRequest):
 
 @app.get("/api/history")
 def get_history(user_uid: Optional[str] = None):
-    """Get analysis history."""
+    """Get analysis history — returns flat records with deduplication."""
     if user_uid:
-        return db.get_user_analyses(user_uid)
-    return db.get_all_analyses()
+        raw = db.get_user_analyses(user_uid)
+    else:
+        raw = db.get_all_analyses()
+
+    # Flatten nested records: unwrap {id, uid, timestamp, source, analysis: {...}} → flat
+    seen_names = set()
+    results = []
+    for item in raw:
+        record = {}
+        if "analysis" in item and isinstance(item["analysis"], dict):
+            record = item["analysis"].copy()
+            record["id"] = item.get("id", record.get("id"))
+            record["source"] = item.get("source", record.get("source", "uploaded"))
+            record["timestamp"] = item.get("timestamp", record.get("timestamp"))
+        else:
+            record = item
+
+        # Deduplicate by policy name
+        name = record.get("policy_metadata", {}).get("policy_name", "")
+        if name and name in seen_names:
+            continue
+        if name:
+            seen_names.add(name)
+        results.append(record)
+
+    return results
 
 
 @app.delete("/api/history")
