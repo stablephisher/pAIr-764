@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ════════════════════════════════════════════════════════════
+    //  USER DATA — Owner-only access
+    // ════════════════════════════════════════════════════════════
+
+    match /users/{userId} {
+      // Only the authenticated user can read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // User's policy analyses — owner-only
+      match /analyses/{analysisId} {
+        allow read, delete: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // User's onboarding state — owner-only
+      match /onboarding/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // User's notifications — read/update only (backend creates via Admin SDK)
+      match /notifications/{notifId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow update: if request.auth != null && request.auth.uid == userId
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']);
+        allow create, delete: if false; // Server-side only via Admin SDK
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  POLICIES — Read-only for authenticated users
+    // ════════════════════════════════════════════════════════════
+
+    match /policies/{policyId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Server-side only via Admin SDK
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  GLOBAL STATS — Read-only for authenticated users
+    // ════════════════════════════════════════════════════════════
+
+    match /global_stats/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Server-side only via Admin SDK
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  DEFAULT — Deny everything else
+    // ════════════════════════════════════════════════════════════
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

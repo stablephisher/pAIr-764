@@ -482,14 +482,69 @@ async def monitor_policies_task():
                     print(f"🚨 NEW POLICY DETECTED: {filename}")
                     text = extract_text_from_pdf(content)
                     if text.strip():
-                        await run_policy_analysis_pipeline(text, source="auto-fetched")
+                        result = await run_policy_analysis_pipeline(text, source="auto-fetched")
                         print(f"✅ Auto-Analysis Complete for {filename}")
+
+                        # Store detected policy and notify relevant users
+                        policy_name = result.get("policy_metadata", {}).get("policy_name", filename)
+                        sector = result.get("policy_metadata", {}).get("policy_type", "")
+                        db.store_detected_policy({
+                            "policy_name": policy_name,
+                            "filename": filename,
+                            "sector": sector,
+                            "source": "auto-fetched",
+                        })
+
+                        # Notify all users (or sector-matched users)
+                        await notify_users_new_policy(policy_name, sector, result)
+
                 except Exception as e:
                     print(f"❌ Failed to auto-process {filename}: {e}")
             await asyncio.sleep(config.policy.monitor_interval_seconds)
         except Exception as e:
             print(f"Monitor Error: {e}")
             await asyncio.sleep(config.policy.monitor_interval_seconds)
+
+
+async def notify_users_new_policy(policy_name: str, sector: str, analysis: dict):
+    """Notify users when a new policy is detected."""
+    try:
+        # Try to find sector-specific users first
+        target_uids = db.get_users_by_sector(sector) if sector else []
+
+        # If no sector match, notify all users with FCM tokens
+        if not target_uids:
+            fcm_users = db.get_all_fcm_tokens()
+            target_uids = [u["uid"] for u in fcm_users]
+
+        risk_level = analysis.get("risk_assessment", {}).get("overall_risk_level", "")
+        risk_score = analysis.get("risk_score", {}).get("overall_score", 0)
+
+        for uid in target_uids:
+            db.create_notification(
+                uid=uid,
+                notif_type="new_policy",
+                title=f"📋 New Policy: {policy_name}",
+                body=f"A new policy has been detected and analyzed. Risk level: {risk_level or 'N/A'}.",
+                metadata={
+                    "policy_name": policy_name,
+                    "sector": sector,
+                    "risk_score": risk_score,
+                },
+            )
+            # High risk alert
+            if risk_score > 70:
+                db.create_notification(
+                    uid=uid,
+                    notif_type="risk_alert",
+                    title=f"⚠️ High Risk Alert: {policy_name}",
+                    body=f"Compliance risk score is {risk_score}/100. Immediate attention recommended.",
+                    metadata={"risk_score": risk_score, "policy_name": policy_name},
+                )
+
+        print(f"🔔 Notified {len(target_uids)} users about new policy: {policy_name}")
+    except Exception as e:
+        print(f"Notification dispatch failed: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -620,6 +675,47 @@ async def analyze_policy(
             user_uid=user_uid,
             business_profile=profile,
         )
+
+        # Create notifications for user on analysis completion
+        if user_uid:
+            policy_name = result.get("policy_metadata", {}).get("policy_name", "Uploaded Policy")
+            risk_score = result.get("risk_score", {}).get("overall_score", 0)
+            schemes_count = len(result.get("matched_schemes", []))
+
+            db.create_notification(
+                uid=user_uid,
+                notif_type="analysis_complete",
+                title=f"✅ Analysis Complete: {policy_name}",
+                body=f"Risk score: {risk_score}/100. {schemes_count} schemes matched.",
+                metadata={
+                    "policy_name": policy_name,
+                    "risk_score": risk_score,
+                    "schemes_count": schemes_count,
+                },
+            )
+
+            # Risk alert if score > 70
+            if risk_score > 70:
+                db.create_notification(
+                    uid=user_uid,
+                    notif_type="risk_alert",
+                    title=f"⚠️ High Risk: {policy_name}",
+                    body=f"Compliance risk is {risk_score}/100. Review obligations immediately.",
+                    metadata={"risk_score": risk_score, "policy_name": policy_name},
+                )
+
+            # Scheme match notification
+            if schemes_count > 0:
+                scheme_names = [s.get("name", s) if isinstance(s, dict) else str(s)
+                                for s in result.get("matched_schemes", [])[:3]]
+                db.create_notification(
+                    uid=user_uid,
+                    notif_type="scheme_match",
+                    title=f"🎯 {schemes_count} Government Schemes Matched",
+                    body=f"You may be eligible for: {', '.join(scheme_names)}.",
+                    metadata={"schemes": scheme_names, "policy_name": policy_name},
+                )
+
         return result
     except Exception as e:
         print(f"Processing Error: {traceback.format_exc()}")
@@ -859,6 +955,154 @@ def save_profile(user_uid: str, profile: Dict[str, Any]):
     """Save user business profile."""
     db.save_user_profile(user_uid, profile)
     return {"message": "Profile saved"}
+
+
+# ── Notifications ────────────────────────────────────────────────────
+
+class FCMTokenRequest(BaseModel):
+    token: str
+
+@app.get("/api/notifications")
+def get_notifications(
+    user_uid: Optional[str] = None,
+    unread_only: bool = False,
+    limit: int = 50,
+):
+    """Get notifications for a user."""
+    if not user_uid:
+        return []
+    return db.get_user_notifications(user_uid, unread_only, limit)
+
+
+@app.post("/api/notifications/{notif_id}/read")
+def mark_notification_read(notif_id: str, user_uid: Optional[str] = None):
+    """Mark a single notification as read."""
+    if not user_uid:
+        raise HTTPException(status_code=400, detail="user_uid required")
+    if db.mark_notification_read(user_uid, notif_id):
+        return {"message": "Notification marked as read"}
+    raise HTTPException(status_code=404, detail="Notification not found")
+
+
+@app.post("/api/notifications/read-all")
+def mark_all_read(user_uid: Optional[str] = None):
+    """Mark all notifications as read."""
+    if not user_uid:
+        raise HTTPException(status_code=400, detail="user_uid required")
+    db.mark_all_notifications_read(user_uid)
+    return {"message": "All notifications marked as read"}
+
+
+@app.delete("/api/notifications/{notif_id}")
+def delete_notification(notif_id: str, user_uid: Optional[str] = None):
+    """Delete a notification."""
+    if not user_uid:
+        raise HTTPException(status_code=400, detail="user_uid required")
+    if db.delete_notification(user_uid, notif_id):
+        return {"message": "Notification deleted"}
+    raise HTTPException(status_code=404, detail="Notification not found")
+
+
+@app.post("/api/fcm/register")
+def register_fcm_token(request: FCMTokenRequest, user_uid: Optional[str] = None):
+    """Register an FCM device token for push notifications."""
+    if not user_uid:
+        raise HTTPException(status_code=400, detail="user_uid required")
+    db.save_fcm_token(user_uid, request.token)
+    return {"message": "FCM token registered"}
+
+
+# ── Analytics ────────────────────────────────────────────────────────
+
+@app.get("/api/analytics/{user_uid}")
+def get_user_analytics(user_uid: str):
+    """Aggregate analytics from all user analyses."""
+    analyses = db.get_user_analyses(user_uid, limit=100)
+
+    # Flatten analysis data
+    all_analyses = []
+    for item in analyses:
+        if "analysis" in item and isinstance(item["analysis"], dict):
+            record = item["analysis"].copy()
+            record["id"] = item.get("id")
+            record["timestamp"] = item.get("timestamp")
+        else:
+            record = item
+        all_analyses.append(record)
+
+    # Aggregate
+    total_analyses = len(all_analyses)
+    risk_scores = []
+    sustainability_scores = []
+    profitability_scores = []
+    all_schemes = []
+    sectors = set()
+    total_paper_saved = 0
+    total_co2_saved = 0.0
+    total_cost_saved = 0.0
+    risk_breakdown = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    score_trend = []
+
+    for a in all_analyses:
+        # Risk scores
+        rs = a.get("risk_score", {})
+        if isinstance(rs, dict) and "overall_score" in rs:
+            risk_scores.append(rs["overall_score"])
+            band = rs.get("overall_band", "MEDIUM").upper()
+            if band in risk_breakdown:
+                risk_breakdown[band] += 1
+
+        # Sustainability
+        sus = a.get("sustainability", {})
+        if isinstance(sus, dict):
+            gs = sus.get("green_score", 0)
+            if gs:
+                sustainability_scores.append(gs)
+            total_paper_saved += sus.get("paper_saved", 0)
+            total_co2_saved += sus.get("co2_saved_kg", 0)
+            total_cost_saved += sus.get("cost_saved_inr", 0)
+
+        # Profitability
+        prof = a.get("profitability", {})
+        if isinstance(prof, dict) and "roi_multiplier" in prof:
+            profitability_scores.append(prof["roi_multiplier"])
+
+        # Schemes
+        schemes = a.get("matched_schemes", [])
+        for s in schemes:
+            name = s.get("name", s) if isinstance(s, dict) else str(s)
+            if name and name not in all_schemes:
+                all_schemes.append(name)
+
+        # Sectors
+        pm = a.get("policy_metadata", {})
+        if isinstance(pm, dict) and pm.get("policy_type"):
+            sectors.add(pm["policy_type"])
+
+        # Trend data
+        score_trend.append({
+            "timestamp": a.get("timestamp"),
+            "risk_score": rs.get("overall_score", 0) if isinstance(rs, dict) else 0,
+            "green_score": sus.get("green_score", 0) if isinstance(sus, dict) else 0,
+            "policy_name": pm.get("policy_name", "Unknown") if isinstance(pm, dict) else "Unknown",
+        })
+
+    return {
+        "total_analyses": total_analyses,
+        "avg_risk_score": round(sum(risk_scores) / len(risk_scores), 1) if risk_scores else 0,
+        "avg_sustainability_score": round(sum(sustainability_scores) / len(sustainability_scores), 1) if sustainability_scores else 0,
+        "avg_profitability_multiplier": round(sum(profitability_scores) / len(profitability_scores), 2) if profitability_scores else 0,
+        "risk_breakdown": risk_breakdown,
+        "sectors_covered": list(sectors),
+        "schemes_matched": all_schemes,
+        "total_schemes": len(all_schemes),
+        "sustainability_totals": {
+            "paper_saved": total_paper_saved,
+            "co2_saved_kg": round(total_co2_saved, 2),
+            "cost_saved_inr": round(total_cost_saved, 2),
+        },
+        "score_trend": score_trend[:20],  # Last 20 for chart
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════

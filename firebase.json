@@ -1,0 +1,19 @@
+{
+    "firestore": {
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "hosting": {
+        "public": "frontend/dist",
+        "ignore": [
+            "firebase-debug.log",
+            "**/.git/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    }
+}

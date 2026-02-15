@@ -294,6 +294,214 @@ class FirestoreDB:
         return {}
 
     # ════════════════════════════════════════════════════════════
+    #  NOTIFICATIONS
+    # ════════════════════════════════════════════════════════════
+
+    def create_notification(
+        self,
+        uid: str,
+        notif_type: str,
+        title: str,
+        body: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """
+        Create a notification for a user.
+
+        Parameters
+        ----------
+        uid : str
+            Target user UID.
+        notif_type : str
+            One of: new_policy, analysis_complete, risk_alert, scheme_match, analytics_update
+        title : str
+            Notification title.
+        body : str
+            Notification body text.
+        metadata : dict, optional
+            Extra data (e.g., analysis_id, policy_name, risk_score).
+
+        Returns
+        -------
+        str
+            Notification ID.
+        """
+        notif_id = str(uuid.uuid4())
+        record = {
+            "id": notif_id,
+            "type": notif_type,
+            "title": title,
+            "body": body,
+            "metadata": metadata or {},
+            "read": False,
+            "created_at": datetime.utcnow().isoformat(),
+            "timestamp": time.time(),
+        }
+
+        if self._use_firestore:
+            try:
+                ref = (
+                    self._firestore_client.collection("users")
+                    .document(uid)
+                    .collection("notifications")
+                    .document(notif_id)
+                )
+                ref.set(record)
+                return notif_id
+            except Exception as e:
+                print(f"[DB] Firestore create_notification failed: {e}")
+
+        # Local fallback
+        self._append_local_notifications(uid, record)
+        return notif_id
+
+    def get_user_notifications(
+        self, uid: str, unread_only: bool = False, limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        """Get notifications for a user, optionally filtered to unread only."""
+        if self._use_firestore:
+            try:
+                ref = (
+                    self._firestore_client.collection("users")
+                    .document(uid)
+                    .collection("notifications")
+                )
+                if unread_only:
+                    ref = ref.where("read", "==", False)
+                ref = ref.order_by("created_at", direction="DESCENDING").limit(limit)
+                docs = ref.stream()
+                return [doc.to_dict() for doc in docs]
+            except Exception as e:
+                print(f"[DB] Firestore get_user_notifications failed: {e}")
+
+        # Local fallback
+        return self._get_local_notifications(uid, unread_only, limit)
+
+    def mark_notification_read(self, uid: str, notif_id: str) -> bool:
+        """Mark a single notification as read."""
+        if self._use_firestore:
+            try:
+                ref = (
+                    self._firestore_client.collection("users")
+                    .document(uid)
+                    .collection("notifications")
+                    .document(notif_id)
+                )
+                ref.update({"read": True, "read_at": datetime.utcnow().isoformat()})
+                return True
+            except Exception as e:
+                print(f"[DB] Firestore mark_notification_read failed: {e}")
+
+        # Local fallback
+        return self._mark_local_notification_read(uid, notif_id)
+
+    def mark_all_notifications_read(self, uid: str) -> bool:
+        """Mark all notifications as read for a user."""
+        if self._use_firestore:
+            try:
+                ref = (
+                    self._firestore_client.collection("users")
+                    .document(uid)
+                    .collection("notifications")
+                    .where("read", "==", False)
+                )
+                docs = ref.stream()
+                for doc in docs:
+                    doc.reference.update({
+                        "read": True,
+                        "read_at": datetime.utcnow().isoformat(),
+                    })
+                return True
+            except Exception as e:
+                print(f"[DB] Firestore mark_all_notifications_read failed: {e}")
+
+        return self._mark_all_local_notifications_read(uid)
+
+    def delete_notification(self, uid: str, notif_id: str) -> bool:
+        """Delete a notification."""
+        if self._use_firestore:
+            try:
+                ref = (
+                    self._firestore_client.collection("users")
+                    .document(uid)
+                    .collection("notifications")
+                    .document(notif_id)
+                )
+                ref.delete()
+                return True
+            except Exception as e:
+                print(f"[DB] Firestore delete_notification failed: {e}")
+        return False
+
+    # ════════════════════════════════════════════════════════════
+    #  FCM TOKENS
+    # ════════════════════════════════════════════════════════════
+
+    def save_fcm_token(self, uid: str, token: str) -> bool:
+        """Save an FCM device token for push notifications."""
+        if self._use_firestore:
+            try:
+                ref = self._firestore_client.collection("users").document(uid)
+                ref.set({"fcm_token": token, "fcm_updated_at": datetime.utcnow().isoformat()}, merge=True)
+                return True
+            except Exception as e:
+                print(f"[DB] Firestore save_fcm_token failed: {e}")
+        return False
+
+    def get_all_fcm_tokens(self) -> List[Dict[str, str]]:
+        """Get all users with FCM tokens (for broadcast notifications)."""
+        if self._use_firestore:
+            try:
+                ref = self._firestore_client.collection("users")
+                docs = ref.stream()
+                results = []
+                for doc in docs:
+                    data = doc.to_dict()
+                    if data.get("fcm_token"):
+                        results.append({"uid": doc.id, "token": data["fcm_token"]})
+                return results
+            except Exception as e:
+                print(f"[DB] Firestore get_all_fcm_tokens failed: {e}")
+        return []
+
+    def get_users_by_sector(self, sector: str) -> List[str]:
+        """Get UIDs of users whose profile matches a sector."""
+        if self._use_firestore:
+            try:
+                ref = self._firestore_client.collection("users").where("sector", "==", sector)
+                docs = ref.stream()
+                return [doc.id for doc in docs]
+            except Exception as e:
+                print(f"[DB] Firestore get_users_by_sector failed: {e}")
+        return []
+
+    # ════════════════════════════════════════════════════════════
+    #  DETECTED POLICIES
+    # ════════════════════════════════════════════════════════════
+
+    def store_detected_policy(self, policy_data: Dict[str, Any]) -> str:
+        """Store a newly detected policy in the global policies collection."""
+        policy_id = str(uuid.uuid4())
+        record = {
+            "id": policy_id,
+            "detected_at": datetime.utcnow().isoformat(),
+            "timestamp": time.time(),
+            **policy_data,
+        }
+
+        if self._use_firestore:
+            try:
+                ref = self._firestore_client.collection("policies").document(policy_id)
+                ref.set(record)
+                return policy_id
+            except Exception as e:
+                print(f"[DB] Firestore store_detected_policy failed: {e}")
+
+        # Local fallback
+        self._save_local("policies", policy_id, record)
+        return policy_id
+
+    # ════════════════════════════════════════════════════════════
     #  LOCAL JSON FALLBACK
     # ════════════════════════════════════════════════════════════
 
@@ -394,6 +602,81 @@ class FirestoreDB:
             else:
                 if os.path.exists(history_file):
                     os.remove(history_file)
+            return True
+        except Exception:
+            return False
+
+    # ── Local notification fallbacks ──
+
+    def _append_local_notifications(self, uid: str, record: Dict):
+        """Append a notification to local storage."""
+        notif_file = os.path.join(self._local_dir, "notifications.json")
+        notifications = []
+        if os.path.exists(notif_file):
+            try:
+                with open(notif_file, "r") as f:
+                    notifications = json.load(f)
+            except Exception:
+                pass
+        record["uid"] = uid
+        notifications.insert(0, record)
+        notifications = notifications[:200]  # Keep last 200
+        try:
+            os.makedirs(self._local_dir, exist_ok=True)
+            with open(notif_file, "w") as f:
+                json.dump(notifications, f, indent=2, default=str)
+        except Exception as e:
+            print(f"[DB] Local notification append failed: {e}")
+
+    def _get_local_notifications(
+        self, uid: str, unread_only: bool, limit: int
+    ) -> List[Dict]:
+        """Get notifications from local file."""
+        notif_file = os.path.join(self._local_dir, "notifications.json")
+        if not os.path.exists(notif_file):
+            return []
+        try:
+            with open(notif_file, "r") as f:
+                notifications = json.load(f)
+            filtered = [n for n in notifications if n.get("uid") == uid]
+            if unread_only:
+                filtered = [n for n in filtered if not n.get("read")]
+            return filtered[:limit]
+        except Exception:
+            return []
+
+    def _mark_local_notification_read(self, uid: str, notif_id: str) -> bool:
+        """Mark a single local notification as read."""
+        notif_file = os.path.join(self._local_dir, "notifications.json")
+        if not os.path.exists(notif_file):
+            return False
+        try:
+            with open(notif_file, "r") as f:
+                notifications = json.load(f)
+            for n in notifications:
+                if n.get("id") == notif_id and n.get("uid") == uid:
+                    n["read"] = True
+                    n["read_at"] = datetime.utcnow().isoformat()
+            with open(notif_file, "w") as f:
+                json.dump(notifications, f, indent=2, default=str)
+            return True
+        except Exception:
+            return False
+
+    def _mark_all_local_notifications_read(self, uid: str) -> bool:
+        """Mark all local notifications as read for a user."""
+        notif_file = os.path.join(self._local_dir, "notifications.json")
+        if not os.path.exists(notif_file):
+            return False
+        try:
+            with open(notif_file, "r") as f:
+                notifications = json.load(f)
+            for n in notifications:
+                if n.get("uid") == uid:
+                    n["read"] = True
+                    n["read_at"] = datetime.utcnow().isoformat()
+            with open(notif_file, "w") as f:
+                json.dump(notifications, f, indent=2, default=str)
             return True
         except Exception:
             return False
