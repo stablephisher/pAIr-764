@@ -57,6 +57,7 @@
   --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
 
   --glow: 0 0 40px rgba(37, 99, 235, 0.15);
+  --bg-glass: rgba(255, 255, 255, 0.85);
 }
 
 /* ═══ DARK THEME ═══ */
@@ -99,6 +100,7 @@
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
 
   --glow: 0 0 60px rgba(59, 130, 246, 0.2);
+  --bg-glass: rgba(10, 10, 15, 0.85);
 }
 
 /* ═══ BASE RESET ═══ */
