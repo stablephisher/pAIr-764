@@ -1,19 +1,29 @@
 """
-pAIr v3 — Profitability Optimizer
-====================================
-Calculates financial ROI and savings from using pAIr's compliance platform
-vs. traditional consulting, plus estimated scheme benefits for MSMEs.
+pAIr v4 — Enterprise Profitability Optimizer
+===============================================
+Calculates financial ROI and savings from pAIr's compliance intelligence
+platform vs. traditional consulting, plus estimated scheme benefits.
+
+v4 Enhancements
+---------------
+- Discounted future value modelling (NPV of compliance savings)
+- Sector-adjusted benefit sizing (manufacturing / service / trading)
+- Multi-year ROI projections with compounding
+- Break-even analysis for pAIr subscription value
+- SAP GRC-aligned cost categorisation
 
 Outputs
 -------
 - Compliance cost avoidance (penalty savings)
 - Scheme benefit estimation (subsidies, guarantees, tax benefits)
 - Time-to-money analysis
-- Total ROI projection
+- Total ROI projection with NPV
+- Multi-year financial projections
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -29,6 +39,21 @@ TAX_BENEFIT_UDYAM_PERCENT = 0.15          # Approx tax benefit for Udyam-registe
 DEFAULT_LOAN_AMOUNT_INR = 500_000         # Default assumed loan size for benefit calc
 GST_LATE_FEE_PER_DAY = 50                # INR late fee per day (GSTR-3B)
 MAX_GST_LATE_FEE = 10_000                # Max cap per return
+
+# ── v4 Constants ─────────────────────────────────────────────────────────
+
+DISCOUNT_RATE = 0.10                      # 10% annual discount rate for NPV
+GROWTH_RATE = 0.15                        # 15% YoY benefit growth assumption
+PROJECTION_YEARS = 5                      # Multi-year projection horizon
+PAIR_ANNUAL_SUBSCRIPTION = 12_000         # Rs 12,000 / year platform cost estimate
+
+SECTOR_BENEFIT_MULTIPLIERS: Dict[str, float] = {
+    "manufacturing": 1.30,
+    "service": 1.00,
+    "trading": 1.15,
+    "handicraft": 1.20,
+    "default": 1.00,
+}
 
 
 # ── Data Models ──────────────────────────────────────────────────────────
@@ -66,18 +91,33 @@ class CostComparison:
 
 
 @dataclass
+class YearlyProjection:
+    """v4: Multi-year financial projection."""
+    year: int
+    gross_benefit_inr: float
+    discounted_benefit_inr: float
+    cumulative_npv_inr: float
+    roi_multiplier: float
+
+
+@dataclass
 class ProfitabilityReport:
     """Complete profitability analysis."""
     total_penalty_avoidance_inr: float
     total_scheme_benefits_inr: float
     total_cost_savings_inr: float
     total_roi_inr: float
-    roi_multiplier: float           # e.g., 100× ROI
+    roi_multiplier: float           # e.g., 100x ROI
     penalty_avoidances: List[PenaltyAvoidance]
     scheme_benefits: List[SchemeBenefit]
     cost_comparison: CostComparison
     yearly_projection_inr: float
     recommendations: List[str]
+    # v4 fields
+    sector_multiplier: float = 1.0
+    npv_5yr_inr: float = 0.0
+    break_even_months: int = 0
+    multi_year_projections: List[YearlyProjection] = field(default_factory=list)
     generated_at: str = ""
 
 
@@ -115,34 +155,48 @@ class ProfitabilityOptimizer:
         num_policies : int
             Number of policies processed.
         """
+        profile = business_profile or {}
+
         # 1. Penalty avoidance
         penalty_avoidances = self._calculate_penalty_avoidance(analysis_result)
         total_penalties = sum(pa.expected_loss_avoided for pa in penalty_avoidances)
 
         # 2. Scheme benefits
-        scheme_benefits = self._estimate_scheme_benefits(business_profile or {})
+        scheme_benefits = self._estimate_scheme_benefits(profile)
         total_schemes = sum(sb.estimated_value_inr for sb in scheme_benefits)
 
         # 3. Cost comparison
         cost_comparison = self._cost_comparison(num_policies, len(scheme_benefits))
 
-        # 4. Aggregate
-        total_roi = total_penalties + total_schemes + cost_comparison.savings_inr
-        pair_cost = cost_comparison.pair_cost_inr or 1  # Avoid division by zero
+        # 4. v4: Sector multiplier
+        sector_mult = self._get_sector_multiplier(profile)
+        total_penalties_adj = total_penalties * sector_mult
+        total_schemes_adj = total_schemes * sector_mult
+
+        # 5. Aggregate
+        total_roi = total_penalties_adj + total_schemes_adj + cost_comparison.savings_inr
+        pair_cost = cost_comparison.pair_cost_inr or 1
         roi_multiplier = total_roi / pair_cost if pair_cost > 0 else 0
 
-        # 5. Yearly projection (assume 12 policies/year, scale benefits)
+        # 6. Yearly projection (assume 12 policies/year, scale benefits)
         yearly_scale = 12 / max(num_policies, 1)
         yearly_proj = total_roi * yearly_scale
 
-        # 6. Recommendations
+        # 7. v4: Multi-year NPV projections
+        multi_year = self._multi_year_projection(yearly_proj)
+        npv_5yr = multi_year[-1].cumulative_npv_inr if multi_year else 0
+
+        # 8. v4: Break-even analysis
+        break_even = self._break_even_months(yearly_proj)
+
+        # 9. Recommendations
         recommendations = self._generate_recommendations(
             penalty_avoidances, scheme_benefits, total_roi
         )
 
         return ProfitabilityReport(
-            total_penalty_avoidance_inr=round(total_penalties, 0),
-            total_scheme_benefits_inr=round(total_schemes, 0),
+            total_penalty_avoidance_inr=round(total_penalties_adj, 0),
+            total_scheme_benefits_inr=round(total_schemes_adj, 0),
             total_cost_savings_inr=round(cost_comparison.savings_inr, 0),
             total_roi_inr=round(total_roi, 0),
             roi_multiplier=round(roi_multiplier, 1),
@@ -151,6 +205,10 @@ class ProfitabilityOptimizer:
             cost_comparison=cost_comparison,
             yearly_projection_inr=round(yearly_proj, 0),
             recommendations=recommendations,
+            sector_multiplier=sector_mult,
+            npv_5yr_inr=round(npv_5yr, 0),
+            break_even_months=break_even,
+            multi_year_projections=multi_year,
             generated_at=datetime.utcnow().isoformat(),
         )
 
@@ -436,3 +494,66 @@ class ProfitabilityOptimizer:
             )
 
         return recs
+
+    # ── v4: Advanced Financial Methods ────────────────────────────────
+
+    def _get_sector_multiplier(self, profile: Dict) -> float:
+        """Resolve sector benefit multiplier from business profile."""
+        sector = profile.get("sector", profile.get("business_type", "")).lower()
+        if any(w in sector for w in ["manufactur", "factory", "production"]):
+            return SECTOR_BENEFIT_MULTIPLIERS["manufacturing"]
+        if any(w in sector for w in ["service", "consult", "it", "software"]):
+            return SECTOR_BENEFIT_MULTIPLIERS["service"]
+        if any(w in sector for w in ["trad", "retail", "wholesale"]):
+            return SECTOR_BENEFIT_MULTIPLIERS["trading"]
+        if any(w in sector for w in ["craft", "handloom", "artisan"]):
+            return SECTOR_BENEFIT_MULTIPLIERS["handicraft"]
+        return SECTOR_BENEFIT_MULTIPLIERS["default"]
+
+    def _multi_year_projection(
+        self, yearly_roi: float
+    ) -> List[YearlyProjection]:
+        """
+        Generate multi-year NPV projections with growth and discounting.
+
+        Year N benefit = Year1 * (1 + growth)^(N-1)
+        NPV(Year N)    = benefit / (1 + discount)^N
+        """
+        projections: List[YearlyProjection] = []
+        cumulative_npv = 0.0
+
+        for year in range(1, PROJECTION_YEARS + 1):
+            gross = yearly_roi * ((1 + GROWTH_RATE) ** (year - 1))
+            npv = gross / ((1 + DISCOUNT_RATE) ** year)
+            cumulative_npv += npv
+            annual_cost = PAIR_ANNUAL_SUBSCRIPTION
+            roi_mult = cumulative_npv / (annual_cost * year) if annual_cost > 0 else 0
+
+            projections.append(YearlyProjection(
+                year=year,
+                gross_benefit_inr=round(gross, 0),
+                discounted_benefit_inr=round(npv, 0),
+                cumulative_npv_inr=round(cumulative_npv, 0),
+                roi_multiplier=round(roi_mult, 1),
+            ))
+
+        return projections
+
+    def _break_even_months(self, yearly_roi: float) -> int:
+        """
+        Calculate months until pAIr subscription pays for itself.
+        Returns 0 if immediate (ROI > cost from month 1).
+        """
+        if yearly_roi <= 0:
+            return 99  # Never breaks even
+        monthly_benefit = yearly_roi / 12
+        monthly_cost = PAIR_ANNUAL_SUBSCRIPTION / 12
+        if monthly_benefit >= monthly_cost:
+            return 1  # Pays for itself immediately
+        cumulative_benefit = 0.0
+        for month in range(1, 61):
+            cumulative_benefit += monthly_benefit
+            cumulative_cost = monthly_cost * month
+            if cumulative_benefit >= cumulative_cost:
+                return month
+        return 60

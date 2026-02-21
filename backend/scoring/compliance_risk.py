@@ -1,14 +1,25 @@
 """
-pAIr v3 — Compliance Risk Scoring Engine
-==========================================
+pAIr v4 — Enterprise Compliance Risk Scoring Engine
+=====================================================
 Quantifies regulatory risk for MSMEs on a 0–100 scale using a weighted
 multi-factor algorithm calibrated for Indian policy environments.
 
+v4 Enhancements
+---------------
+- Urgency decay function (exponential deadline urgency)
+- Sector risk multiplier (manufacturing vs service vs trading)
+- Regional compliance strictness factor
+- Probability-adjusted penalty model (Expected Value)
+- Discounted future value modelling for long-term penalties
+- Impact-first scoring alignment
+
 Formula
 -------
-    RiskScore = Σ (wᵢ × factorᵢ)    where i ∈ {severity, penalty, deadline, frequency}
+    RiskScore = Σ (wᵢ × factorᵢ × sectorMult × regionalMult)
+    where i ∈ {severity, penalty, deadline, frequency}
 
-Each factor is normalized to 0–100 before weighting.
+    DeadlineUrgency = 100 × e^(-λ × days_remaining)     [λ = 0.033]
+    ExpectedPenalty = P(enforcement) × PenaltyAmount × (1 + r)^(-t)
 
 Risk Bands
 ----------
@@ -72,6 +83,34 @@ FREQUENCY_SCORES: Dict[str, int] = {
     Frequency.ONE_TIME: 10,
 }
 
+# ── v4: Sector Risk Multipliers ──────────────────────────────────────────
+# Manufacturing has more compliance burden than services
+
+SECTOR_RISK_MULTIPLIERS: Dict[str, float] = {
+    "manufacturing": 1.25,
+    "service": 1.00,
+    "trading": 1.10,
+    "handicraft": 0.90,
+    "default": 1.05,
+}
+
+# ── v4: Regional Compliance Strictness ───────────────────────────────────
+
+REGIONAL_STRICTNESS: Dict[str, float] = {
+    "maharashtra": 1.20, "karnataka": 1.15, "tamil_nadu": 1.10,
+    "telangana": 1.10, "delhi": 1.25, "gujarat": 1.05,
+    "uttar_pradesh": 0.90, "west_bengal": 0.95, "rajasthan": 0.90,
+    "default": 1.00,
+}
+
+# ── v4: Urgency Decay Constants ──────────────────────────────────────────
+# λ for exponential decay: urgency = 100 * e^(-λ * days)
+# At 7 days: ~79, at 30 days: ~37, at 90 days: ~5
+URGENCY_LAMBDA = 0.033
+
+# ── v4: Discount Rate for Future Value ───────────────────────────────────
+DISCOUNT_RATE_ANNUAL = 0.10  # 10% discount rate for future penalty valuation
+
 
 # ── Data Models ──────────────────────────────────────────────────────────
 
@@ -87,6 +126,11 @@ class ObligationRisk:
     risk_band: RiskBand = RiskBand.MINIMAL
     days_remaining: Optional[int] = None
     remediation_hint: str = ""
+    # v4 additions
+    expected_penalty_inr: float = 0.0      # Probability-adjusted penalty
+    urgency_decay_score: float = 0.0       # Exponential urgency
+    discounted_penalty_inr: float = 0.0    # Time-value adjusted penalty
+    sector_adjusted_score: float = 0.0     # After sector multiplier
 
 
 @dataclass
@@ -99,18 +143,31 @@ class ComplianceRiskReport:
     score_breakdown: Dict[str, float]        # Per-factor averages
     generated_at: str = ""
     recommendations: List[str] = field(default_factory=list)
+    # v4 additions
+    sector_multiplier: float = 1.0
+    regional_multiplier: float = 1.0
+    total_expected_penalty_inr: float = 0.0  # Sum of all probability-adjusted penalties
+    total_discounted_penalty_inr: float = 0.0  # Present value of all penalties
+    risk_velocity: str = ""                  # ACCELERATING / STABLE / DECELERATING
 
 
 # ── Scoring Engine ───────────────────────────────────────────────────────
 
 class ComplianceRiskScorer:
     """
-    Multi-factor compliance risk scorer.
+    Enterprise-grade multi-factor compliance risk scorer.
+
+    v4 Features:
+    - Exponential urgency decay function
+    - Sector × regional risk multipliers
+    - Probability-adjusted expected penalty values
+    - Discounted future value modelling
+    - Risk velocity tracking
 
     Usage
     -----
         scorer = ComplianceRiskScorer()
-        report = scorer.score(policy_analysis_dict)
+        report = scorer.score(policy_analysis_dict, business_profile=profile)
     """
 
     def __init__(self):
@@ -124,7 +181,11 @@ class ComplianceRiskScorer:
 
     # ── Public API ───────────────────────────────────────────────────
 
-    def score(self, analysis: Dict[str, Any]) -> ComplianceRiskReport:
+    def score(
+        self,
+        analysis: Dict[str, Any],
+        business_profile: Optional[Dict[str, Any]] = None,
+    ) -> ComplianceRiskReport:
         """
         Score a policy analysis result and return a full risk report.
 
@@ -133,10 +194,17 @@ class ComplianceRiskScorer:
         analysis : dict
             A PolicyAnalysis-shaped dict with keys: obligations, penalties,
             risk_assessment, compliance_actions, etc.
+        business_profile : dict, optional
+            MSME profile for sector/regional adjustments.
         """
+        profile = business_profile or {}
         obligations = analysis.get("obligations", [])
         penalties = analysis.get("penalties", [])
         actions = analysis.get("compliance_actions", [])
+
+        # v4: Resolve sector and regional multipliers
+        sector_mult = self._get_sector_multiplier(profile)
+        regional_mult = self._get_regional_multiplier(profile)
 
         # Build a penalty-lookup for obligation matching
         penalty_map = self._build_penalty_map(penalties)
@@ -144,7 +212,7 @@ class ComplianceRiskScorer:
         obligation_risks: List[ObligationRisk] = []
 
         for obl in obligations:
-            obl_risk = self._score_obligation(obl, penalty_map)
+            obl_risk = self._score_obligation(obl, penalty_map, sector_mult, regional_mult)
             obligation_risks.append(obl_risk)
 
         # Add action-derived synthetic obligations if no overlap
@@ -168,6 +236,13 @@ class ComplianceRiskScorer:
         # Per-factor averages
         factor_avgs = self._factor_averages(obligation_risks)
 
+        # v4: Aggregate expected & discounted penalties
+        total_expected = sum(r.expected_penalty_inr for r in obligation_risks)
+        total_discounted = sum(r.discounted_penalty_inr for r in obligation_risks)
+
+        # v4: Risk velocity (are deadlines accelerating?)
+        risk_velocity = self._compute_risk_velocity(obligation_risks)
+
         # Recommendations
         recommendations = self._generate_recommendations(
             obligation_risks, overall_band, analysis
@@ -181,6 +256,11 @@ class ComplianceRiskScorer:
             score_breakdown=factor_avgs,
             generated_at=datetime.utcnow().isoformat(),
             recommendations=recommendations,
+            sector_multiplier=sector_mult,
+            regional_multiplier=regional_mult,
+            total_expected_penalty_inr=round(total_expected, 0),
+            total_discounted_penalty_inr=round(total_discounted, 0),
+            risk_velocity=risk_velocity,
         )
 
     def score_quick(self, risk_level: str, penalties: List[dict]) -> float:
@@ -208,7 +288,8 @@ class ComplianceRiskScorer:
     # ── Internal Scoring Logic ───────────────────────────────────────
 
     def _score_obligation(
-        self, obl: Dict[str, Any], penalty_map: Dict[str, float]
+        self, obl: Dict[str, Any], penalty_map: Dict[str, float],
+        sector_mult: float = 1.0, regional_mult: float = 1.0,
     ) -> ObligationRisk:
         """Score a single obligation against all four factors."""
 
@@ -237,7 +318,21 @@ class ComplianceRiskScorer:
             + self._weights["frequency"] * frequency_score
         )
 
-        band = self._band(weighted)
+        # v4: Apply sector × regional multipliers (capped at 1.4×)
+        adjusted = min(100, weighted * min(sector_mult * regional_mult, 1.4))
+
+        # v4: Exponential urgency decay
+        urgency_decay = self._urgency_decay(days_remaining)
+
+        # v4: Expected penalty (probability-adjusted)
+        raw_penalty_inr = self._extract_raw_penalty_inr(name, penalty_map)
+        enforcement_prob = self._enforcement_probability(severity_raw)
+        expected_penalty = raw_penalty_inr * enforcement_prob
+
+        # v4: Discounted future value
+        discounted = self._discount_penalty(expected_penalty, days_remaining)
+
+        band = self._band(adjusted)
         hint = self._remediation_hint(band, name)
 
         return ObligationRisk(
@@ -246,10 +341,14 @@ class ComplianceRiskScorer:
             penalty_score=round(penalty_score, 1),
             deadline_score=round(deadline_score, 1),
             frequency_score=round(frequency_score, 1),
-            weighted_score=round(weighted, 1),
+            weighted_score=round(adjusted, 1),
             risk_band=band,
             days_remaining=days_remaining,
             remediation_hint=hint,
+            expected_penalty_inr=round(expected_penalty, 0),
+            urgency_decay_score=round(urgency_decay, 1),
+            discounted_penalty_inr=round(discounted, 0),
+            sector_adjusted_score=round(adjusted, 1),
         )
 
     def _score_action_as_obligation(self, action: Dict[str, Any]) -> ObligationRisk:
@@ -525,3 +624,109 @@ class ComplianceRiskScorer:
             RiskBand.MINIMAL: f"'{name}' is low priority. Monitor periodically.",
         }
         return hints.get(band, "Review compliance requirements.")
+
+    # ── v4: Advanced Scoring Methods ─────────────────────────────────
+
+    def _urgency_decay(self, days_remaining: Optional[int]) -> float:
+        """
+        Exponential urgency decay function.
+        urgency = 100 × e^(-λ × days)
+
+        Returns 100 for overdue, ~79 for 7 days, ~37 for 30 days, ~5 for 90 days.
+        """
+        if days_remaining is None:
+            return 50.0  # Unknown → moderate urgency
+        if days_remaining <= 0:
+            return 100.0  # Overdue → maximum urgency
+        return 100.0 * math.exp(-URGENCY_LAMBDA * days_remaining)
+
+    def _enforcement_probability(self, severity_raw: str) -> float:
+        """
+        Probability of enforcement/penalty action given severity.
+        Criminal: 0.90, Suspension: 0.80, Heavy Fine: 0.70, etc.
+        """
+        kw = severity_raw.lower()
+        if any(w in kw for w in ["criminal", "imprison", "jail"]):
+            return 0.90
+        if any(w in kw for w in ["suspend", "revok", "cancel"]):
+            return 0.80
+        if any(w in kw for w in ["heavy", "signific", "lakh", "crore"]):
+            return 0.70
+        if any(w in kw for w in ["fine", "penal"]):
+            return 0.55
+        if any(w in kw for w in ["warn", "notice"]):
+            return 0.30
+        return 0.40  # Default moderate
+
+    def _extract_raw_penalty_inr(self, obl_name: str, penalty_map: Dict[str, float]) -> float:
+        """Extract raw penalty amount in INR for expected value calculation."""
+        words = [w.lower() for w in obl_name.split() if len(w) > 3]
+        amounts = [penalty_map.get(w, 0) for w in words]
+        if amounts:
+            # Convert score back to approximate INR (inverse of _penalty_amount_to_score)
+            max_score = max(amounts)
+            if max_score >= 100:
+                return 10_00_000
+            if max_score >= 85:
+                return 5_00_000
+            if max_score >= 70:
+                return 1_00_000
+            if max_score >= 55:
+                return 50_000
+            if max_score >= 40:
+                return 10_000
+        return 5_000  # Default minimum estimate
+
+    def _discount_penalty(self, expected_penalty: float, days: Optional[int]) -> float:
+        """
+        Discounted future value of penalty.
+        PV = FV / (1 + r)^t  where r = annual rate, t = years.
+        """
+        if days is None or days <= 0:
+            return expected_penalty  # Already due or overdue → full value
+        years = days / 365.0
+        return expected_penalty / ((1 + DISCOUNT_RATE_ANNUAL) ** years)
+
+    def _get_sector_multiplier(self, profile: Dict[str, Any]) -> float:
+        """Resolve sector risk multiplier from business profile."""
+        sector = profile.get("sector", profile.get("business_type", "")).lower()
+        if any(w in sector for w in ["manufactur", "factory", "production"]):
+            return SECTOR_RISK_MULTIPLIERS["manufacturing"]
+        if any(w in sector for w in ["service", "consult", "it", "software"]):
+            return SECTOR_RISK_MULTIPLIERS["service"]
+        if any(w in sector for w in ["trad", "retail", "wholesale"]):
+            return SECTOR_RISK_MULTIPLIERS["trading"]
+        if any(w in sector for w in ["craft", "handloom", "artisan"]):
+            return SECTOR_RISK_MULTIPLIERS["handicraft"]
+        return SECTOR_RISK_MULTIPLIERS["default"]
+
+    def _get_regional_multiplier(self, profile: Dict[str, Any]) -> float:
+        """Resolve regional compliance strictness multiplier."""
+        state = profile.get("state", profile.get("location", "")).lower().replace(" ", "_")
+        if state in REGIONAL_STRICTNESS:
+            return REGIONAL_STRICTNESS[state]
+        for key in REGIONAL_STRICTNESS:
+            if key in state or state in key:
+                return REGIONAL_STRICTNESS[key]
+        return REGIONAL_STRICTNESS["default"]
+
+    def _compute_risk_velocity(self, risks: List[ObligationRisk]) -> str:
+        """
+        Determine if risk is accelerating (deadlines clustering soon),
+        stable, or decelerating.
+        """
+        days_list = [r.days_remaining for r in risks if r.days_remaining is not None]
+        if not days_list:
+            return "STABLE"
+        overdue = sum(1 for d in days_list if d < 0)
+        soon = sum(1 for d in days_list if 0 <= d <= 30)
+        far = sum(1 for d in days_list if d > 30)
+        total = len(days_list)
+        if total == 0:
+            return "STABLE"
+        urgency_ratio = (overdue * 2 + soon) / total
+        if urgency_ratio > 1.5:
+            return "ACCELERATING"
+        if urgency_ratio < 0.5:
+            return "DECELERATING"
+        return "STABLE"

@@ -1,7 +1,10 @@
 """
-pAIr v3 — Main FastAPI Server
-================================
-Production-grade MSME compliance & scheme navigator.
+pAIr v4 — Policy AI Regulator — Main FastAPI Server
+======================================================
+Autonomous Regulatory & Sustainability Intelligence Companion for MSMEs.
+GRC for India's 63 Million MSMEs.
+
+"Always in pAIr with your business."
 
 Routes
 ------
@@ -9,6 +12,10 @@ Routes
   Onboarding:  /api/onboarding/start, /api/onboarding/answer, /api/onboarding/profile
   Analysis:    /api/analyze (PDF upload)
   Scoring:     /api/scoring/risk, /api/scoring/sustainability, /api/scoring/profitability
+  Impact:      /api/scoring/impact (composite impact score)
+  Predict:     /api/predict/alerts (predictive compliance alerts)
+  Benchmark:   /api/benchmark/sector (sector compliance benchmarking)
+  Diff:        /api/policy/diff (policy version diff)
   History:     /api/history (GET/DELETE)
   Translation: /api/translate
   Sources:     /api/sources
@@ -38,6 +45,18 @@ from pypdf import PdfReader
 from config import config
 from schemas import PolicyAnalysis
 from db.firestore import FirestoreDB
+from utils import (
+    setup_structured_logging,
+    HealthMonitor,
+    RateLimiter,
+    RequestContext,
+    validate_environment,
+)
+
+# ── Structured Logging ──────────────────────────────────────────────────
+
+import logging
+logger = setup_structured_logging(level=os.getenv("LOG_LEVEL", "INFO"))
 
 # ── Request / Response Models ────────────────────────────────────────────
 
@@ -72,9 +91,9 @@ class HealthResponse(BaseModel):
 # ── Initialize App ──────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="pAIr — MSME Compliance & Scheme Navigator",
-    description="AI-powered policy analysis platform for Indian MSMEs",
-    version="3.0.0",
+    title="pAIr — Policy AI Regulator",
+    description="Autonomous Regulatory & Sustainability Intelligence Companion for MSMEs. GRC for India's 63 Million MSMEs.",
+    version="4.0.0",
 )
 
 # CORS
@@ -93,6 +112,15 @@ if api_key:
 
 # Database
 db = FirestoreDB()
+
+# ── v4: Stability Infrastructure ────────────────────────────────────────
+
+health_monitor = HealthMonitor()
+rate_limiter = RateLimiter(max_requests=30, window_seconds=60)
+
+# Validate environment at startup
+env_status = validate_environment()
+logger.info(f"Environment validation: {env_status}")
 
 # ── Auth Helpers ─────────────────────────────────────────────────────────
 
@@ -641,12 +669,15 @@ async def notify_users_new_policy(policy_name: str, sector: str, analysis: dict)
 
 @app.get("/api/health", response_model=HealthResponse)
 def health_check():
-    """Health check endpoint."""
+    """Health check endpoint with v4 monitoring data."""
     return HealthResponse(
         status="healthy",
-        version="3.0.0",
+        version="4.0.0",
         demo_mode=config.server.demo_mode,
-        engines=["risk_scorer", "sustainability", "profitability", "ethics"],
+        engines=[
+            "risk_scorer", "sustainability", "profitability", "ethics",
+            "impact_engine", "predictive_alerts", "policy_diff", "sector_benchmark",
+        ],
     )
 
 
@@ -874,9 +905,237 @@ def score_profitability(request: ScoringRequest):
             "scheme_benefits_inr": report.total_scheme_benefits_inr,
             "yearly_projection_inr": report.yearly_projection_inr,
             "recommendations": report.recommendations,
+            # v4 fields
+            "sector_multiplier": report.sector_multiplier,
+            "npv_5yr_inr": report.npv_5yr_inr,
+            "break_even_months": report.break_even_months,
+            "multi_year_projections": [
+                {
+                    "year": p.year,
+                    "gross_benefit_inr": p.gross_benefit_inr,
+                    "discounted_benefit_inr": p.discounted_benefit_inr,
+                    "cumulative_npv_inr": p.cumulative_npv_inr,
+                    "roi_multiplier": p.roi_multiplier,
+                }
+                for p in report.multi_year_projections
+            ],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── v4: Impact Engine ───────────────────────────────────────────────
+
+@app.post("/api/scoring/impact")
+def score_impact(request: ScoringRequest):
+    """Get composite impact score (v4 centrepiece)."""
+    try:
+        from scoring.impact_engine import ImpactEngine
+        engine = ImpactEngine()
+        report = engine.compute_impact(
+            analysis_result=request.analysis,
+            business_profile=request.business_profile or {},
+            num_policies=request.num_policies,
+        )
+        return {
+            "impact_score": report.impact_score,
+            "impact_grade": report.impact_grade,
+            "breakdown": {
+                "risk_reduction": report.breakdown.risk_reduction,
+                "profitability_gain": report.breakdown.profitability_gain,
+                "sustainability_improvement": report.breakdown.sustainability_improvement,
+                "time_saved": report.breakdown.time_saved,
+                "cost_saved": report.breakdown.cost_saved,
+            },
+            "sector_benchmark_percentile": report.sector_benchmark_percentile,
+            "grc_alignment": {
+                "governance": report.grc_alignment.governance_score,
+                "risk": report.grc_alignment.risk_score,
+                "compliance": report.grc_alignment.compliance_score,
+            },
+            "narrative": report.narrative,
+            "projections": [
+                {
+                    "period": p.period,
+                    "projected_score": p.projected_score,
+                    "improvement_potential": p.improvement_potential,
+                }
+                for p in report.projections
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Impact scoring failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── v4: Predictive Alerts ───────────────────────────────────────────
+
+class PredictiveAlertRequest(BaseModel):
+    business_profile: Dict[str, Any]
+    analysis_history: Optional[List[Dict[str, Any]]] = None
+    horizon_days: int = 90
+
+@app.post("/api/predict/alerts")
+def predict_alerts(request: PredictiveAlertRequest):
+    """Get predictive compliance alerts (v4 innovation)."""
+    try:
+        from innovation.predictive_alerts import PredictiveAlertEngine
+        engine = PredictiveAlertEngine()
+        report = engine.predict(
+            business_profile=request.business_profile,
+            analysis_history=request.analysis_history,
+            horizon_days=request.horizon_days,
+        )
+        return {
+            "alerts": [
+                {
+                    "alert_id": a.alert_id,
+                    "type": a.prediction_type.value,
+                    "title": a.title,
+                    "description": a.description,
+                    "confidence": a.confidence,
+                    "confidence_band": a.confidence_band.value,
+                    "predicted_date": a.predicted_date,
+                    "lead_time_days": a.lead_time_days,
+                    "recommended_actions": a.recommended_actions,
+                }
+                for a in report.alerts
+            ],
+            "risk_trajectory": report.risk_trajectory,
+            "next_30_day_risk": report.next_30_day_risk,
+            "next_90_day_risk": report.next_90_day_risk,
+            "calendar": [
+                {
+                    "month": c.month,
+                    "month_name": c.month_name,
+                    "obligation_count": c.obligation_count,
+                    "risk_level": c.risk_level,
+                    "key_deadlines": c.key_deadlines,
+                }
+                for c in report.calendar
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Predictive alerts failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── v4: Sector Benchmarking ─────────────────────────────────────────
+
+class BenchmarkRequest(BaseModel):
+    user_scores: Dict[str, float]
+    business_profile: Dict[str, Any]
+
+@app.post("/api/benchmark/sector")
+def benchmark_sector(request: BenchmarkRequest):
+    """Get sector compliance benchmarking report (v4 innovation)."""
+    try:
+        from innovation.sector_benchmark import SectorBenchmarkEngine
+        engine = SectorBenchmarkEngine()
+        report = engine.benchmark(
+            user_scores=request.user_scores,
+            business_profile=request.business_profile,
+        )
+        return {
+            "overall_percentile": report.overall_percentile,
+            "overall_tier": report.overall_tier.value,
+            "sector": report.sector,
+            "size_category": report.size_category,
+            "dimensions": [
+                {
+                    "dimension": d.dimension.value,
+                    "user_score": d.user_score,
+                    "sector_average": d.sector_average,
+                    "percentile_rank": d.percentile_rank,
+                    "tier": d.tier.value,
+                    "gap_to_average": d.gap_to_average,
+                    "improvement_opportunity": d.improvement_opportunity,
+                }
+                for d in report.dimensions
+            ],
+            "peer_comparison": {
+                "peer_group": report.peer_comparison.peer_group,
+                "peer_count": report.peer_comparison.peer_count,
+                "user_rank": report.peer_comparison.user_rank,
+                "strengths": report.peer_comparison.strengths,
+                "weaknesses": report.peer_comparison.weaknesses,
+            },
+            "recommendations": report.recommendations,
+        }
+    except Exception as e:
+        logger.error(f"Sector benchmarking failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── v4: Policy Diff ─────────────────────────────────────────────────
+
+class PolicyDiffRequest(BaseModel):
+    old_text: str
+    new_text: str
+    old_name: str = "Previous Version"
+    new_name: str = "Current Version"
+
+@app.post("/api/policy/diff")
+def policy_diff(request: PolicyDiffRequest):
+    """Compare two policy versions and get structured diff (v4 innovation)."""
+    try:
+        from innovation.policy_diff import PolicyDiffEngine
+        engine = PolicyDiffEngine()
+        diff = engine.compute_diff(
+            old_text=request.old_text,
+            new_text=request.new_text,
+            old_name=request.old_name,
+            new_name=request.new_name,
+        )
+        return {
+            "diff_id": diff.diff_id,
+            "severity": diff.overall_severity.value,
+            "change_percentage": diff.change_percentage,
+            "summary": diff.summary,
+            "sections_added": len(diff.sections_added),
+            "sections_removed": len(diff.sections_removed),
+            "sections_modified": len(diff.sections_modified),
+            "sections_unchanged": diff.sections_unchanged,
+            "penalty_changes": [
+                {
+                    "obligation": p.obligation,
+                    "old_penalty": p.old_penalty,
+                    "new_penalty": p.new_penalty,
+                    "direction": p.direction,
+                }
+                for p in diff.penalty_changes
+            ],
+            "deadline_changes": [
+                {
+                    "obligation": d.obligation,
+                    "old_deadline": d.old_deadline,
+                    "new_deadline": d.new_deadline,
+                    "direction": d.direction,
+                }
+                for d in diff.deadline_changes
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Policy diff failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── v4: Health Monitor (detailed) ───────────────────────────────────
+
+@app.get("/api/health/detailed")
+def health_detailed():
+    """Detailed health with monitoring metrics (v4)."""
+    return {
+        "status": "healthy",
+        "version": "4.0.0",
+        "demo_mode": config.server.demo_mode,
+        "monitoring": health_monitor.to_dict(),
+        "engines": [
+            "risk_scorer", "sustainability", "profitability", "ethics",
+            "impact_engine", "predictive_alerts", "policy_diff", "sector_benchmark",
+            "policy_intelligence",
+        ],
+    }
 
 
 # ── History ──────────────────────────────────────────────────────────
@@ -1348,14 +1607,17 @@ def get_business_resources(sector: Optional[str] = None, category: Optional[str]
 @app.on_event("startup")
 async def startup_event():
     print("\n" + "=" * 60)
-    print("  pAIr v3.0 — MSME Compliance & Scheme Navigator")
+    print("  pAIr v4.0 — Policy AI Regulator")
+    print("  Autonomous Regulatory & Sustainability Intelligence")
+    print("  'Always in pAIr with your business.'")
     print("=" * 60)
     masked_key = f"******{api_key[-4:]}" if api_key else "NONE"
     print(f"  🔑 API Key: {masked_key}")
     print(f"  🎯 Primary Model: {config.gemini.primary_model}")
     print(f"  🔄 Demo Mode: {config.server.demo_mode}")
     print(f"  📡 Policy Monitor: {os.path.abspath(MONITOR_DIR)}")
-    print(f"  🏗️  Engines: Risk | Sustainability | Profitability | Ethics")
+    print(f"  🏗️  Engines: Risk | Sustainability | Profitability | Ethics | Impact")
+    print(f"  🚀 Innovation: Predictive Alerts | Policy Diff | Benchmarking")
     print("=" * 60 + "\n")
     asyncio.create_task(monitor_policies_task())
 
