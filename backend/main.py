@@ -928,36 +928,6 @@ def delete_history_item(item_id: str, user_uid: Optional[str] = None):
     raise HTTPException(status_code=404, detail="Item not found")
 
 
-# ── Profile ──────────────────────────────────────────────────────────
-
-class ProfileUpdateRequest(BaseModel):
-    business_name: Optional[str] = None
-    sector: Optional[str] = None
-    business_type: Optional[str] = None
-    state: Optional[str] = None
-    display_name: Optional[str] = None
-    phone: Optional[str] = None
-    photo_url: Optional[str] = None
-    businesses: Optional[List[Dict[str, Any]]] = None
-
-
-@app.get("/api/profile/{uid}")
-def get_profile(uid: str):
-    """Get user profile by UID."""
-    profile = db.get_user_profile(uid)
-    if profile:
-        return profile
-    return {}
-
-
-@app.put("/api/profile/{uid}")
-def update_profile(uid: str, request: ProfileUpdateRequest):
-    """Save or update user profile."""
-    data = {k: v for k, v in request.dict().items() if v is not None}
-    data["updated_at"] = datetime.utcnow().isoformat()
-    db.save_user_profile(uid, data)
-    return {"message": "Profile updated", "profile": data}
-
 
 # ── Sources ──────────────────────────────────────────────────────────
 
@@ -1064,7 +1034,7 @@ def get_profile(user_uid: str):
     profile = db.get_user_profile(user_uid)
     if profile:
         return profile
-    return {"message": "No profile found", "has_profile": False}
+    return {}
 
 
 @app.post("/api/profile/{user_uid}")
@@ -1072,6 +1042,15 @@ def save_profile(user_uid: str, profile: Dict[str, Any]):
     """Save user business profile."""
     db.save_user_profile(user_uid, profile)
     return {"message": "Profile saved"}
+
+
+@app.put("/api/profile/{user_uid}")
+def update_profile(user_uid: str, profile: Dict[str, Any]):
+    """Update user business profile (partial update)."""
+    existing = db.get_user_profile(user_uid) or {}
+    existing.update(profile)
+    db.save_user_profile(user_uid, existing)
+    return {"message": "Profile updated", "profile": existing}
 
 
 # ── Notifications ────────────────────────────────────────────────────

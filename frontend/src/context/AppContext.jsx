@@ -15,24 +15,61 @@ export function AppProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [language, setLanguage] = useState(LANGUAGES[0]);
-    const [profile, setProfile] = useState(null);
+    const [profile, setProfileState] = useState(null);
     const [history, setHistory] = useState([]);
     const [notifications, setNotifications] = useState([
         { id: 1, title: 'Compliance Update', message: 'New GST regulations for MSMEs released.', time: '2h ago', read: false },
         { id: 2, title: 'Analysis Complete', message: 'Your "Factory License" analysis is ready.', time: '5h ago', read: false },
     ]);
 
+    // Profile setter that also persists to localStorage
+    const setProfile = useCallback((profileData) => {
+        if (typeof profileData === 'function') {
+            setProfileState(prev => {
+                const newProfile = profileData(prev);
+                if (newProfile && user) {
+                    localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(newProfile));
+                }
+                return newProfile;
+            });
+        } else {
+            setProfileState(profileData);
+            if (profileData && user) {
+                localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(profileData));
+            }
+        }
+    }, [user]);
+
     // Auth Listener
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
             if (currentUser) {
+                // Try loading profile from localStorage immediately as fallback
+                let localProfile = null;
                 try {
-                    // Fetch profile
-                    const profileRes = await axios.get(`${API}/api/profile/${currentUser.uid}`);
-                    if (profileRes.data && Object.keys(profileRes.data).length > 0) {
-                        setProfile(profileRes.data);
+                    const cached = localStorage.getItem(`pair-profile-${currentUser.uid}`);
+                    if (cached) {
+                        localProfile = JSON.parse(cached);
+                        // Only treat as valid if it has business_name (a required field)
+                        if (localProfile && localProfile.business_name) {
+                            setProfileState(localProfile);
+                        } else {
+                            localProfile = null;
+                        }
                     }
+                } catch (e) {
+                    console.warn("Failed to load cached profile", e);
+                }
+
+                try {
+                    // Fetch profile from API
+                    const profileRes = await axios.get(`${API}/api/profile/${currentUser.uid}`);
+                    if (profileRes.data && Object.keys(profileRes.data).length > 0 && profileRes.data.business_name) {
+                        setProfileState(profileRes.data);
+                        localStorage.setItem(`pair-profile-${currentUser.uid}`, JSON.stringify(profileRes.data));
+                    }
+                    // If API returned empty {}, keep localStorage profile if we had one
 
                     // Fetch history
                     const histRes = await axios.get(`${API}/api/history`, {
@@ -42,10 +79,11 @@ export function AppProvider({ children }) {
                         setHistory(histRes.data);
                     }
                 } catch (e) {
-                    console.error("Error fetching user data", e);
+                    console.error("Error fetching user data (backend may be offline)", e);
+                    // localStorage profile is already set above if available
                 }
             } else {
-                setProfile(null);
+                setProfileState(null);
                 setHistory([]);
             }
             setLoading(false);
@@ -58,10 +96,20 @@ export function AppProvider({ children }) {
         if (!user) return;
         try {
             const res = await axios.put(`${API}/api/profile/${user.uid}`, data);
-            setProfile(prev => ({ ...prev, ...data }));
+            setProfileState(prev => {
+                const updated = { ...prev, ...data };
+                localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(updated));
+                return updated;
+            });
             return res.data;
         } catch (e) {
             console.error("Error saving profile", e);
+            // Still update locally even if backend fails
+            setProfileState(prev => {
+                const updated = { ...prev, ...data };
+                localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(updated));
+                return updated;
+            });
             throw e;
         }
     }, [user]);
