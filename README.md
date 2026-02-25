@@ -22,13 +22,15 @@
 
 ---
 
-## 👥 Team pAIr
+## 👥 Team pAIr - 13494
 
 | Name | Role |
 |------|------|
-| **Shiva Ganesh Talikota** | Team Lead & AI Architect |
-| **Chandra Bose Pechetti** | Backend & Agent Developer |
-| **Karthik Chinthakindi** | Frontend & Integration Developer |
+| **Shiva Ganesh Talikota** | Team Lead and AI systems & Product Architect |
+| **Syeda Sanobar Ali** | Backend Developer |
+| **Geethika Kudipudi** | Frontend Developer |
+| **Dinesh Nanam** | Documentation |
+| **Harsha Vardhan Reddy Mallela** | AI pipeline & Model engineering |
 
 ---
 
