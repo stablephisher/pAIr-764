@@ -7,7 +7,9 @@ Generates user-friendly summaries and explanations.
 import os
 import json
 from typing import Dict, Any
-import google.generativeai as genai
+import re
+from openai import OpenAI
+from config import config
 
 
 EXPLANATION_PROMPT = """
@@ -37,6 +39,15 @@ Output a plain text summary (not JSON) that answers:
 """
 
 
+def _parse_json(text: str) -> dict:
+    """Clean markdown fences and parse JSON from AI response."""
+    text = text.strip()
+    text = re.sub(r'^```(?:json)?\s*', '', text)
+    text = re.sub(r'\s*```$', '', text)
+    text = text.strip()
+    return json.loads(text)
+
+
 class ExplanationAgent:
     """
     User communication agent for generating friendly summaries.
@@ -50,12 +61,15 @@ class ExplanationAgent:
     
     def __init__(self, api_key: str = None, demo_mode: bool = False):
         self.demo_mode = demo_mode
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            
-        self.model_name = "models/gemini-2.5-flash"
+        key = api_key or config.ai.api_key
+        self._client = OpenAI(
+            base_url=config.ai.base_url,
+            api_key=key,
+            default_headers={
+                "HTTP-Referer": config.ai.site_url,
+                "X-Title": config.ai.site_name,
+            },
+        ) if key else None
         
     async def generate_summary(self, context) -> str:
         """
@@ -71,8 +85,6 @@ class ExplanationAgent:
             return self._get_demo_explanation()
             
         try:
-            model = genai.GenerativeModel(self.model_name)
-            
             # Prepare summary input
             input_data = {
                 "policy_analysis": context.policy_analysis,
@@ -81,11 +93,18 @@ class ExplanationAgent:
                 "verification_result": context.verification_result
             }
             
-            response = model.generate_content(
-                f"{EXPLANATION_PROMPT}\n\nAnalysis Data:\n{json.dumps(input_data, indent=2)}"
+            prompt_text = f"{EXPLANATION_PROMPT}\n\nAnalysis Data:\n{json.dumps(input_data, indent=2)}"
+            resp = self._client.chat.completions.create(
+                model=config.ai.primary_model,
+                messages=[
+                    {"role": "system", "content": "You are an Explanation Agent that creates simple, jargon-free summaries for MSME owners."},
+                    {"role": "user", "content": prompt_text},
+                ],
+                temperature=0.3,
             )
+            response_text = resp.choices[0].message.content or ""
             
-            return response.text.strip()
+            return response_text.strip()
             
         except Exception as e:
             print(f"Explanation generation failed: {e}")
@@ -97,15 +116,21 @@ class ExplanationAgent:
             return "This is a government scheme to help small businesses get bank loans without collateral. If you're a registered MSME, you may be eligible for guaranteed loans up to Rs. 5 crore."
             
         try:
-            model = genai.GenerativeModel(self.model_name)
-            
             prompt = f"""
             In 2-3 simple sentences, explain what this policy means for a small business owner:
             {json.dumps(policy_analysis.get('policy_metadata', {}), indent=2)}
             """
             
-            response = model.generate_content(prompt)
-            return response.text.strip()
+            resp = self._client.chat.completions.create(
+                model=config.ai.primary_model,
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that explains policies simply."},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.3,
+            )
+            response_text = resp.choices[0].message.content or ""
+            return response_text.strip()
             
         except:
             return "This policy may affect your business. Please review the detailed analysis above."
@@ -210,8 +235,6 @@ For assistance, contact your local District Industries Centre or a CA profession
         language_name = lang_names.get(target_language.lower(), target_language)
         
         try:
-            model = genai.GenerativeModel(self.model_name)
-            
             prompt = f"""
             Translate the following text to {language_name}. 
             Keep the formatting (bullets, bold, etc.) intact.
@@ -220,8 +243,16 @@ For assistance, contact your local District Industries Centre or a CA profession
             {summary}
             """
             
-            response = model.generate_content(prompt)
-            return response.text.strip()
+            resp = self._client.chat.completions.create(
+                model=config.ai.primary_model,
+                messages=[
+                    {"role": "system", "content": f"You are a professional translator. Translate to {language_name}."},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.3,
+            )
+            response_text = resp.choices[0].message.content or ""
+            return response_text.strip()
             
         except Exception as e:
             print(f"Translation failed: {e}")

@@ -7,7 +7,9 @@ Generates prioritized compliance roadmaps and action plans.
 import os
 import json
 from typing import Dict, Any, List
-import google.generativeai as genai
+import re
+from openai import OpenAI
+from config import config
 
 
 PLANNING_PROMPT = """
@@ -79,6 +81,15 @@ OUTPUT FORMAT (STRICT — JSON ONLY):
 """
 
 
+def _parse_json(text: str) -> dict:
+    """Clean markdown fences and parse JSON from AI response."""
+    text = text.strip()
+    text = re.sub(r'^```(?:json)?\s*', '', text)
+    text = re.sub(r'\s*```$', '', text)
+    text = text.strip()
+    return json.loads(text)
+
+
 class PlanningAgent:
     """
     Strategist agent for compliance roadmap generation.
@@ -92,12 +103,15 @@ class PlanningAgent:
     
     def __init__(self, api_key: str = None, demo_mode: bool = False):
         self.demo_mode = demo_mode
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            
-        self.model_name = "models/gemini-2.5-flash"
+        key = api_key or config.ai.api_key
+        self._client = OpenAI(
+            base_url=config.ai.base_url,
+            api_key=key,
+            default_headers={
+                "HTTP-Referer": config.ai.site_url,
+                "X-Title": config.ai.site_name,
+            },
+        ) if key else None
         
     async def generate_plan(
         self, 
@@ -118,26 +132,23 @@ class PlanningAgent:
             return self._get_demo_plan()
             
         try:
-            model = genai.GenerativeModel(self.model_name)
-            
             input_data = {
                 "policy_analysis": policy_analysis,
                 "eligible_schemes": eligible_schemes or []
             }
             
-            response = model.generate_content(
-                f"{PLANNING_PROMPT}\n\nINPUT POLICY INTELLIGENCE:\n{json.dumps(input_data, indent=2)}",
-                generation_config={"response_mime_type": "application/json"}
+            prompt_text = f"{PLANNING_PROMPT}\n\nINPUT POLICY INTELLIGENCE:\n{json.dumps(input_data, indent=2)}"
+            resp = self._client.chat.completions.create(
+                model=config.ai.primary_model,
+                messages=[
+                    {"role": "system", "content": "You are a Compliance Planning Agent. Return valid JSON only."},
+                    {"role": "user", "content": prompt_text},
+                ],
+                temperature=0.3,
             )
+            response_text = resp.choices[0].message.content or ""
             
-            response_text = response.text
-            
-            if response_text.startswith("```json"):
-                response_text = response_text[7:-3]
-            elif response_text.startswith("```"):
-                response_text = response_text[3:-3]
-                
-            return json.loads(response_text)
+            return _parse_json(response_text)
             
         except Exception as e:
             raise ValueError(f"Planning failed: {str(e)}")

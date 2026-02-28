@@ -107,6 +107,7 @@ class AdaptiveOnboardingEngine:
 
         profile = {
             # Core identity
+            "business_name": field_map.get("business_name", "My Business"),
             "business_type": field_map.get("business_type", "unknown"),
             "enterprise_classification": enterprise_type,
             "investment_range": field_map.get("investment_range", "unknown"),

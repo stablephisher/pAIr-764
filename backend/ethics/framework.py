@@ -342,7 +342,8 @@ class EthicalAIFramework:
         # (All qualified schemes should appear regardless of demographics)
         if profile:
             # Verify: if owner is women/SC/ST, special schemes should be included
-            owner = profile.get("owner_category", "").lower()
+            owner_raw = profile.get("owner_category", "")
+            owner = owner_raw.lower() if isinstance(owner_raw, str) else " ".join(str(c) for c in owner_raw).lower()
             plan = analysis.get("compliance_plan", {})
 
             if any(w in owner for w in ["women", "woman", "female"]):

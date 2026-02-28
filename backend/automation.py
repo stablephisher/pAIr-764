@@ -115,8 +115,8 @@ def main():
     args = parser.parse_args()
     
     # Ensure API key is set
-    if not os.getenv("GEMINI_API_KEY"):
-        logger.error("GEMINI_API_KEY environment variable not set!")
+    if not os.getenv("OPENROUTER_API_KEY"):
+        logger.error("OPENROUTER_API_KEY environment variable not set!")
         sys.exit(1)
     
     if args.file:

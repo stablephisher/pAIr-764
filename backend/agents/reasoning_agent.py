@@ -7,7 +7,9 @@ Semantic understanding, policy interpretation, and eligibility logic.
 import os
 import json
 from typing import Dict, Any, List, Optional
-import google.generativeai as genai
+import re
+from openai import OpenAI
+from config import config
 
 
 REASONING_PROMPT = """
@@ -110,11 +112,20 @@ OUTPUT FORMAT (JSON):
 """
 
 
+def _parse_json(text: str) -> dict:
+    """Clean markdown fences and parse JSON from AI response."""
+    text = text.strip()
+    text = re.sub(r'^```(?:json)?\s*', '', text)
+    text = re.sub(r'\s*```$', '', text)
+    text = text.strip()
+    return json.loads(text)
+
+
 class ReasoningAgent:
     """
     Legal Expert agent for policy analysis.
     
-    Uses Gemini for:
+    Uses OpenRouter AI for:
     - Deep semantic reasoning on policy text
     - Structured intelligence extraction
     - MSME eligibility logic for schemes (CGTMSE, PMEGP)
@@ -122,12 +133,15 @@ class ReasoningAgent:
     
     def __init__(self, api_key: str = None, demo_mode: bool = False):
         self.demo_mode = demo_mode
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            
-        self.model_name = "models/gemini-2.5-flash"
+        key = api_key or config.ai.api_key
+        self._client = OpenAI(
+            base_url=config.ai.base_url,
+            api_key=key,
+            default_headers={
+                "HTTP-Referer": config.ai.site_url,
+                "X-Title": config.ai.site_name,
+            },
+        ) if key else None
         
     async def analyze(
         self, 
@@ -163,22 +177,18 @@ class ReasoningAgent:
     async def _analyze_policy(self, policy_text: str) -> Dict[str, Any]:
         """Run Gemini analysis on policy text."""
         try:
-            model = genai.GenerativeModel(self.model_name)
-            
-            response = model.generate_content(
-                f"{REASONING_PROMPT}\n\nINPUT POLICY TEXT:\n{policy_text}",
-                generation_config={"response_mime_type": "application/json"}
+            prompt_text = f"{REASONING_PROMPT}\n\nINPUT POLICY TEXT:\n{policy_text}"
+            resp = self._client.chat.completions.create(
+                model=config.ai.primary_model,
+                messages=[
+                    {"role": "system", "content": "You are a senior policy analyst. Return valid JSON only."},
+                    {"role": "user", "content": prompt_text},
+                ],
+                temperature=0.3,
             )
+            response_text = resp.choices[0].message.content or ""
             
-            response_text = response.text
-            
-            # Clean JSON markers
-            if response_text.startswith("```json"):
-                response_text = response_text[7:-3]
-            elif response_text.startswith("```"):
-                response_text = response_text[3:-3]
-                
-            return json.loads(response_text)
+            return _parse_json(response_text)
             
         except Exception as e:
             raise ValueError(f"Policy analysis failed: {str(e)}")
@@ -191,25 +201,22 @@ class ReasoningAgent:
         from schemes import GOVERNMENT_SCHEMES
         
         try:
-            model = genai.GenerativeModel(self.model_name)
-            
             prompt = ELIGIBILITY_PROMPT.format(
                 business_profile=json.dumps(business_profile, indent=2),
                 schemes=json.dumps(GOVERNMENT_SCHEMES, indent=2)
             )
             
-            response = model.generate_content(
-                prompt,
-                generation_config={"response_mime_type": "application/json"}
+            resp = self._client.chat.completions.create(
+                model=config.ai.primary_model,
+                messages=[
+                    {"role": "system", "content": "You are an MSME scheme eligibility expert. Return valid JSON only."},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.3,
             )
+            response_text = resp.choices[0].message.content or ""
             
-            response_text = response.text
-            if response_text.startswith("```json"):
-                response_text = response_text[7:-3]
-            elif response_text.startswith("```"):
-                response_text = response_text[3:-3]
-                
-            result = json.loads(response_text)
+            result = _parse_json(response_text)
             return result.get("eligible_schemes", [])
             
         except Exception as e:

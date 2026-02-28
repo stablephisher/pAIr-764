@@ -431,7 +431,24 @@ class FirestoreDB:
                 return True
             except Exception as e:
                 print(f"[DB] Firestore delete_notification failed: {e}")
-        return False
+        return self._delete_local_notification(uid, notif_id)
+
+    def _delete_local_notification(self, uid: str, notif_id: str) -> bool:
+        """Delete a notification from local storage."""
+        notif_file = os.path.join(self._local_dir, "notifications.json")
+        if not os.path.exists(notif_file):
+            return False
+        try:
+            with open(notif_file, "r") as f:
+                notifications = json.load(f)
+            new_list = [n for n in notifications if not (n.get("id") == notif_id and n.get("uid") == uid)]
+            if len(new_list) == len(notifications):
+                return False
+            with open(notif_file, "w") as f:
+                json.dump(new_list, f, indent=2, default=str)
+            return True
+        except Exception:
+            return False
 
     # ════════════════════════════════════════════════════════════
     #  FCM TOKENS

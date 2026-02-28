@@ -129,6 +129,31 @@ async def verify_firebase_token(
         raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
 
+# ─── Raw Token Verification (non-dependency) ────────────────────────
+def verify_firebase_token_raw(token: str) -> Dict[str, Any]:
+    """Verify a raw Firebase ID token string. Returns decoded token dict."""
+    if config.server.demo_mode:
+        return {
+            "uid": "demo-user-001",
+            "email": "demo@pair-msme.dev",
+            "name": "Demo MSME Owner",
+            "email_verified": True,
+            "provider": "demo",
+        }
+    try:
+        get_firebase_app()
+        decoded = firebase_auth.verify_id_token(token)
+        return {
+            "uid": decoded["uid"],
+            "email": decoded.get("email", ""),
+            "name": decoded.get("name", ""),
+            "email_verified": decoded.get("email_verified", False),
+            "provider": decoded.get("firebase", {}).get("sign_in_provider", "unknown"),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
+
+
 # ─── Optional Auth (for public + authenticated endpoints) ────────────
 async def optional_firebase_token(
     credentials: Optional[HTTPAuthorizationCredentials] = Security(security),

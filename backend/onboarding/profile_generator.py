@@ -2,18 +2,17 @@
 Business Profile Generator
 ============================
 Converts onboarding answers into AI-enriched MSME profiles.
-Uses Gemini to generate natural language business summary.
+Uses OpenRouter (OpenAI-compatible) for natural language business summary.
 """
 
-import json
+import json, re
 from typing import Dict, Any
 
-import google.generativeai as genai
+from openai import AsyncOpenAI
 from config import config
 
 
-PROFILE_ENRICHMENT_PROMPT = """
-You are an MSME business analyst. Given the structured business profile below,
+PROFILE_ENRICHMENT_PROMPT = """You are an MSME business analyst. Given the structured business profile below,
 generate a concise 3-4 sentence natural language summary of this business
 that a compliance agent can use to quickly understand the business context.
 
@@ -33,8 +32,16 @@ Output a JSON object:
   "compliance_priority": "HIGH | MEDIUM | LOW",
   "priority_reasoning": "...",
   "recommended_first_action": "..."
-}}
-"""
+}}"""
+
+
+def _parse_json(text: str) -> dict:
+    """Extract JSON from a response that may contain markdown fences."""
+    text = text.strip()
+    m = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+    if m:
+        text = m.group(1).strip()
+    return json.loads(text)
 
 
 class ProfileGenerator:
@@ -42,36 +49,52 @@ class ProfileGenerator:
 
     def __init__(self, demo_mode: bool = False):
         self.demo_mode = demo_mode
-        if config.gemini.api_key:
-            genai.configure(api_key=config.gemini.api_key)
+        api_key = config.ai.api_key
+        self._client = (
+            AsyncOpenAI(
+                base_url=config.ai.base_url,
+                api_key=api_key,
+                default_headers={
+                    "HTTP-Referer": config.ai.site_url,
+                    "X-Title": config.ai.site_name,
+                },
+            )
+            if api_key
+            else None
+        )
 
     async def enrich_profile(self, profile: Dict[str, Any]) -> Dict[str, Any]:
         """
         Take the raw profile from the decision tree and enrich it
         with AI-generated summary, compliance priority, etc.
         """
-        if self.demo_mode:
+        if self.demo_mode or not self._client:
             return self._get_demo_enrichment(profile)
 
         try:
-            model = genai.GenerativeModel(config.gemini.primary_model)
-            # Remove raw answers from prompt to keep it clean
             clean_profile = {k: v for k, v in profile.items() if not k.startswith("_")}
 
-            response = model.generate_content(
-                PROFILE_ENRICHMENT_PROMPT.format(
-                    profile_json=json.dumps(clean_profile, indent=2)
-                ),
-                generation_config={"response_mime_type": "application/json"},
-            )
+            for model_id in [config.ai.primary_model, config.ai.fallback_model]:
+                try:
+                    resp = await self._client.chat.completions.create(
+                        model=model_id,
+                        messages=[
+                            {"role": "system", "content": "You are an expert MSME business analyst."},
+                            {
+                                "role": "user",
+                                "content": PROFILE_ENRICHMENT_PROMPT.format(
+                                    profile_json=json.dumps(clean_profile, indent=2)
+                                ),
+                            },
+                        ],
+                        temperature=0.3,
+                    )
+                    text = resp.choices[0].message.content or ""
+                    break
+                except Exception:
+                    text = ""
 
-            text = response.text.strip()
-            if text.startswith("```json"):
-                text = text[7:-3]
-            elif text.startswith("```"):
-                text = text[3:-3]
-
-            enrichment = json.loads(text)
+            enrichment = _parse_json(text)
             profile["ai_summary"] = enrichment.get("business_summary", "")
             profile["compliance_priority"] = enrichment.get("compliance_priority", "MEDIUM")
             profile["priority_reasoning"] = enrichment.get("priority_reasoning", "")

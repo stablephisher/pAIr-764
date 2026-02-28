@@ -12,20 +12,22 @@ from typing import Optional
 @dataclass
 class FirebaseConfig:
     """Firebase configuration."""
-    project_id: str = os.getenv("FIREBASE_PROJECT_ID", "pair-msme-navigator")
+    project_id: str = os.getenv("FIREBASE_PROJECT_ID", "codeunnati-im-proj")
     credentials_path: Optional[str] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", None)
     api_key: str = os.getenv("FIREBASE_API_KEY", "")
 
 
 @dataclass
-class GeminiConfig:
-    """Google Gemini AI configuration."""
-    api_key: str = os.getenv("GEMINI_API_KEY", "")
-    primary_model: str = "models/gemini-2.5-flash"
-    fallback_model: str = "models/gemini-2.0-flash-lite"
+class AIConfig:
+    """OpenRouter AI configuration (OpenAI-compatible)."""
+    api_key: str = os.getenv("OPENROUTER_API_KEY", "")
+    base_url: str = "https://openrouter.ai/api/v1"
+    primary_model: str = "google/gemma-3-27b-it"
+    fallback_model: str = "meta-llama/llama-3.3-70b-instruct"
     max_retries: int = 3
-    retry_delay_seconds: int = 30
-    response_mime_type: str = "application/json"
+    retry_delay_seconds: int = 5
+    site_url: str = os.getenv("SITE_URL", "https://pair-msme.vercel.app")
+    site_name: str = "pAIr - Policy AI Regulator"
 
 
 @dataclass
@@ -78,7 +80,7 @@ class ServerConfig:
 class AppConfig:
     """Root application configuration."""
     firebase: FirebaseConfig = field(default_factory=FirebaseConfig)
-    gemini: GeminiConfig = field(default_factory=GeminiConfig)
+    ai: AIConfig = field(default_factory=AIConfig)
     policy: PolicyConfig = field(default_factory=PolicyConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
     server: ServerConfig = field(default_factory=ServerConfig)

@@ -17,10 +17,7 @@ export function AppProvider({ children }) {
     const [language, setLanguage] = useState(LANGUAGES[0]);
     const [profile, setProfileState] = useState(null);
     const [history, setHistory] = useState([]);
-    const [notifications, setNotifications] = useState([
-        { id: 1, title: 'Compliance Update', message: 'New GST regulations for MSMEs released.', time: '2h ago', read: false },
-        { id: 2, title: 'Analysis Complete', message: 'Your "Factory License" analysis is ready.', time: '5h ago', read: false },
-    ]);
+    const [notifications, setNotifications] = useState([]);
 
     // Profile setter that also persists to localStorage
     const setProfile = useCallback((profileData) => {
@@ -77,6 +74,18 @@ export function AppProvider({ children }) {
                     });
                     if (histRes.data && Array.isArray(histRes.data)) {
                         setHistory(histRes.data);
+                    }
+
+                    // Fetch notifications from backend
+                    try {
+                        const notifRes = await axios.get(`${API}/api/notifications`, {
+                            params: { user_uid: currentUser.uid }
+                        });
+                        if (notifRes.data && Array.isArray(notifRes.data)) {
+                            setNotifications(notifRes.data);
+                        }
+                    } catch (ne) {
+                        console.warn("Notifications fetch failed", ne);
                     }
                 } catch (e) {
                     console.error("Error fetching user data (backend may be offline)", e);
@@ -168,9 +177,18 @@ export function AppProvider({ children }) {
         }
     }, [user]);
 
-    const markAllNotificationsRead = () => {
+    const markAllNotificationsRead = useCallback(async () => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    };
+        if (user) {
+            try {
+                await axios.post(`${API}/api/notifications/read-all`, null, {
+                    params: { user_uid: user.uid }
+                });
+            } catch (e) {
+                console.warn("Failed to mark notifications read on backend", e);
+            }
+        }
+    }, [user]);
 
     return (
         <AppContext.Provider value={{

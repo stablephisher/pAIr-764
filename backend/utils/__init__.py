@@ -468,7 +468,7 @@ def validate_environment() -> Dict[str, Any]:
     Returns a dict of {var_name: status} for logging.
     """
     required = [
-        "GEMINI_API_KEY",
+        "OPENROUTER_API_KEY",
     ]
     optional = [
         "FIREBASE_PROJECT_ID",

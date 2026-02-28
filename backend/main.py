@@ -39,7 +39,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-import google.generativeai as genai
+from openai import AsyncOpenAI
 from pypdf import PdfReader
 
 from config import config
@@ -105,10 +105,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure Gemini
-api_key = config.gemini.api_key or os.getenv("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
+# Configure OpenRouter (OpenAI-compatible)
+api_key = config.ai.api_key or os.getenv("OPENROUTER_API_KEY", "")
+ai_client = AsyncOpenAI(
+    base_url=config.ai.base_url,
+    api_key=api_key,
+    default_headers={
+        "HTTP-Referer": config.ai.site_url,
+        "X-Title": config.ai.site_name,
+    },
+) if api_key else None
 
 # Database
 db = FirestoreDB()
@@ -280,6 +286,67 @@ Write like incorrect advice could cause financial loss.
 
 
 # ═══════════════════════════════════════════════════════════════════
+#  AI HELPER — OpenRouter (OpenAI-compatible)
+# ═══════════════════════════════════════════════════════════════════
+
+async def call_ai(system_prompt: str, user_prompt: str, models_to_try: list = None, json_mode: bool = True) -> str:
+    """
+    Call OpenRouter with retry logic and model fallback.
+    Returns the raw text response.
+    """
+    if not ai_client:
+        raise Exception("AI not configured — OPENROUTER_API_KEY not set")
+
+    models = models_to_try or [config.ai.primary_model, config.ai.fallback_model]
+    last_exception = None
+
+    for model_name in models:
+        for attempt in range(config.ai.max_retries):
+            try:
+                msgs = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ]
+                if json_mode:
+                    msgs[0]["content"] += "\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown, no extra text."
+
+                response = await ai_client.chat.completions.create(
+                    model=model_name,
+                    messages=msgs,
+                    temperature=0.1,
+                    max_tokens=8192,
+                )
+                text = response.choices[0].message.content.strip()
+                return text
+            except Exception as e:
+                last_exception = e
+                err_str = str(e)
+                if "429" in err_str or "rate" in err_str.lower():
+                    wait = config.ai.retry_delay_seconds * (attempt + 1)
+                    logger.warning(f"Rate limited on {model_name}, attempt {attempt+1}. Waiting {wait}s...")
+                    await asyncio.sleep(wait)
+                elif attempt < config.ai.max_retries - 1:
+                    await asyncio.sleep(1)
+                else:
+                    logger.warning(f"Model {model_name} failed after {config.ai.max_retries} attempts: {e}")
+                    break  # Try next model
+
+    raise Exception(f"All AI models failed. Last error: {last_exception}")
+
+
+def parse_ai_json(text: str) -> dict:
+    """Safely parse JSON from AI response, stripping markdown fences."""
+    text = text.strip()
+    if text.startswith("```json"):
+        text = text[7:]
+    if text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    return json.loads(text.strip())
+
+
+# ═══════════════════════════════════════════════════════════════════
 #  CORE ANALYSIS PIPELINE
 # ═══════════════════════════════════════════════════════════════════
 
@@ -288,32 +355,16 @@ async def generate_compliance_plan(analysis_data: dict, models_to_try: list) -> 
     analysis_json_str = json.dumps(analysis_data, indent=2)
     last_exception = None
 
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(model_name)
-            max_retries = config.gemini.max_retries
-            for attempt in range(max_retries):
-                try:
-                    response = model.generate_content(
-                        f"{PLANNING_AGENT_PROMPT}\n\nINPUT POLICY INTELLIGENCE:\n{analysis_json_str}",
-                        generation_config={"response_mime_type": "application/json"}
-                    )
-                    plan_text = response.text
-                    if plan_text.startswith("```json"): plan_text = plan_text[7:-3]
-                    elif plan_text.startswith("```"): plan_text = plan_text[3:-3]
-                    return json.loads(plan_text)
-                except Exception as inner_e:
-                    last_exception = inner_e
-                    if "429" in str(inner_e):
-                        print(f"⚠️ Rate limited on {model_name} (Planning). Retrying in {config.gemini.retry_delay_seconds}s...")
-                        await asyncio.sleep(config.gemini.retry_delay_seconds)
-                    else:
-                        raise inner_e
-        except Exception as e:
-            last_exception = e
-
-    print(f"Warning: Compliance Plan generation failed. Last error: {last_exception}")
-    return None
+    try:
+        text = await call_ai(
+            PLANNING_AGENT_PROMPT,
+            f"INPUT POLICY INTELLIGENCE:\n{analysis_json_str}",
+            models_to_try,
+        )
+        return parse_ai_json(text)
+    except Exception as e:
+        print(f"Warning: Compliance Plan generation failed. Error: {e}")
+        return None
 
 
 async def run_policy_analysis_pipeline(
@@ -327,48 +378,26 @@ async def run_policy_analysis_pipeline(
 
     Returns the full analysis dict including v3 scoring data.
     """
-    models_to_try = [config.gemini.primary_model, config.gemini.fallback_model]
+    models_to_try = [config.ai.primary_model, config.ai.fallback_model]
 
     # ── Step 1: Policy Analysis ──
     start_time = time.time()
-    response = None
-    last_exception = None
     used_models = []
 
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(model_name)
-            for attempt in range(config.gemini.max_retries):
-                try:
-                    genai.configure(api_key=api_key)
-                    response = model.generate_content(
-                        f"{SYSTEM_PROMPT}\n\nINPUT POLICY TEXT:\n{policy_text}",
-                        generation_config={"response_mime_type": config.gemini.response_mime_type}
-                    )
-                    used_models.append(model_name)
-                    break
-                except Exception as inner_e:
-                    last_exception = inner_e
-                    if "429" in str(inner_e):
-                        await asyncio.sleep(config.gemini.retry_delay_seconds)
-                    else:
-                        raise inner_e
-            if response:
-                break
-        except Exception as e:
-            last_exception = e
-
-    if not response:
-        raise Exception(f"Analysis failed. Last error: {str(last_exception)}")
+    try:
+        raw_step_1_response = await call_ai(
+            SYSTEM_PROMPT,
+            f"INPUT POLICY TEXT:\n{policy_text}",
+            models_to_try,
+        )
+        used_models.append(config.ai.primary_model)
+    except Exception as e:
+        raise Exception(f"Analysis failed: {str(e)}")
 
     step_1_duration = time.time() - start_time
 
     # Parse JSON response
-    response_text = response.text
-    raw_step_1_response = response_text
-    if response_text.startswith("```json"): response_text = response_text[7:-3]
-    elif response_text.startswith("```"): response_text = response_text[3:-3]
-    analysis_data = json.loads(response_text)
+    analysis_data = parse_ai_json(raw_step_1_response)
 
     # ── Step 2: Compliance Planning ──
     step_2_duration = 0
@@ -777,8 +806,8 @@ async def analyze_policy(
     if not policy_text.strip():
         raise HTTPException(status_code=400, detail="Could not extract text from the PDF.")
 
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set on server.")
+    if not ai_client:
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not set on server.")
 
     try:
         # Get user profile if available
@@ -932,8 +961,14 @@ def score_impact(request: ScoringRequest):
     try:
         from scoring.impact_engine import ImpactEngine
         engine = ImpactEngine()
-        report = engine.compute_impact(
-            analysis_result=request.analysis,
+        # Extract sub-scores from analysis for the impact engine
+        risk_data = request.analysis.get("risk_score", {})
+        sustainability_data = request.analysis.get("sustainability", {})
+        profitability_data = request.analysis.get("profitability", {})
+        report = engine.calculate(
+            risk_data=risk_data,
+            sustainability_data=sustainability_data,
+            profitability_data=profitability_data,
             business_profile=request.business_profile or {},
             num_policies=request.num_policies,
         )
@@ -941,27 +976,20 @@ def score_impact(request: ScoringRequest):
             "impact_score": report.impact_score,
             "impact_grade": report.impact_grade,
             "breakdown": {
-                "risk_reduction": report.breakdown.risk_reduction,
+                "risk_reduction": report.breakdown.compliance_risk_reduction,
                 "profitability_gain": report.breakdown.profitability_gain,
                 "sustainability_improvement": report.breakdown.sustainability_improvement,
                 "time_saved": report.breakdown.time_saved,
                 "cost_saved": report.breakdown.cost_saved,
             },
-            "sector_benchmark_percentile": report.sector_benchmark_percentile,
+            "sector_benchmark_percentile": report.benchmark.percentile,
             "grc_alignment": {
                 "governance": report.grc_alignment.governance_score,
-                "risk": report.grc_alignment.risk_score,
+                "risk": report.grc_alignment.risk_management_score,
                 "compliance": report.grc_alignment.compliance_score,
             },
             "narrative": report.narrative,
-            "projections": [
-                {
-                    "period": p.period,
-                    "projected_score": p.projected_score,
-                    "improvement_potential": p.improvement_potential,
-                }
-                for p in report.projections
-            ],
+            "key_metrics": report.key_metrics,
         }
     except Exception as e:
         logger.error(f"Impact scoring failed: {e}", exc_info=True)
@@ -1248,9 +1276,9 @@ Respond with ONLY the translated JSON:
 
 @app.post("/api/translate")
 async def translate_content(request: TranslateRequest):
-    """Translate analysis content to target language using Gemini."""
+    """Translate analysis content to target language using AI."""
     try:
-        if not api_key:
+        if not ai_client:
             raise HTTPException(status_code=500, detail="API key not configured")
 
         target_lang = request.target_language
@@ -1266,19 +1294,10 @@ async def translate_content(request: TranslateRequest):
         language_name = lang_names.get(target_lang.lower(), target_lang)
 
         json_content = json.dumps(request.data, indent=2, ensure_ascii=False)
-        prompt = TRANSLATION_PROMPT.format(language=language_name, json_content=json_content)
+        system_msg = TRANSLATION_PROMPT.format(language=language_name, json_content=json_content)
 
-        model = genai.GenerativeModel(config.gemini.primary_model)
-        response = model.generate_content(prompt)
-
-        response_text = response.text.strip()
-        if response_text.startswith("```"):
-            response_text = response_text.split("```")[1]
-            if response_text.startswith("json"):
-                response_text = response_text[4:]
-        response_text = response_text.strip()
-
-        return json.loads(response_text)
+        text = await call_ai(system_msg, "Translate now.", json_mode=True)
+        return parse_ai_json(text)
     except json.JSONDecodeError:
         raise HTTPException(status_code=500, detail="Translation failed - invalid response format")
     except Exception as e:
@@ -1520,9 +1539,9 @@ Return ONLY valid JSON with this structure:
 
 @app.post("/api/competitor-analysis")
 async def competitor_analysis(request: CompetitorAnalysisRequest):
-    """Generate competitive intelligence analysis using Gemini."""
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set")
+    """Generate competitive intelligence analysis using AI."""
+    if not ai_client:
+        raise HTTPException(status_code=500, detail="AI API key not set")
     
     try:
         prompt = COMPETITOR_PROMPT.format(
@@ -1533,18 +1552,11 @@ async def competitor_analysis(request: CompetitorAnalysisRequest):
             years_in_business=request.years_in_business or 1,
         )
         
-        model = genai.GenerativeModel(config.gemini.primary_model)
-        genai.configure(api_key=api_key)
-        response = model.generate_content(
+        text = await call_ai(
+            "You are an expert business intelligence analyst. Return ONLY valid JSON.",
             prompt,
-            generation_config={"response_mime_type": "application/json"}
         )
-        
-        response_text = response.text
-        if response_text.startswith("```json"): response_text = response_text[7:-3]
-        elif response_text.startswith("```"): response_text = response_text[3:-3]
-        
-        return json.loads(response_text)
+        return parse_ai_json(text)
     except Exception as e:
         print(f"Competitor analysis error: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
@@ -1613,8 +1625,9 @@ async def startup_event():
     print("=" * 60)
     masked_key = f"******{api_key[-4:]}" if api_key else "NONE"
     print(f"  🔑 API Key: {masked_key}")
-    print(f"  🎯 Primary Model: {config.gemini.primary_model}")
-    print(f"  🔄 Demo Mode: {config.server.demo_mode}")
+    print(f"  🤖 Provider: OpenRouter (OpenAI-compatible)")
+    print(f"  🎯 Primary Model: {config.ai.primary_model}")
+    print(f"  🔄 Fallback Model: {config.ai.fallback_model}")
     print(f"  📡 Policy Monitor: {os.path.abspath(MONITOR_DIR)}")
     print(f"  🏗️  Engines: Risk | Sustainability | Profitability | Ethics | Impact")
     print(f"  🚀 Innovation: Predictive Alerts | Policy Diff | Benchmarking")
