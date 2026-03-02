@@ -53,6 +53,16 @@
             ]
         },
         {
+            "collectionGroup": "notifications",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "created_at",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
             "collectionGroup": "policies",
             "queryScope": "COLLECTION",
             "fields": [
@@ -73,6 +83,16 @@
                 {
                     "fieldPath": "detected_at",
                     "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "users",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "sector",
+                    "order": "ASCENDING"
                 }
             ]
         }

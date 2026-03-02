@@ -21,12 +21,17 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 
-      // User's notifications — read/update only (backend creates via Admin SDK)
+      // User's notifications — read and mark-read only (backend creates via Admin SDK)
       match /notifications/{notifId} {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow update: if request.auth != null && request.auth.uid == userId
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']);
         allow create, delete: if false; // Server-side only via Admin SDK
+      }
+
+      // User's competitor analysis cache
+      match /competitor_cache/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
