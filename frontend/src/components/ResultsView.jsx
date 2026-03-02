@@ -3,9 +3,11 @@ import { FileText, Zap, TrendingUp, CheckCircle, Clock, AlertCircle, ArrowRight 
 import MiniPieChart from './charts/MiniPieChart';
 import MiniBarChart from './charts/MiniBarChart';
 import { Briefcase } from 'lucide-react';
+import { t } from '../i18n/translations';
 
 export default function ResultsView({ data, language, profile }) {
     const [tab, setTab] = useState('overview');
+    const lang = language || 'en';
 
     // Backend returns flat structure — map to display format
     const policyMeta = data.policy_metadata || {};
@@ -65,20 +67,20 @@ export default function ResultsView({ data, language, profile }) {
 
             {/* Scores */}
             <div className="card p-6">
-                <h3 className="font-semibold mb-6">Analysis Scores</h3>
+                <h3 className="font-semibold mb-6">{t('Analysis Scores', lang)}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <ScoreRing value={scores.risk_score || 0} label="Risk Score"
+                    <ScoreRing value={scores.risk_score || 0} label={t('Risk Score', lang)}
                         color={scores.risk_score > 70 ? 'var(--red)' : scores.risk_score > 40 ? 'var(--orange)' : 'var(--green)'} />
-                    <ScoreRing value={scores.sustainability_score || 0} label="Sustainability" color="var(--green)" />
-                    <ScoreRing value={scores.profitability_score || 0} label="Profitability" color="var(--accent)" />
-                    <ScoreRing value={scores.ethics_score || 0} label="Ethics" color="var(--purple)" />
+                    <ScoreRing value={scores.sustainability_score || 0} label={t('Sustainability', lang)} color="var(--green)" />
+                    <ScoreRing value={scores.profitability_score || 0} label={t('Profitability', lang)} color="var(--accent)" />
+                    <ScoreRing value={scores.ethics_score || 0} label={t('Ethics', lang)} color="var(--purple)" />
                 </div>
             </div>
 
             {/* Score Charts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="card p-5">
-                    <MiniPieChart title="Score Distribution" data={[
+                    <MiniPieChart title={t('Score Distribution', lang)} data={[
                         { label: 'Risk', value: scores.risk_score || 1, color: (scores.risk_score || 0) > 70 ? '#ef4444' : (scores.risk_score || 0) > 40 ? '#f97316' : '#22c55e' },
                         { label: 'Sustainability', value: scores.sustainability_score || 1, color: '#22c55e' },
                         { label: 'Profitability', value: scores.profitability_score || 1, color: '#6366f1' },
@@ -86,7 +88,7 @@ export default function ResultsView({ data, language, profile }) {
                     ]} />
                 </div>
                 <div className="card p-5">
-                    <MiniBarChart title="Score Breakdown" data={[
+                    <MiniBarChart title={t('Score Breakdown', lang)} data={[
                         { label: 'Risk Score', value: scores.risk_score || 0, color: (scores.risk_score || 0) > 70 ? '#ef4444' : (scores.risk_score || 0) > 40 ? '#f97316' : '#22c55e', max: 100, suffix: '/100' },
                         { label: 'Green Score', value: scores.sustainability_score || 0, color: '#22c55e', max: 100, suffix: '/100' },
                         { label: 'Profitability', value: scores.profitability_score || 0, color: '#6366f1', max: 100, suffix: '/100' },
@@ -113,10 +115,10 @@ export default function ResultsView({ data, language, profile }) {
             {/* Tabs */}
             <div className="card overflow-hidden">
                 <div className="tabs">
-                    {['overview', 'obligations', 'actions'].map(t => (
-                        <button key={t} onClick={() => setTab(t)} className={`tab ${tab === t ? 'active' : ''}`}>
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                            {t === 'obligations' && obligations.length > 0 && ` (${obligations.length})`}
+                    {[{key: 'overview', label: t('Overview', lang)}, {key: 'obligations', label: t('Obligations', lang)}, {key: 'actions', label: t('Actions', lang)}].map(item => (
+                        <button key={item.key} onClick={() => setTab(item.key)} className={`tab ${tab === item.key ? 'active' : ''}`}>
+                            {item.label}
+                            {item.key === 'obligations' && obligations.length > 0 && ` (${obligations.length})`}
                         </button>
                     ))}
                 </div>
@@ -297,7 +299,7 @@ export default function ResultsView({ data, language, profile }) {
                             {/* Fallback if no actions */}
                             {!compliancePlan.immediate_actions?.length && !compliancePlan.short_term?.length && !compliancePlan.long_term?.length && (
                                 <div className="text-center py-12">
-                                    <p style={{ color: 'var(--text-secondary)' }}>No specific actions identified</p>
+                                    <p style={{ color: 'var(--text-secondary)' }}>{t('No specific actions identified', lang)}</p>
                                 </div>
                             )}
                         </div>

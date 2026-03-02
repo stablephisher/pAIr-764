@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { FileText, ChevronRight, Trash2, Clock, Upload, AlertCircle, Search } from 'lucide-react';
+import { t } from '../i18n/translations';
 
 export default function History() {
-    const { history, deleteHistoryItem, clearHistory } = useAppContext();
+    const { history, deleteHistoryItem, clearHistory, language } = useAppContext();
+    const lang = language?.code || 'en';
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [deleting, setDeleting] = useState(null);
@@ -26,16 +28,16 @@ export default function History() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text)' }}>
-                        <Clock size={24} style={{ color: 'var(--accent)' }} /> Analysis History
+                        <Clock size={24} style={{ color: 'var(--accent)' }} /> {t('Analysis History', lang)}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-tertiary)' }}>
-                        {history.length} analysis record{history.length !== 1 ? 's' : ''}
+                        {history.length} {t('analysis records', lang)}
                     </p>
                 </div>
                 {history.length > 0 && (
                     <button onClick={clearHistory} className="btn btn-sm gap-1.5"
                         style={{ background: 'var(--red-light)', color: 'var(--red)', border: '1px solid transparent' }}>
-                        <Trash2 size={14} /> Clear All
+                        <Trash2 size={14} /> {t('Clear All', lang)}
                     </button>
                 )}
             </div>
@@ -44,7 +46,7 @@ export default function History() {
             {history.length > 0 && (
                 <div className="relative mb-6">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-tertiary)' }} />
-                    <input type="text" placeholder="Search by policy name..." value={search}
+                    <input type="text" placeholder={t('Search by policy name...', lang)} value={search}
                         onChange={e => setSearch(e.target.value)}
                         className="input w-full pl-10"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text)' }} />
@@ -104,12 +106,12 @@ export default function History() {
                         style={{ background: 'var(--accent-light)' }}>
                         <Upload size={28} style={{ color: 'var(--accent)' }} />
                     </div>
-                    <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>No Analysis Yet</h3>
+                    <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>{t('No Analysis Yet', lang)}</h3>
                     <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-                        Upload your first policy document to get started with AI-powered compliance analysis.
+                        {t('Upload your first policy document to get started.', lang)}
                     </p>
                     <button onClick={() => navigate('/analysis/new')} className="btn btn-primary gap-2">
-                        <Upload size={16} /> Start Your First Analysis
+                        <Upload size={16} /> {t('Start Your First Analysis', lang)}
                     </button>
                 </div>
             )}

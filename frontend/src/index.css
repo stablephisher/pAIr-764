@@ -1025,11 +1025,31 @@ a:hover {
   visibility: hidden;
   transition: all var(--transition);
   margin-bottom: 0.5rem;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: var(--shadow-md);
 }
 
 .tooltip:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+/* Ensure error containers always have readable hover text */
+[style*="red-light"]:hover,
+.error-container:hover {
+  cursor: default;
+}
+
+/* SVG chart hover readability - ensure pie/bar overlays are visible */
+svg path[style*="cursor"]:hover,
+svg rect[style*="cursor"]:hover {
+  filter: brightness(1.15);
+}
+
+/* Ensure all badge text stays visible on hover */
+.badge:hover {
+  filter: brightness(0.95);
 }
 
 /* ═══ ANIMATION KEYFRAMES ═══ */

@@ -1,12 +1,13 @@
 import React from 'react';
 import { BarChart3, Shield, Leaf, Activity, CheckCircle, Building2, Loader2 } from 'lucide-react';
+import { t } from '../i18n/translations';
 
-export default function AnalyticsView({ analytics, loading }) {
+export default function AnalyticsView({ analytics, loading, lang = 'en' }) {
     if (loading) {
         return (
             <div className="text-center py-16">
                 <Loader2 size={32} className="animate-spin mx-auto mb-4" style={{ color: 'var(--accent)' }} />
-                <p style={{ color: 'var(--text-secondary)' }}>Loading analytics...</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('Loading analytics...', lang)}</p>
             </div>
         );
     }
@@ -27,25 +28,25 @@ export default function AnalyticsView({ analytics, loading }) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="card p-5 text-center">
                         <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{analytics.total_analyses}</div>
-                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Total Analyses</p>
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('Total Analyses', lang)}</p>
                     </div>
                     <div className="card p-5 text-center">
                         <div className="text-3xl font-bold" style={{ color: analytics.avg_risk_score > 70 ? 'var(--red)' : analytics.avg_risk_score > 40 ? 'var(--orange)' : 'var(--green)' }}>{analytics.avg_risk_score}</div>
-                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Avg Risk Score</p>
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('Avg Risk Score', lang)}</p>
                     </div>
                     <div className="card p-5 text-center">
                         <div className="text-3xl font-bold" style={{ color: 'var(--green)' }}>{analytics.avg_sustainability_score}</div>
-                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Avg Green Score</p>
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('Avg Green Score', lang)}</p>
                     </div>
                     <div className="card p-5 text-center">
                         <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{analytics.total_schemes}</div>
-                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Schemes Matched</p>
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('Schemes Matched', lang)}</p>
                     </div>
                 </div>
 
                 {/* Risk Breakdown */}
                 <div className="card p-6">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2"><Shield size={18} style={{ color: 'var(--orange)' }} /> Risk Distribution</h3>
+                    <h3 className="font-semibold mb-4 flex items-center gap-2"><Shield size={18} style={{ color: 'var(--orange)' }} /> {t('Risk Distribution', lang)}</h3>
                     <div className="grid grid-cols-4 gap-3">
                         {Object.entries(analytics.risk_breakdown || {}).map(([level, count]) => (
                             <div key={level} className="p-3 rounded-xl text-center" style={{
@@ -62,19 +63,19 @@ export default function AnalyticsView({ analytics, loading }) {
 
                 {/* Sustainability Totals */}
                 <div className="card p-6">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2"><Leaf size={18} style={{ color: 'var(--green)' }} /> Sustainability Impact</h3>
+                    <h3 className="font-semibold mb-4 flex items-center gap-2"><Leaf size={18} style={{ color: 'var(--green)' }} /> {t('Sustainability Impact', lang)}</h3>
                     <div className="grid grid-cols-3 gap-4">
                         <div className="p-4 rounded-xl text-center" style={{ background: 'var(--green-light)' }}>
                             <div className="text-2xl font-bold" style={{ color: 'var(--green)' }}>{analytics.sustainability_totals?.paper_saved || 0}</div>
-                            <p className="text-xs mt-1">Pages Saved</p>
+                            <p className="text-xs mt-1">{t('Pages Saved', lang)}</p>
                         </div>
                         <div className="p-4 rounded-xl text-center" style={{ background: 'var(--green-light)' }}>
                             <div className="text-2xl font-bold" style={{ color: 'var(--green)' }}>{analytics.sustainability_totals?.co2_saved_kg || 0} kg</div>
-                            <p className="text-xs mt-1">CO₂ Saved</p>
+                            <p className="text-xs mt-1">{t('CO₂ Saved', lang)}</p>
                         </div>
                         <div className="p-4 rounded-xl text-center" style={{ background: 'var(--green-light)' }}>
                             <div className="text-2xl font-bold" style={{ color: 'var(--green)' }}>₹{analytics.sustainability_totals?.cost_saved_inr || 0}</div>
-                            <p className="text-xs mt-1">Cost Saved</p>
+                            <p className="text-xs mt-1">{t('Cost Saved', lang)}</p>
                         </div>
                     </div>
                 </div>
@@ -82,7 +83,7 @@ export default function AnalyticsView({ analytics, loading }) {
                 {/* Score Trend */}
                 {analytics.score_trend?.length > 0 && (
                     <div className="card p-6">
-                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Activity size={18} style={{ color: 'var(--accent)' }} /> Score Trend</h3>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Activity size={18} style={{ color: 'var(--accent)' }} /> {t('Score Trend', lang)}</h3>
                         <div className="space-y-2">
                             {analytics.score_trend.map((item, i) => (
                                 <div key={i} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
@@ -105,7 +106,7 @@ export default function AnalyticsView({ analytics, loading }) {
                 {/* Matched Schemes */}
                 {analytics.schemes_matched?.length > 0 && (
                     <div className="card p-6">
-                        <h3 className="font-semibold mb-4 flex items-center gap-2"><CheckCircle size={18} style={{ color: 'var(--accent)' }} /> Government Schemes Matched</h3>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2"><CheckCircle size={18} style={{ color: 'var(--accent)' }} /> {t('Government Schemes Matched', lang)}</h3>
                         <div className="flex flex-wrap gap-2">
                             {analytics.schemes_matched.map((s, i) => (
                                 <span key={i} className="px-3 py-1.5 rounded-full text-sm font-medium" style={{
@@ -119,7 +120,7 @@ export default function AnalyticsView({ analytics, loading }) {
                 {/* Sectors */}
                 {analytics.sectors_covered?.length > 0 && (
                     <div className="card p-6">
-                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Building2 size={18} /> Sectors Analyzed</h3>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Building2 size={18} /> {t('Sectors Analyzed', lang)}</h3>
                         <div className="flex flex-wrap gap-2">
                             {analytics.sectors_covered.map((s, i) => (
                                 <span key={i} className="px-3 py-1.5 rounded-full text-sm" style={{

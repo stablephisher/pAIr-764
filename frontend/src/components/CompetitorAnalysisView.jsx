@@ -177,9 +177,9 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             <div className="card p-6">
                 <h4 className="font-semibold mb-4">{t('Market Metrics', lang)}</h4>
                 <MiniBarChart data={[
-                    { label: 'Barrier to Entry', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[metrics.barrier_to_entry] || 50, color: 'var(--orange)', max: 100, suffix: '' },
-                    { label: 'Price Sensitivity', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[metrics.price_sensitivity] || 50, color: 'var(--red)', max: 100, suffix: '' },
-                    { label: 'Digital Adoption', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[metrics.digital_adoption] || 50, color: 'var(--accent)', max: 100, suffix: '' },
+                    { label: 'Barrier to Entry', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[(metrics.barrier_to_entry || '').toUpperCase()] || 50, color: '#f59e0b', max: 100, suffix: '' },
+                    { label: 'Price Sensitivity', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[(metrics.price_sensitivity || '').toUpperCase()] || 50, color: '#ef4444', max: 100, suffix: '' },
+                    { label: 'Digital Adoption', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[(metrics.digital_adoption || '').toUpperCase()] || 50, color: '#6366f1', max: 100, suffix: '' },
                 ]} />
             </div>
 

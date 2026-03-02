@@ -1,30 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Globe, Building2, Scale, Briefcase, BookOpen, ExternalLink, Loader2 } from 'lucide-react';
+import { Globe, Building2, Scale, Briefcase, BookOpen, ExternalLink, Loader2, Star, Sparkles } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import { t } from '../i18n/translations';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function ResourcesView() {
+    const { language, profile } = useAppContext();
+    const lang = language?.code || 'en';
     const [resources, setResources] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get(`${API}/api/resources`).then(r => { setResources(r.data); setLoading(false); }).catch(() => setLoading(false));
-    }, []);
+        const params = {};
+        if (profile?.sector) params.sector = profile.sector;
+        axios.get(`${API}/api/resources`, { params }).then(r => { setResources(r.data); setLoading(false); }).catch(() => setLoading(false));
+    }, [profile?.sector]);
 
     if (loading) return <div className="text-center py-16"><Loader2 size={32} className="animate-spin mx-auto" style={{ color: 'var(--accent)' }} /></div>;
     if (!resources) return null;
 
     const groups = resources.resources || {};
-    const labels = { government_portals: 'Government Portals', compliance_resources: 'Compliance & Tax', business_tools: 'Business Tools', learning_resources: 'Learning & Support' };
+    const labels = { government_portals: t('Government Portals', lang), compliance_resources: t('Compliance & Tax', lang), business_tools: t('Business Tools', lang), learning_resources: t('Learning & Support', lang) };
     const icons = { government_portals: Building2, compliance_resources: Scale, business_tools: Briefcase, learning_resources: BookOpen };
 
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div className="card p-6">
-                <h3 className="text-xl font-bold flex items-center gap-2 mb-1"><Globe size={22} style={{ color: 'var(--accent)' }} /> Business Resources</h3>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Curated, verified resources for Indian MSMEs</p>
+                <h3 className="text-xl font-bold flex items-center gap-2 mb-1"><Globe size={22} style={{ color: 'var(--accent)' }} /> {t('Business Resources', lang)}</h3>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('Curated, verified resources for Indian MSMEs', lang)}</p>
             </div>
+
+            {/* Personalized recommendation banner */}
+            {profile?.sector && (
+                <div className="card p-5" style={{ borderLeft: '3px solid var(--accent)', background: 'var(--accent-light)' }}>
+                    <h4 className="font-semibold flex items-center gap-2 mb-1" style={{ color: 'var(--accent)' }}>
+                        <Sparkles size={16} /> {t('Recommended for Your Business', lang)}
+                    </h4>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        {t('Based on your business profile', lang)} — <strong>{profile.business_name || profile.sector}</strong> ({profile.state || 'India'})
+                    </p>
+                </div>
+            )}
+
             {Object.entries(groups).map(([key, items]) => {
                 const Icon = icons[key] || Globe;
                 return (

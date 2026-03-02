@@ -117,9 +117,9 @@ export default function Navbar() {
                                 <div className="fixed inset-0 z-10" onClick={() => setNotifDropdown(false)} />
                                 <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                                     <div className="p-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Notifications</span>
+                                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{t('Notifications', lang)}</span>
                                         {unreadCount > 0 && (
-                                            <button onClick={markAllNotificationsRead} className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Mark all read</button>
+                                            <button onClick={markAllNotificationsRead} className="text-xs font-medium" style={{ color: 'var(--accent)' }}>{t('Mark all read', lang)}</button>
                                         )}
                                     </div>
                                     <div className="max-h-64 overflow-y-auto">

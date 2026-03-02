@@ -5,11 +5,13 @@ import UploadView from '../components/UploadView';
 import ProcessingView from '../components/ProcessingView';
 import ResultsView from '../components/ResultsView';
 import { useAppContext } from '../context/AppContext';
+import { t } from '../i18n/translations';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function Analysis() {
     const { user, language, profile, refreshHistory } = useAppContext();
+    const lang = language?.code || 'en';
     const navigate = useNavigate();
     const [status, setStatus] = useState('IDLE'); // IDLE | PROCESSING | DONE | ERROR
     const [error, setError] = useState(null);
@@ -56,13 +58,13 @@ export default function Analysis() {
         return (
             <div className="max-w-5xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Analysis Results</h2>
+                    <h2 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{t('Analysis Results', lang)}</h2>
                     <div className="flex items-center gap-2">
-                        <button onClick={() => navigate('/')} className="btn btn-ghost">Home</button>
-                        <button onClick={() => { setStatus('IDLE'); setResult(null); }} className="btn btn-secondary">New Analysis</button>
+                        <button onClick={() => navigate('/')} className="btn btn-ghost">{t('Home', lang)}</button>
+                        <button onClick={() => { setStatus('IDLE'); setResult(null); }} className="btn btn-secondary">{t('Analyze', lang)}</button>
                     </div>
                 </div>
-                <ResultsView data={result} language={language} profile={profile} />
+                <ResultsView data={result} language={lang} profile={profile} />
             </div>
         );
     }

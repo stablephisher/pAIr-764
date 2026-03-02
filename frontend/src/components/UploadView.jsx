@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Upload, FileText, Zap, X, AlertCircle, History, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import { t } from '../i18n/translations';
 
 export default function UploadView({ onAnalyze }) {
-    const { history } = useAppContext();
+    const { history, language } = useAppContext();
+    const lang = language?.code || 'en';
     const navigate = useNavigate();
     const [file, setFile] = useState(null);
     const [dragging, setDragging] = useState(false);
@@ -36,9 +38,9 @@ export default function UploadView({ onAnalyze }) {
     return (
         <div className="max-w-2xl mx-auto py-12 animate-fade-in-up">
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold mb-3">Upload a Policy Document</h1>
+                <h1 className="text-3xl font-bold mb-3">{t('Upload a Policy Document', lang)}</h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    Get instant compliance analysis, risk scores, and scheme recommendations
+                    {t('Get instant compliance analysis, risk scores, and scheme recommendations', lang)}
                 </p>
             </div>
 
@@ -52,7 +54,7 @@ export default function UploadView({ onAnalyze }) {
                         style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
                         <Upload size={28} />
                     </div>
-                    <p className="font-medium mb-1">Click to upload or drag and drop</p>
+                    <p className="font-medium mb-1">{t('Click to upload or drag and drop', lang)}</p>
                     <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>PDF files only (max 10MB)</p>
                 </label>
             </div>
@@ -81,13 +83,13 @@ export default function UploadView({ onAnalyze }) {
 
             {file && !error && (
                 <button onClick={handleAnalyze} className="btn btn-primary w-full mt-6 py-4 text-base">
-                    <Zap size={18} /> Analyze Document
+                    <Zap size={18} /> {t('Analyze Document', lang)}
                 </button>
             )}
 
             <div className="text-center mt-8">
                 <button onClick={() => navigate('/profile')} className="text-sm hover:underline" style={{ color: 'var(--text-secondary)' }}>
-                    Update business profile →
+                    {t('Update business profile', lang)}
                 </button>
             </div>
 
@@ -95,7 +97,7 @@ export default function UploadView({ onAnalyze }) {
             {history && history.length > 0 && (
                 <div className="mt-10">
                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <History size={18} style={{ color: 'var(--accent)' }} /> Recent Analyses
+                        <History size={18} style={{ color: 'var(--accent)' }} /> {t('Recent Analyses', lang)}
                     </h3>
                     <div className="space-y-2">
                         {history.slice(0, 5).map(item => (
@@ -123,7 +125,7 @@ export default function UploadView({ onAnalyze }) {
                     </div>
                     <button onClick={() => navigate('/history')}
                         className="btn btn-secondary w-full mt-4 gap-2 text-sm">
-                        <History size={16} /> View Full History
+                        <History size={16} /> {t('View Full History', lang)}
                     </button>
                 </div>
             )}
