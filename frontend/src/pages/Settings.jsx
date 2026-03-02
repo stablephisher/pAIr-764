@@ -208,7 +208,7 @@ export default function Settings() {
                     </div>
                     <div>
                         <p className="text-xs font-medium" style={{ color: 'var(--text-tertiary)' }}>POWERED BY</p>
-                        <p className="font-bold" style={{ color: 'var(--text)' }}>Google Gemini AI</p>
+                        <p className="font-bold" style={{ color: 'var(--text)' }}>Gemma 3 + LLaMA 3.3</p>
                     </div>
                 </div>
             </div>

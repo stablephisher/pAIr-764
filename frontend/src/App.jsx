@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Shield, Loader2 } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Shield, Zap } from 'lucide-react';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -22,52 +22,55 @@ import ProfileSetup from './components/ProfileSetup';
 
 function LoadingScreen() {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center" style={{ background: 'var(--bg)' }}>
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse"
-                style={{ background: 'var(--accent)', color: 'white' }}>
-                <Shield size={40} />
+        <div className="loading-screen">
+            <div className="loading-logo">
+                <Zap size={36} color="white" fill="white" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">pAIr</h1>
-            <p className="text-gray-500">Loading your workspace...</p>
+            <div className="loading-text">pAIr</div>
+            <div className="loading-subtext">Your AI Compliance Partner</div>
         </div>
     );
 }
 
-function AppContent() {
-    const { user, profile, loading, setProfile } = useAppContext();
-
-    if (loading) return <LoadingScreen />;
+/* Guard wrapper — redirects to login for protected routes */
+function RequireAuth({ children }) {
+    const { user, profile, setProfile } = useAppContext();
+    const navigate = useNavigate();
 
     if (!user) {
-        return <Login />;
+        return <Login onBack={() => navigate('/')} />;
     }
-
-    // If user is logged in but has no profile, show setup
-    // We check if profile is null (it's initialized as null, then set if exists)
-    // If API returns 404, profile stays null? AppContext logic: "if (res.data) setProfile(res.data)".
-    // So if no profile, it remains null.
-    // We need to ensure we don't get stuck if profile fetch fails but user exists.
-    // Ideally AppContext sets profile to 'empty' or similar if 404.
-    // For now assuming profile is null means "needs setup".
 
     if (!profile) {
         return <ProfileSetup user={user} onComplete={setProfile} />;
     }
 
+    return children;
+}
+
+function AppContent() {
+    const { loading } = useAppContext();
+
+    if (loading) return <LoadingScreen />;
+
     return (
         <Routes>
+            {/* Public routes — no login needed */}
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<Home />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="analysis/new" element={<Analysis />} />
-                <Route path="analysis/:id" element={<AnalysisResult />} />
-                <Route path="competitor-analysis" element={<CompetitorAnalysis />} />
-                <Route path="resources" element={<Resources />} />
-                <Route path="history" element={<History />} />
-                <Route path="team" element={<Team />} />
                 <Route path="about" element={<About />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="settings" element={<Settings />} />
+                <Route path="team" element={<Team />} />
+                <Route path="login" element={<Login />} />
+
+                {/* Protected routes — login required */}
+                <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+                <Route path="analysis/new" element={<RequireAuth><Analysis /></RequireAuth>} />
+                <Route path="analysis/:id" element={<RequireAuth><AnalysisResult /></RequireAuth>} />
+                <Route path="competitor-analysis" element={<RequireAuth><CompetitorAnalysis /></RequireAuth>} />
+                <Route path="resources" element={<RequireAuth><Resources /></RequireAuth>} />
+                <Route path="history" element={<RequireAuth><History /></RequireAuth>} />
+                <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
         </Routes>

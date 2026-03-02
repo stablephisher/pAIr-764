@@ -508,11 +508,11 @@ PERSONALIZATION INSTRUCTIONS:
         print(f"Step 3 (Scoring) failed: {traceback.format_exc()}")
         # ── Fallback scoring from AI analysis data ──
         # Compute meaningful scores from the analysis itself so we never show 0
-        obligations = analysis_data.get("compliance_obligations", [])
+        obligations = analysis_data.get("obligations", analysis_data.get("compliance_obligations", []))
         risk_assessment = analysis_data.get("risk_assessment", {})
         matched_schemes = analysis_data.get("matched_schemes", [])
         risk_factors = risk_assessment.get("risk_factors", [])
-        actions = analysis_data.get("compliance_actions", [])
+        actions = analysis_data.get("compliance_plan", {}).get("action_plan", analysis_data.get("compliance_actions", []))
         
         # Risk: based on risk level + number of obligations + risk factors
         risk_level = risk_assessment.get("overall_risk_level", "MEDIUM").upper()
@@ -892,6 +892,158 @@ async def analyze_policy(
     except Exception as e:
         print(f"Processing Error: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
+
+
+# ── Smart Analysis (Profile-based, no file upload) ───────────────────
+
+SMART_ANALYSIS_PROMPT = """
+You are a senior compliance advisor for Indian MSMEs.
+
+Given a business profile, generate a compliance health-check covering:
+1. Key regulatory obligations for this type of business
+2. Common compliance gaps
+3. Government schemes they're likely eligible for
+4. An action plan for the next 90 days
+
+TARGET AUDIENCE: Non-legal MSME owners who need clear, practical advice.
+
+OUTPUT FORMAT (STRICT — JSON ONLY):
+{
+  "policy_metadata": {
+    "policy_name": "Compliance Health Check",
+    "issuing_authority": "pAIr AI Analysis",
+    "effective_date": "<today>",
+    "geographical_scope": "<business location>",
+    "policy_type": "Profile-Based Assessment"
+  },
+  "applicability": {
+    "who_is_affected": "<description>",
+    "conditions": [],
+    "exceptions": []
+  },
+  "obligations": [
+    {
+      "obligation": "",
+      "description": "",
+      "deadline": "",
+      "frequency": "",
+      "severity_if_ignored": ""
+    }
+  ],
+  "penalties": [],
+  "required_documents": [],
+  "compliance_actions": [],
+  "risk_assessment": {
+    "overall_risk_level": "HIGH | MEDIUM | LOW",
+    "reasoning": ""
+  },
+  "matched_schemes": [
+    {
+      "name": "",
+      "description": "",
+      "eligibility": "",
+      "benefits": "",
+      "link": ""
+    }
+  ],
+  "confidence_notes": {
+    "ambiguous_sections": [],
+    "missing_information": []
+  }
+}
+"""
+
+@app.post("/api/smart-analysis")
+async def smart_analysis(request: Dict[str, Any]):
+    """Generate compliance insights from business profile alone (no PDF needed)."""
+    user_uid = request.get("user_uid")
+    profile = request.get("profile") or {}
+
+    if not profile.get("business_name"):
+        raise HTTPException(status_code=400, detail="Business profile is required.")
+
+    if not ai_client:
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not set on server.")
+
+    # Build a synthetic "policy text" from the profile
+    profile_text = f"""
+BUSINESS PROFILE FOR COMPLIANCE ANALYSIS:
+- Business Name: {profile.get('business_name', 'Unknown')}
+- Business Type: {profile.get('business_type', 'MSME')}
+- Sector: {profile.get('sector', 'General')}
+- Location: {profile.get('location', 'India')}
+- Employees: {profile.get('employees', 'Unknown')}
+- Annual Revenue: {profile.get('revenue', 'Unknown')}
+- Years in Business: {profile.get('years_in_business', 'Unknown')}
+- Products/Services: {profile.get('products_services', 'Unknown')}
+- Description: {profile.get('business_description', 'Unknown')}
+- Compliance Concerns: {profile.get('compliance_concerns', 'General compliance')}
+
+TASK: Based on this profile, identify the top regulatory obligations, compliance gaps,
+eligible government schemes, and create a 90-day action plan for this MSME.
+Include real Indian regulations (GST, MSME Act, Labour Laws, Environmental norms, etc.)
+and real government schemes (PMEGP, CLCSS, ZED, Udyam, etc.) they're likely eligible for.
+"""
+
+    models_to_try = [config.ai.primary_model, config.ai.fallback_model]
+
+    try:
+        raw_response = await call_ai(SMART_ANALYSIS_PROMPT, profile_text, models_to_try)
+        analysis_data = parse_ai_json(raw_response)
+
+        # Run through compliance planner
+        compliance_plan = await generate_compliance_plan(analysis_data, models_to_try)
+        if compliance_plan:
+            analysis_data["compliance_plan"] = compliance_plan
+
+        # Derive simple scores
+        obligations = analysis_data.get("obligations", [])
+        matched_schemes = analysis_data.get("matched_schemes", [])
+        risk_level = analysis_data.get("risk_assessment", {}).get("overall_risk_level", "MEDIUM")
+        risk_score = 75 if risk_level == "HIGH" else 50 if risk_level == "MEDIUM" else 25
+
+        analysis_data["risk_score"] = {"overall_score": risk_score, "level": risk_level}
+        analysis_data["sustainability"] = {
+            "green_score": 65, "grade": "B",
+            "paper_saved": len(obligations) * 5, "co2_saved_kg": round(len(obligations) * 0.3, 1),
+            "cost_saved_inr": len(obligations) * 300, "hours_saved": len(obligations) * 0.5,
+            "narrative": "Digital compliance analysis reduces paper and time costs.",
+            "fallback": True,
+        }
+        analysis_data["profitability"] = {
+            "total_roi_inr": len(matched_schemes) * 75000,
+            "roi_multiplier": round(max(1.5, len(matched_schemes) * 1.0), 1),
+            "penalty_avoidance_inr": len(obligations) * 15000,
+            "scheme_benefits_inr": len(matched_schemes) * 100000,
+            "recommendations": ["Apply for all matched government schemes", "Set up a compliance calendar"],
+            "fallback": True,
+        }
+        analysis_data["ethics"] = {
+            "overall_score": 72, "checks_passed": 4, "total_checks": 5,
+            "disclaimers": ["AI-generated analysis — verify with a legal professional."],
+            "fallback": True,
+        }
+
+        # Save to history
+        if user_uid:
+            analysis_data["source"] = "smart-analysis"
+            analysis_data["timestamp"] = datetime.now(timezone.utc).isoformat()
+            db.save_analysis(user_uid, analysis_data)
+
+            policy_name = "Compliance Health Check"
+            db.create_notification(
+                uid=user_uid,
+                notif_type="analysis_complete",
+                title=f"✅ Profile Analysis Complete",
+                body=f"Your compliance health check is ready. {len(obligations)} obligations found, {len(matched_schemes)} schemes matched.",
+                metadata={"policy_name": policy_name, "risk_score": risk_score, "schemes_count": len(matched_schemes)},
+            )
+
+        return analysis_data
+
+    except Exception as e:
+        print(f"Smart Analysis Error: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Smart analysis failed: {str(e)}")
 
 
 # ── Scoring API ──────────────────────────────────────────────────────

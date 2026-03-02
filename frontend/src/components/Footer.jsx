@@ -39,8 +39,8 @@ export default function Footer() {
                             </div>
                             <span className="font-bold text-xl" style={{ color: 'var(--text)' }}>pAIr</span>
                         </div>
-                        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-                            AI-powered compliance navigator for Indian MSMEs. Making regulatory adherence simple, automated, and intelligent.
+                        <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            Helping small businesses navigate government policies — so they can focus on what they do best.
                         </p>
                     </div>
 

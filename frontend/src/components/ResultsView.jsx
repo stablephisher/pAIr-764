@@ -23,8 +23,9 @@ export default function ResultsView({ data, language, profile }) {
         ethics_score: ethicsData.overall_score || 0,
     };
 
-    const obligations = data.compliance_obligations || [];
+    const obligations = data.obligations || data.compliance_obligations || [];
     const compliancePlan = data.compliance_plan || {};
+    const actionPlan = compliancePlan.action_plan || [];
     const riskAssessment = data.risk_assessment || {};
 
     // Score ring component
@@ -226,16 +227,22 @@ export default function ResultsView({ data, language, profile }) {
                                     <div key={i} className="card p-5 flex items-start gap-4">
                                         <CheckCircle size={20} style={{ color: 'var(--accent)' }} className="flex-shrink-0 mt-0.5" />
                                         <div className="flex-1">
-                                            <p className="font-medium mb-2">{obl.description || obl.text}</p>
+                                            <p className="font-medium mb-1">{obl.obligation || obl.description || obl.text || (typeof obl === 'string' ? obl : '')}</p>
+                                            {obl.description && obl.obligation && <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{obl.description}</p>}
                                             <div className="flex flex-wrap gap-2">
-                                                {obl.severity && (
-                                                    <span className={`badge badge-${obl.severity === 'high' ? 'red' : obl.severity === 'medium' ? 'orange' : 'green'}`}>
-                                                        {obl.severity}
+                                                {(obl.severity_if_ignored || obl.severity) && (
+                                                    <span className={`badge badge-${(obl.severity_if_ignored || obl.severity || '').toLowerCase().includes('high') ? 'red' : (obl.severity_if_ignored || obl.severity || '').toLowerCase().includes('medium') ? 'orange' : 'green'}`}>
+                                                        {obl.severity_if_ignored || obl.severity}
                                                     </span>
                                                 )}
                                                 {obl.deadline && (
                                                     <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                                                         <Clock size={12} /> {obl.deadline}
+                                                    </span>
+                                                )}
+                                                {obl.frequency && (
+                                                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+                                                        {obl.frequency}
                                                     </span>
                                                 )}
                                             </div>
@@ -248,56 +255,66 @@ export default function ResultsView({ data, language, profile }) {
 
                     {tab === 'actions' && (
                         <div className="space-y-6">
-                            {/* Immediate Actions */}
-                            {compliancePlan.immediate_actions?.length > 0 && (
+                            {/* Action Plan from Planning Agent */}
+                            {actionPlan.length > 0 && (
                                 <div>
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Zap size={16} style={{ color: 'var(--orange)' }} /> Immediate Actions
+                                        <Zap size={16} style={{ color: 'var(--accent)' }} /> {t('Compliance Action Plan', lang)}
                                     </h4>
-                                    {compliancePlan.immediate_actions.map((action, i) => (
-                                        <div key={i} className="p-4 rounded-xl flex items-start gap-3 mb-2" style={{ background: 'var(--orange-light)' }}>
-                                            <CheckCircle size={18} style={{ color: 'var(--orange)' }} className="flex-shrink-0 mt-0.5" />
+                                    {actionPlan.map((step, i) => (
+                                        <div key={i} className="p-4 rounded-xl flex items-start gap-3 mb-3" style={{ background: 'var(--bg-secondary)' }}>
+                                            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
+                                                style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                                                {step.step_number || i + 1}
+                                            </div>
                                             <div className="flex-1">
-                                                <p className="text-sm font-medium">{action.action || action}</p>
-                                                {action.deadline && <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Deadline: {action.deadline}</p>}
+                                                <p className="text-sm font-semibold mb-1">{step.action || (typeof step === 'string' ? step : '')}</p>
+                                                {step.why_it_matters && <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>{step.why_it_matters}</p>}
+                                                <div className="flex flex-wrap gap-2">
+                                                    {step.deadline && (
+                                                        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                                                            <Clock size={12} /> {step.deadline}
+                                                        </span>
+                                                    )}
+                                                    {step.risk_if_ignored && (
+                                                        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--red)' }}>
+                                                            <AlertCircle size={12} /> {step.risk_if_ignored}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
 
-                            {/* Short Term */}
-                            {compliancePlan.short_term?.length > 0 && (
+                            {/* Legacy immediate/short/long term actions fallback */}
+                            {actionPlan.length === 0 && compliancePlan.immediate_actions?.length > 0 && (
                                 <div>
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Clock size={16} style={{ color: 'var(--accent)' }} /> Short Term
+                                        <Zap size={16} style={{ color: 'var(--orange)' }} /> Immediate Actions
                                     </h4>
-                                    {compliancePlan.short_term.map((action, i) => (
+                                    {compliancePlan.immediate_actions.map((action, i) => (
                                         <div key={i} className="p-4 rounded-xl flex items-start gap-3 mb-2" style={{ background: 'var(--bg-secondary)' }}>
-                                            <ArrowRight size={18} style={{ color: 'var(--accent)' }} className="flex-shrink-0 mt-0.5" />
-                                            <p className="text-sm">{action.action || action}</p>
+                                            <CheckCircle size={18} style={{ color: 'var(--orange)' }} className="flex-shrink-0 mt-0.5" />
+                                            <p className="text-sm font-medium">{action.action || action}</p>
                                         </div>
                                     ))}
                                 </div>
                             )}
 
-                            {/* Long Term */}
-                            {compliancePlan.long_term?.length > 0 && (
-                                <div>
-                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                        <TrendingUp size={16} style={{ color: 'var(--green)' }} /> Long Term
+                            {/* Monitoring advice from planning */}
+                            {compliancePlan.monitoring_advice && (
+                                <div className="p-4 rounded-xl" style={{ background: 'var(--accent-light)', borderLeft: '3px solid var(--accent)' }}>
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm">
+                                        <TrendingUp size={14} /> Ongoing Monitoring
                                     </h4>
-                                    {compliancePlan.long_term.map((action, i) => (
-                                        <div key={i} className="p-4 rounded-xl flex items-start gap-3 mb-2" style={{ background: 'var(--green-light)' }}>
-                                            <ArrowRight size={18} style={{ color: 'var(--green)' }} className="flex-shrink-0 mt-0.5" />
-                                            <p className="text-sm">{action.action || action}</p>
-                                        </div>
-                                    ))}
+                                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{compliancePlan.monitoring_advice}</p>
                                 </div>
                             )}
 
                             {/* Fallback if no actions */}
-                            {!compliancePlan.immediate_actions?.length && !compliancePlan.short_term?.length && !compliancePlan.long_term?.length && (
+                            {actionPlan.length === 0 && !compliancePlan.immediate_actions?.length && (
                                 <div className="text-center py-12">
                                     <p style={{ color: 'var(--text-secondary)' }}>{t('No specific actions identified', lang)}</p>
                                 </div>

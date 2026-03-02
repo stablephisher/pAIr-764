@@ -66,7 +66,7 @@ export default function Navbar() {
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-1 ml-6 mr-auto">
-                    <NavItem to="/" icon={Zap} label={t('Analyze', lang)} />
+                    <NavItem to="/" icon={Zap} label={t('Home', lang)} />
                     <NavItem to="/dashboard" icon={BarChart3} label={t('Dashboard', lang)} />
                     <NavItem to="/competitor-analysis" icon={Briefcase} label={t('Competitor', lang)} />
                     <NavItem to="/resources" icon={Globe} label={t('Resources', lang)} />
@@ -212,7 +212,7 @@ export default function Navbar() {
                 <div className="md:hidden border-t" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                     <div className="p-3 space-y-1">
                         {[
-                            { to: '/', icon: Zap, label: t('Analyze', lang) },
+                            { to: '/', icon: Zap, label: t('Home', lang) },
                             { to: '/dashboard', icon: BarChart3, label: t('Dashboard', lang) },
                             { to: '/competitor-analysis', icon: Briefcase, label: t('Competitor Analysis', lang) },
                             { to: '/resources', icon: Globe, label: t('Resources', lang) },

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Zap, Moon, Sun, Settings, Loader2, CheckCircle, ArrowRight, Building2 } from 'lucide-react';
+import { ArrowLeft, Zap, Moon, Sun, Settings, Loader2, CheckCircle, ArrowRight, Building2, Sparkles } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -22,13 +22,35 @@ export default function ProfileSetup({ user, onComplete, existingProfile, onCanc
         years_in_business: existingProfile?.years_in_business || '',
     });
     const [saving, setSaving] = useState(false);
+    const [analyzing, setAnalyzing] = useState(false);
+
+    const triggerSmartAnalysis = async (savedProfile) => {
+        setAnalyzing(true);
+        try {
+            await axios.post(`${API}/api/smart-analysis`, {
+                user_uid: user.uid,
+                profile: savedProfile,
+            });
+        } catch (e) {
+            console.warn('Smart analysis trigger failed (non-blocking):', e);
+        } finally {
+            setAnalyzing(false);
+            onComplete(savedProfile);
+        }
+    };
 
     const handleSave = async () => {
         setSaving(true);
         try {
             await axios.post(`${API}/api/profile/${user.uid}`, profile);
             localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(profile));
-            onComplete(profile);
+            if (!isEditing) {
+                // New user — trigger smart analysis automatically
+                setSaving(false);
+                await triggerSmartAnalysis(profile);
+            } else {
+                onComplete(profile);
+            }
         } catch (e) {
             console.error('Profile save error:', e);
             localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(profile));
@@ -144,6 +166,31 @@ export default function ProfileSetup({ user, onComplete, existingProfile, onCanc
             setStep(step + 1);
         }
     };
+
+    // Analyzing state — shown after profile save for new users
+    if (analyzing) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: 'var(--bg)' }}>
+                <div className="text-center animate-fade-in-up max-w-md px-6">
+                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
+                        style={{ background: 'var(--gradient-accent, var(--accent))', color: 'white' }}>
+                        <Sparkles size={36} className="animate-pulse" />
+                    </div>
+                    <h1 className="text-2xl font-bold mb-3">Analyzing your business...</h1>
+                    <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+                        Our AI is scanning regulations, matching government schemes,
+                        and building your personalized compliance roadmap. This takes 15-30 seconds.
+                    </p>
+                    <div className="h-2 rounded-full overflow-hidden mx-auto" style={{ background: 'var(--bg-tertiary)', maxWidth: '280px' }}>
+                        <div className="h-full rounded-full progress-animated" style={{ width: '80%', animation: 'shimmer 2s infinite' }} />
+                    </div>
+                    <p className="text-xs mt-4" style={{ color: 'var(--text-tertiary)' }}>
+                        Powered by Gemma 3 + LLaMA 3.3
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>

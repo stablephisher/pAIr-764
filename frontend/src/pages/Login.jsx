@@ -3,7 +3,7 @@ import { Shield, Loader2, AlertCircle, Moon, Sun, Zap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { signInWithGoogle } from '../firebase';
 
-export default function LoginPage() {
+export default function LoginPage({ onBack }) {
     const { theme, toggleTheme } = useTheme();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -25,6 +25,7 @@ export default function LoginPage() {
             {/* Header */}
             <header className="flex items-center justify-between px-6 h-16 border-b" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2">
+                    {onBack && <button onClick={onBack} className="btn btn-ghost btn-icon mr-1" style={{ color: 'var(--text-secondary)' }}>&larr;</button>}
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
                         <Zap size={18} color="white" fill="white" />
                     </div>
