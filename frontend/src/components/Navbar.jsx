@@ -9,6 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import { LANGUAGES } from '../constants';
 import { logOut } from '../firebase';
+import { t } from '../i18n/translations';
 
 export default function Navbar() {
     const { user, profile, language, setLanguage, notifications, markAllNotificationsRead } = useAppContext();
@@ -21,6 +22,7 @@ export default function Navbar() {
     const [mobileMenu, setMobileMenu] = useState(false);
 
     const unreadCount = notifications.filter(n => !n.read).length;
+    const lang = language?.code || 'en';
 
     const isActive = (path) => {
         if (path === '/') return location.pathname === '/';
@@ -64,12 +66,13 @@ export default function Navbar() {
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-1 ml-6 mr-auto">
-                    <NavItem to="/" icon={Zap} label="Analyze" />
-                    <NavItem to="/dashboard" icon={BarChart3} label="Dashboard" />
-                    <NavItem to="/competitor-analysis" icon={Briefcase} label="Competitor" />
-                    <NavItem to="/resources" icon={Globe} label="Resources" />
-                    <NavItem to="/history" icon={Clock} label="History" />
-                    <NavItem to="/team" icon={User} label="Team" />
+                    <NavItem to="/" icon={Zap} label={t('Analyze', lang)} />
+                    <NavItem to="/dashboard" icon={BarChart3} label={t('Dashboard', lang)} />
+                    <NavItem to="/competitor-analysis" icon={Briefcase} label={t('Competitor', lang)} />
+                    <NavItem to="/resources" icon={Globe} label={t('Resources', lang)} />
+                    <NavItem to="/history" icon={Clock} label={t('History', lang)} />
+                    <NavItem to="/team" icon={User} label={t('Team', lang)} />
+                    <NavItem to="/about" icon={FileText} label={t('About', lang)} />
                 </nav>
 
                 {/* Right Actions */}
@@ -123,7 +126,7 @@ export default function Navbar() {
                                         {notifications.length === 0 ? (
                                             <div className="p-8 text-center" style={{ color: 'var(--text-tertiary)' }}>
                                                 <Bell size={24} className="mx-auto mb-2 opacity-40" />
-                                                <p className="text-sm">No notifications yet</p>
+                                                <p className="text-sm">{t('No notifications yet', lang)}</p>
                                             </div>
                                         ) : (
                                             notifications.map(n => (
@@ -179,19 +182,19 @@ export default function Navbar() {
                                             <Link to="/profile" onClick={() => setProfileDropdown(false)}
                                                 className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
                                                 style={{ color: 'var(--text-secondary)' }}>
-                                                <Building2 size={16} /> Manage Businesses
+                                                <Building2 size={16} /> {t('Manage Businesses', lang)}
                                             </Link>
                                             <Link to="/settings" onClick={() => setProfileDropdown(false)}
                                                 className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
                                                 style={{ color: 'var(--text-secondary)' }}>
-                                                <Settings size={16} /> Settings
+                                                <Settings size={16} /> {t('Settings', lang)}
                                             </Link>
                                         </div>
                                         <div className="border-t py-1" style={{ borderColor: 'var(--border)' }}>
                                             <button onClick={() => { logOut(); setProfileDropdown(false); }}
                                                 className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors"
                                                 style={{ color: 'var(--red)' }}>
-                                                <LogOut size={16} /> Sign Out
+                                                <LogOut size={16} /> {t('Sign Out', lang)}
                                             </button>
                                         </div>
                                     </div>
@@ -199,7 +202,7 @@ export default function Navbar() {
                             )}
                         </div>
                     ) : (
-                        <Link to="/login" className="btn btn-primary btn-sm ml-2">Sign In</Link>
+                        <Link to="/login" className="btn btn-primary btn-sm ml-2">{t('Sign In', lang)}</Link>
                     )}
                 </div>
             </div>
@@ -209,12 +212,13 @@ export default function Navbar() {
                 <div className="md:hidden border-t" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                     <div className="p-3 space-y-1">
                         {[
-                            { to: '/', icon: Zap, label: 'Analyze' },
-                            { to: '/dashboard', icon: BarChart3, label: 'Dashboard' },
-                            { to: '/competitor-analysis', icon: Briefcase, label: 'Competitor Analysis' },
-                            { to: '/resources', icon: Globe, label: 'Resources' },
-                            { to: '/history', icon: Clock, label: 'History' },
-                            { to: '/team', icon: User, label: 'Team' },
+                            { to: '/', icon: Zap, label: t('Analyze', lang) },
+                            { to: '/dashboard', icon: BarChart3, label: t('Dashboard', lang) },
+                            { to: '/competitor-analysis', icon: Briefcase, label: t('Competitor Analysis', lang) },
+                            { to: '/resources', icon: Globe, label: t('Resources', lang) },
+                            { to: '/history', icon: Clock, label: t('History', lang) },
+                            { to: '/team', icon: User, label: t('Team', lang) },
+                            { to: '/about', icon: FileText, label: t('About', lang) },
                         ].map(item => (
                             <Link key={item.to} to={item.to} onClick={() => setMobileMenu(false)}
                                 className="flex items-center gap-3 p-3 rounded-lg transition-all"

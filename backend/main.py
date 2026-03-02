@@ -384,10 +384,36 @@ async def run_policy_analysis_pipeline(
     start_time = time.time()
     used_models = []
 
+    # Build personalized context from business profile
+    profile_context = ""
+    if business_profile:
+        bp = business_profile
+        profile_context = f"""
+
+BUSINESS CONTEXT (Personalize your analysis for this MSME):
+- Business Name: {bp.get('business_name', 'Unknown')}
+- Sector: {bp.get('sector', 'Unknown')}
+- State: {bp.get('state', 'India')}
+- Business Type: {bp.get('business_type', 'MSME')}
+- Employee Count: {bp.get('employee_count', 'Unknown')}
+- Annual Revenue: {bp.get('annual_revenue', 'Unknown')}
+- Years in Business: {bp.get('years_in_business', 'Unknown')}
+- Products/Services: {bp.get('products_services', 'Unknown')}
+- Owner Category: {bp.get('owner_category', 'Unknown')}
+- Registration Type: {bp.get('registration_type', 'Unknown')}
+
+PERSONALIZATION INSTRUCTIONS:
+- Tailor all compliance actions specifically for a {bp.get('sector', '')} business in {bp.get('state', 'India')}
+- Consider the business size ({bp.get('employee_count', '')} employees) when assessing risk severity
+- Highlight obligations most relevant to {bp.get('business_type', 'MSME')} businesses
+- If the business has been operating for {bp.get('years_in_business', 'unknown')} years, factor in grandfathering clauses
+- Match government schemes specifically for {bp.get('owner_category', '')} category owners in {bp.get('state', 'India')}
+"""
+
     try:
         raw_step_1_response = await call_ai(
             SYSTEM_PROMPT,
-            f"INPUT POLICY TEXT:\n{policy_text}",
+            f"{profile_context}\nINPUT POLICY TEXT:\n{policy_text}",
             models_to_try,
         )
         used_models.append(config.ai.primary_model)

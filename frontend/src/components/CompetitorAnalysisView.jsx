@@ -1,16 +1,54 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Briefcase, Globe, TrendingUp, TrendingDown, Target, Shield, Users, CheckCircle, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { Briefcase, Globe, TrendingUp, TrendingDown, Target, Shield, Users, CheckCircle, AlertCircle, RefreshCw, Loader2, Clock } from 'lucide-react';
 import MiniBarChart from './charts/MiniBarChart';
+import { useAppContext } from '../context/AppContext';
+import { t } from '../i18n/translations';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function getCacheKey(profile) {
+    return `pair-competitor-${profile?.sector || 'default'}-${profile?.state || 'India'}`;
+}
+
+function getCachedData(profile) {
+    try {
+        const raw = localStorage.getItem(getCacheKey(profile));
+        if (!raw) return null;
+        const cached = JSON.parse(raw);
+        if (Date.now() - cached.timestamp > CACHE_DURATION_MS) {
+            localStorage.removeItem(getCacheKey(profile));
+            return null;
+        }
+        return cached;
+    } catch { return null; }
+}
+
+function setCachedData(profile, data) {
+    try {
+        localStorage.setItem(getCacheKey(profile), JSON.stringify({ data, timestamp: Date.now() }));
+    } catch { /* quota exceeded */ }
+}
 
 export default function CompetitorAnalysisView({ profile, onBack }) {
+    const { language } = useAppContext();
+    const lang = language?.code || 'en';
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [cachedAt, setCachedAt] = useState(null);
+    const didInit = useRef(false);
 
-    const runAnalysis = useCallback(async () => {
+    const runAnalysis = useCallback(async (forceRefresh = false) => {
+        if (!forceRefresh) {
+            const cached = getCachedData(profile);
+            if (cached) {
+                setData(cached.data);
+                setCachedAt(new Date(cached.timestamp));
+                return;
+            }
+        }
         setLoading(true);
         setError(null);
         try {
@@ -22,28 +60,32 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
                 years_in_business: parseInt(profile?.years_in_business) || 1,
             });
             setData(res.data);
+            setCachedAt(new Date());
+            setCachedData(profile, res.data);
         } catch (e) {
             setError(e.response?.data?.detail || 'Failed to generate analysis');
         }
         setLoading(false);
     }, [profile]);
 
-    useEffect(() => { runAnalysis(); }, [runAnalysis]);
+    useEffect(() => {
+        if (!didInit.current) { didInit.current = true; runAnalysis(false); }
+    }, [runAnalysis]);
 
     if (loading) return (
         <div className="text-center py-20 animate-fade-in-up">
             <Loader2 size={40} className="animate-spin mx-auto mb-4" style={{ color: 'var(--accent)' }} />
-            <p className="font-medium">Analyzing competitive landscape...</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>This may take 15-30 seconds</p>
+            <p className="font-medium">{t('Analyzing competitive landscape...', lang)}</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('This may take 15-30 seconds', lang)}</p>
         </div>
     );
 
     if (error) return (
         <div className="text-center py-16 animate-fade-in-up">
             <AlertCircle size={48} className="mx-auto mb-4" style={{ color: 'var(--red)' }} />
-            <h3 className="font-bold text-lg mb-2">Analysis Failed</h3>
+            <h3 className="font-bold text-lg mb-2">{t('Analysis Failed', lang)}</h3>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-            <button onClick={runAnalysis} className="btn btn-primary gap-2"><RefreshCw size={16} /> Retry</button>
+            <button onClick={runAnalysis} className="btn btn-primary gap-2"><RefreshCw size={16} /> {t('Retry', lang)}</button>
         </div>
     );
 
@@ -60,39 +102,47 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
                 <div className="flex items-start justify-between">
                     <div>
                         <h3 className="text-xl font-bold flex items-center gap-2">
-                            <Briefcase size={22} style={{ color: 'var(--accent)' }} /> Competitive Intelligence
+                            <Briefcase size={22} style={{ color: 'var(--accent)' }} /> {t('Competitive Intelligence', lang)}
                         </h3>
                         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                             Market analysis for {profile?.sector || 'your sector'} in {profile?.state || 'India'}
                         </p>
+                        {cachedAt && (
+                            <p className="text-xs mt-2 flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
+                                <Clock size={12} /> Last updated: {cachedAt.toLocaleDateString()} {cachedAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                <span className="ml-1 opacity-60">• Refreshes weekly</span>
+                            </p>
+                        )}
                     </div>
-                    <button onClick={runAnalysis} className="btn btn-ghost btn-icon" title="Refresh"><RefreshCw size={16} /></button>
+                    <button onClick={() => runAnalysis(true)} className="btn btn-secondary gap-2 text-sm" title="Force fresh analysis">
+                        <RefreshCw size={14} /> {t('Refresh', lang)}
+                    </button>
                 </div>
             </div>
 
             {/* Market Overview */}
             <div className="card p-6">
-                <h4 className="font-semibold mb-4 flex items-center gap-2"><Globe size={18} style={{ color: 'var(--accent)' }} /> Market Overview</h4>
+                <h4 className="font-semibold mb-4 flex items-center gap-2"><Globe size={18} style={{ color: 'var(--accent)' }} /> {t('Market Overview', lang)}</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                     <div className="p-3 rounded-xl text-center" style={{ background: 'var(--accent-light)' }}>
                         <p className="text-lg font-bold" style={{ color: 'var(--accent)' }}>{market.market_size_inr || 'N/A'}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Market Size</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Market Size', lang)}</p>
                     </div>
                     <div className="p-3 rounded-xl text-center" style={{ background: 'var(--green-light)' }}>
                         <p className="text-lg font-bold" style={{ color: 'var(--green)' }}>{market.growth_rate || 'N/A'}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Growth Rate</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Growth Rate', lang)}</p>
                     </div>
                     <div className="p-3 rounded-xl text-center" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-lg font-bold">{metrics.your_estimated_position || 'N/A'}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Your Position</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Your Position', lang)}</p>
                     </div>
                 </div>
                 {market.key_trends?.length > 0 && (
                     <div>
-                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-tertiary)' }}>KEY TRENDS</p>
+                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-tertiary)' }}>{t('KEY TRENDS', lang)}</p>
                         <div className="flex flex-wrap gap-2">
-                            {market.key_trends.map((t, i) => (
-                                <span key={i} className="px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: 'var(--bg-tertiary)' }}>{t}</span>
+                            {market.key_trends.map((trend, i) => (
+                                <span key={i} className="px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: 'var(--bg-tertiary)' }}>{trend}</span>
                             ))}
                         </div>
                     </div>
@@ -102,10 +152,10 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             {/* SWOT */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                    { title: 'Strengths', items: swot.strengths || [], color: 'var(--green)', bg: 'var(--green-light)', icon: TrendingUp },
-                    { title: 'Weaknesses', items: swot.weaknesses || [], color: 'var(--red)', bg: 'var(--red-light)', icon: TrendingDown },
-                    { title: 'Opportunities', items: swot.opportunities || [], color: 'var(--accent)', bg: 'var(--accent-light)', icon: Target },
-                    { title: 'Threats', items: swot.threats || [], color: 'var(--orange)', bg: 'var(--orange-light)', icon: Shield },
+                    { title: t('Strengths', lang), items: swot.strengths || [], color: 'var(--green)', bg: 'var(--green-light)', icon: TrendingUp },
+                    { title: t('Weaknesses', lang), items: swot.weaknesses || [], color: 'var(--red)', bg: 'var(--red-light)', icon: TrendingDown },
+                    { title: t('Opportunities', lang), items: swot.opportunities || [], color: 'var(--accent)', bg: 'var(--accent-light)', icon: Target },
+                    { title: t('Threats', lang), items: swot.threats || [], color: 'var(--orange)', bg: 'var(--orange-light)', icon: Shield },
                 ].map(({ title, items, color, bg, icon: Icon }) => (
                     <div key={title} className="card p-5">
                         <h5 className="font-semibold mb-3 flex items-center gap-2" style={{ color }}>
@@ -125,7 +175,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
 
             {/* Market Metrics */}
             <div className="card p-6">
-                <h4 className="font-semibold mb-4">Market Metrics</h4>
+                <h4 className="font-semibold mb-4">{t('Market Metrics', lang)}</h4>
                 <MiniBarChart data={[
                     { label: 'Barrier to Entry', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[metrics.barrier_to_entry] || 50, color: 'var(--orange)', max: 100, suffix: '' },
                     { label: 'Price Sensitivity', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[metrics.price_sensitivity] || 50, color: 'var(--red)', max: 100, suffix: '' },
@@ -136,7 +186,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             {/* Competitors */}
             {data.key_competitors?.length > 0 && (
                 <div className="card p-6">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Users size={18} /> Key Competitors</h4>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Users size={18} /> {t('Key Competitors', lang)}</h4>
                     <div className="space-y-3">
                         {data.key_competitors.map((c, i) => (
                             <div key={i} className="p-4 rounded-xl transition-all hover:shadow-md cursor-pointer" style={{ background: 'var(--bg-secondary)' }}>
@@ -168,7 +218,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             {/* Recommendations */}
             {data.recommendations?.length > 0 && (
                 <div className="card p-6">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Target size={18} style={{ color: 'var(--green)' }} /> Strategic Recommendations</h4>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Target size={18} style={{ color: 'var(--green)' }} /> {t('Strategic Recommendations', lang)}</h4>
                     <div className="space-y-3">
                         {data.recommendations.map((r, i) => (
                             <div key={i} className="p-4 rounded-xl flex items-start gap-3 transition-all hover:shadow-md" style={{ background: 'var(--bg-secondary)' }}>

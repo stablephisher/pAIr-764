@@ -17,6 +17,7 @@ import History from './pages/History';
 import Team from './pages/Team';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import About from './pages/About';
 import ProfileSetup from './components/ProfileSetup';
 
 function LoadingScreen() {
@@ -64,6 +65,7 @@ function AppContent() {
                 <Route path="resources" element={<Resources />} />
                 <Route path="history" element={<History />} />
                 <Route path="team" element={<Team />} />
+                <Route path="about" element={<About />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

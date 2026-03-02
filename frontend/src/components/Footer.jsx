@@ -1,24 +1,29 @@
 import React from 'react';
-import { Github, Twitter, Linkedin, Mail, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
+import { t } from '../i18n/translations';
 
 export default function Footer() {
     const year = new Date().getFullYear();
+    const { language } = useAppContext();
+    const lang = language?.code || 'en';
 
     const links = {
-        product: [
-            { label: 'Analyze', page: '/' },
-            { label: 'Dashboard', page: '/dashboard' },
-            { label: 'Resources', page: '/resources' },
+        [t('Product', lang)]: [
+            { label: t('Analyze', lang), page: '/' },
+            { label: t('Dashboard', lang), page: '/dashboard' },
+            { label: t('Resources', lang), page: '/resources' },
         ],
-        company: [
-            { label: 'Our Team', page: '/team' },
-            { label: 'History', page: '/history' },
-            { label: 'Settings', page: '/settings' },
+        [t('Company', lang)]: [
+            { label: t('Team', lang), page: '/team' },
+            { label: t('History', lang), page: '/history' },
+            { label: t('Settings', lang), page: '/settings' },
         ],
-        support: [
-            { label: 'Manage Businesses', page: '/profile' },
-            { label: 'Competitor Analysis', page: '/competitor-analysis' },
+        [t('Support', lang)]: [
+            { label: t('Manage Businesses', lang), page: '/profile' },
+            { label: t('Competitor Analysis', lang), page: '/competitor-analysis' },
+            { label: t('About', lang) + ' pAIr', page: '/about' },
         ],
     };
 
@@ -37,32 +42,12 @@ export default function Footer() {
                         <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
                             AI-powered compliance navigator for Indian MSMEs. Making regulatory adherence simple, automated, and intelligent.
                         </p>
-                        <div className="flex gap-4">
-                            <a href="https://github.com" target="_blank" rel="noopener noreferrer"
-                                className="transition-colors" style={{ color: 'var(--text-tertiary)' }}
-                                onMouseEnter={e => e.target.style.color = 'var(--accent)'}
-                                onMouseLeave={e => e.target.style.color = 'var(--text-tertiary)'}>
-                                <Github size={18} />
-                            </a>
-                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-                                className="transition-colors" style={{ color: 'var(--text-tertiary)' }}
-                                onMouseEnter={e => e.target.style.color = 'var(--accent)'}
-                                onMouseLeave={e => e.target.style.color = 'var(--text-tertiary)'}>
-                                <Twitter size={18} />
-                            </a>
-                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                                className="transition-colors" style={{ color: 'var(--text-tertiary)' }}
-                                onMouseEnter={e => e.target.style.color = 'var(--accent)'}
-                                onMouseLeave={e => e.target.style.color = 'var(--text-tertiary)'}>
-                                <Linkedin size={18} />
-                            </a>
-                        </div>
                     </div>
 
                     {/* Links */}
                     {Object.entries(links).map(([category, items]) => (
                         <div key={category}>
-                            <h4 className="font-semibold mb-4 capitalize" style={{ color: 'var(--text)' }}>{category}</h4>
+                            <h4 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>{category}</h4>
                             <ul className="space-y-2">
                                 {items.map((item, i) => (
                                     <li key={i}>
@@ -83,7 +68,7 @@ export default function Footer() {
                 <div className="pt-8 flex flex-col md:flex-row items-center justify-between border-t" style={{ borderColor: 'var(--border)' }}>
                     <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>© {year} pAIr Inc. All rights reserved.</p>
                     <div className="flex items-center gap-1 text-xs mt-4 md:mt-0" style={{ color: 'var(--text-tertiary)' }}>
-                        Made with <Heart size={12} fill="var(--red)" stroke="none" /> for <span className="font-semibold" style={{ color: 'var(--text)' }}>Startup India</span>
+                        Made with <Heart size={12} fill="var(--red)" stroke="none" /> by <span className="font-semibold" style={{ color: 'var(--text)' }}>Team pAIr</span>
                     </div>
                 </div>
             </div>
