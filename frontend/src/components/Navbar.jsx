@@ -211,7 +211,7 @@ export default function Navbar() {
             {mobileMenu && (
                 <div className="md:hidden border-t" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                     <div className="p-3 space-y-1">
-                        {[
+                        {[  
                             { to: '/', icon: Zap, label: t('Home', lang) },
                             { to: '/dashboard', icon: BarChart3, label: t('Dashboard', lang) },
                             { to: '/competitor-analysis', icon: Briefcase, label: t('Competitor Analysis', lang) },
