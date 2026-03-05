@@ -15,7 +15,7 @@ const agents = [
     { name: 'Planning Agent', role: 'Action Planner', desc: 'Turns all that legal analysis into a clear, step-by-step plan you can actually follow.', color: 'from-amber-500 to-orange-500', icon: Target },
     { name: 'Execution Agent', role: 'Draft Generator', desc: 'Creates application drafts, compliance checklists, and form guides so you can start acting right away.', color: 'from-pink-500 to-rose-500', icon: Rocket },
     { name: 'Verification Agent', role: 'Quality Checker', desc: 'Double-checks everything for accuracy before it reaches you. No hallucinations, no guesswork.', color: 'from-cyan-500 to-blue-500', icon: CheckCircle },
-    { name: 'Explanation Agent', role: 'Translator', desc: 'Takes technical jargon and turns it into simple language — in any of 10 Indian languages.', color: 'from-green-500 to-emerald-500', icon: Eye },
+    { name: 'Explanation Agent', role: 'Translator', desc: 'Takes technical jargon and turns it into simple language — in any of 15 Indian languages.', color: 'from-green-500 to-emerald-500', icon: Eye },
 ];
 
 export default function About() {
@@ -55,10 +55,10 @@ export default function About() {
             {/* ═══ QUICK STATS ═══ */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { value: '7', label: 'AI Agents', icon: Brain },
-                    { value: '10', label: 'Languages', icon: Globe },
-                    { value: '5', label: 'Scoring Engines', icon: BarChart3 },
-                    { value: '30+', label: 'Gov Schemes', icon: FileText },
+                    { value: '7', label: t('AI Agents', lang), icon: Brain },
+                    { value: '15', label: t('Languages', lang), icon: Globe },
+                    { value: '5', label: t('Scoring Engines', lang), icon: BarChart3 },
+                    { value: '30+', label: t('Gov Schemes', lang), icon: FileText },
                 ].map((s, i) => (
                     <div key={i} className="card card-hover p-6 text-center hover-lift">
                         <s.icon size={24} className="mx-auto mb-3" style={{ color: 'var(--accent)' }} />
@@ -205,7 +205,7 @@ export default function About() {
                     {[
                         { title: 'Not a chatbot', desc: 'This isn\'t a conversation — it\'s a pipeline. Seven specialized agents analyze, plan, verify, and deliver.' },
                         { title: 'Actually personalized', desc: 'Every analysis knows your sector, your state, your business size. The output is yours, not generic.' },
-                        { title: 'Made for Bharat', desc: '10 Indian languages, designed for non-tech-savvy owners. Your uncle who runs a welding shop can use this.' },
+                        { title: 'Made for Bharat', desc: '15 Indian languages, designed for non-tech-savvy owners. Your uncle who runs a welding shop can use this.' },
                         { title: 'Plans, not summaries', desc: 'We don\'t just explain what a policy says. We tell you what to do, by when, and what happens if you don\'t.' },
                         { title: 'Auto policy monitor', desc: 'New policies get auto-analyzed and affected businesses get instant notifications. Stay ahead, not behind.' },
                         { title: '100% free AI models', desc: 'Built on Gemma 3 27B + LLaMA 3.3 70B — no expensive API. Affordable compliance for every MSME.' },

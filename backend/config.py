@@ -22,10 +22,10 @@ class AIConfig:
     """OpenRouter AI configuration (OpenAI-compatible)."""
     api_key: str = os.getenv("OPENROUTER_API_KEY", "")
     base_url: str = "https://openrouter.ai/api/v1"
-    primary_model: str = "google/gemma-3-27b-it"
-    fallback_model: str = "meta-llama/llama-3.3-70b-instruct"
+    primary_model: str = os.getenv("PRIMARY_MODEL", "google/gemini-2.0-flash-exp:free")
+    fallback_model: str = os.getenv("FALLBACK_MODEL", "google/gemma-3-27b-it:free")
     max_retries: int = 3
-    retry_delay_seconds: int = 5
+    retry_delay_seconds: int = 2
     site_url: str = os.getenv("SITE_URL", "https://pair-msme.vercel.app")
     site_name: str = "pAIr - Policy AI Regulator"
 

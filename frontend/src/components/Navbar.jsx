@@ -88,7 +88,7 @@ export default function Navbar() {
                         {langDropdown && (
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setLangDropdown(false)} />
-                                <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl border py-1 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                                <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl border py-1 z-20 overflow-hidden max-h-80 overflow-y-auto" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                                     {LANGUAGES.map(l => (
                                         <button key={l.code}
                                             onClick={() => { setLanguage(l); setLangDropdown(false); }}

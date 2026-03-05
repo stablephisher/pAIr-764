@@ -1411,6 +1411,81 @@ svg rect[style*="cursor"]:hover {
   h2 {
     font-size: 1.5rem;
   }
+
+  /* Mobile-specific layout fixes */
+  .card {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .card p, .card span {
+    word-break: break-word;
+  }
+
+  /* Score rings smaller on mobile */
+  .score-ring svg {
+    width: 90px;
+    height: 90px;
+  }
+
+  /* Fix overflow on mobile */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Stack grids on mobile */
+  .grid-cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Tabs scroll horizontally on mobile */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Better spacing for mobile nav */
+  nav a, nav button {
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Make analysis results more readable on mobile */
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+  }
+
+  /* Modal/popup improvements */
+  .fixed.inset-0 > div {
+    margin: 0.75rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 380px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+  }
+  .card {
+    padding: 0.75rem;
+  }
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
 }
 
 /* ═══ ACCESSIBILITY ENHANCEMENTS ═══ */

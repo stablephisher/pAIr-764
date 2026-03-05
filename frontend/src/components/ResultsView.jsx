@@ -25,7 +25,16 @@ export default function ResultsView({ data, language, profile }) {
 
     const obligations = data.obligations || data.compliance_obligations || [];
     const compliancePlan = data.compliance_plan || {};
-    const actionPlan = compliancePlan.action_plan || [];
+    // Fallback chain: compliance_plan.action_plan → compliance_actions (mapped) → []
+    let actionPlan = compliancePlan.action_plan || [];
+    if (actionPlan.length === 0 && data.compliance_actions?.length > 0) {
+        actionPlan = data.compliance_actions.map((act, i) => ({
+            step_number: i + 1,
+            action: typeof act === 'string' ? act : (act.action || ''),
+            priority: act.priority || 'MEDIUM',
+            deadline: act.estimated_effort || act.deadline || '',
+        }));
+    }
     const riskAssessment = data.risk_assessment || {};
 
     // Score ring component

@@ -38,7 +38,7 @@ function RequireAuth({ children }) {
     const navigate = useNavigate();
 
     if (!user) {
-        return <Login onBack={() => navigate('/')} />;
+        return <Navigate to="/login" replace />;
     }
 
     if (!profile) {

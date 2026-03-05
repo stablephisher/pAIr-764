@@ -6,16 +6,61 @@ import { t } from '../i18n/translations';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+// Static fallback resources when backend is unreachable
+const FALLBACK_RESOURCES = {
+    government_portals: [
+        { name: "Udyam Registration Portal", desc: "Official MSME registration portal by Government of India", url: "https://udyamregistration.gov.in", category: "Registration" },
+        { name: "GeM Portal", desc: "Government e-Marketplace for public procurement", url: "https://gem.gov.in", category: "Procurement" },
+        { name: "MSME Samadhaan", desc: "Delayed payment monitoring system for MSMEs", url: "https://samadhaan.msme.gov.in", category: "Payments" },
+        { name: "National Single Window System", desc: "Single platform for business approvals and clearances", url: "https://nsws.gov.in", category: "Approvals" },
+        { name: "CHAMPIONS Portal", desc: "MSME grievance redressal and support platform", url: "https://champions.gov.in", category: "Grievance" },
+    ],
+    compliance_resources: [
+        { name: "MCA Portal", desc: "Ministry of Corporate Affairs - Company registration and compliance", url: "https://www.mca.gov.in", category: "Corporate" },
+        { name: "GST Portal", desc: "Goods and Services Tax filing and compliance", url: "https://www.gst.gov.in", category: "Tax" },
+        { name: "Income Tax e-Filing", desc: "Income tax return filing portal", url: "https://www.incometax.gov.in", category: "Tax" },
+        { name: "EPFO Portal", desc: "Employee Provident Fund Organization", url: "https://www.epfindia.gov.in", category: "Labour" },
+        { name: "Shram Suvidha Portal", desc: "Unified portal for labour law compliance", url: "https://shramsuvidha.gov.in", category: "Labour" },
+    ],
+    business_tools: [
+        { name: "MSME Toolkit by Microsoft", desc: "Free digital tools for small businesses", url: "https://www.msmetoolkit.in", category: "Digital" },
+        { name: "Startup India Hub", desc: "Resources and support for startups and MSMEs", url: "https://www.startupindia.gov.in", category: "Startup" },
+        { name: "TReDS Platform", desc: "Trade Receivables Discounting System for MSMEs", url: "https://www.rxil.in", category: "Finance" },
+        { name: "SIDBI", desc: "Small Industries Development Bank - MSME loans and schemes", url: "https://www.sidbi.in", category: "Finance" },
+    ],
+    learning_resources: [
+        { name: "MSME Development Institute", desc: "Training programs and skill development for MSMEs", url: "https://msmedikanpur.gov.in", category: "Training" },
+        { name: "Swayam Portal", desc: "Free online courses including business and compliance", url: "https://swayam.gov.in", category: "Education" },
+        { name: "NIESBUD", desc: "National Institute for Entrepreneurship and Small Business Development", url: "https://niesbud.nic.in", category: "Entrepreneurship" },
+    ],
+};
+
 export default function ResourcesView() {
     const { language, profile } = useAppContext();
     const lang = language?.code || 'en';
     const [resources, setResources] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [usingFallback, setUsingFallback] = useState(false);
 
     useEffect(() => {
         const params = {};
         if (profile?.sector) params.sector = profile.sector;
-        axios.get(`${API}/api/resources`, { params }).then(r => { setResources(r.data); setLoading(false); }).catch(() => setLoading(false));
+        axios.get(`${API}/api/resources`, { params, timeout: 8000 })
+            .then(r => {
+                const data = r.data;
+                if (data?.resources && Object.keys(data.resources).length > 0) {
+                    setResources(data);
+                } else {
+                    setResources({ resources: FALLBACK_RESOURCES });
+                    setUsingFallback(true);
+                }
+                setLoading(false);
+            })
+            .catch(() => {
+                setResources({ resources: FALLBACK_RESOURCES });
+                setUsingFallback(true);
+                setLoading(false);
+            });
     }, [profile?.sector]);
 
     if (loading) return <div className="text-center py-16"><Loader2 size={32} className="animate-spin mx-auto" style={{ color: 'var(--accent)' }} /></div>;

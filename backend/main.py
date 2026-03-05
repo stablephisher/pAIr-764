@@ -33,6 +33,8 @@ import uuid
 import time
 import asyncio
 import traceback
+import re
+from datetime import datetime, timezone
 
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
@@ -297,7 +299,12 @@ async def call_ai(system_prompt: str, user_prompt: str, models_to_try: list = No
     if not ai_client:
         raise Exception("AI not configured — OPENROUTER_API_KEY not set")
 
-    models = models_to_try or [config.ai.primary_model, config.ai.fallback_model]
+    models = models_to_try or [
+        config.ai.primary_model,
+        config.ai.fallback_model,
+        "google/gemma-3-12b-it:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+    ]
     last_exception = None
 
     for model_name in models:
@@ -317,6 +324,7 @@ async def call_ai(system_prompt: str, user_prompt: str, models_to_try: list = No
                     max_tokens=8192,
                 )
                 text = response.choices[0].message.content.strip()
+                logger.info(f"AI call succeeded with model {model_name}")
                 return text
             except Exception as e:
                 last_exception = e
@@ -325,6 +333,9 @@ async def call_ai(system_prompt: str, user_prompt: str, models_to_try: list = No
                     wait = config.ai.retry_delay_seconds * (attempt + 1)
                     logger.warning(f"Rate limited on {model_name}, attempt {attempt+1}. Waiting {wait}s...")
                     await asyncio.sleep(wait)
+                elif "401" in err_str or "403" in err_str:
+                    logger.warning(f"Auth error on {model_name}: {e}")
+                    break  # Skip to next model
                 elif attempt < config.ai.max_retries - 1:
                     await asyncio.sleep(1)
                 else:
@@ -335,15 +346,40 @@ async def call_ai(system_prompt: str, user_prompt: str, models_to_try: list = No
 
 
 def parse_ai_json(text: str) -> dict:
-    """Safely parse JSON from AI response, stripping markdown fences."""
+    """Safely parse JSON from AI response, stripping markdown fences and fixing common issues."""
+    import re
     text = text.strip()
+    # Strip markdown code fences
     if text.startswith("```json"):
         text = text[7:]
     if text.startswith("```"):
         text = text[3:]
     if text.endswith("```"):
         text = text[:-3]
-    return json.loads(text.strip())
+    text = text.strip()
+    
+    # Try direct parse first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    
+    # Try to extract JSON object from surrounding text
+    match = re.search(r'\{[\s\S]*\}', text)
+    if match:
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            pass
+    
+    # Try to fix common issues: trailing commas
+    cleaned = re.sub(r',\s*([}\]])', r'\1', text)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        pass
+    
+    raise json.JSONDecodeError("Could not parse AI response as JSON", text, 0)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -435,6 +471,32 @@ PERSONALIZATION INSTRUCTIONS:
             step_2_duration = time.time() - st2_start
     except Exception as e:
         print(f"Step 2 (Planning) failed: {e}")
+
+    # Ensure compliance_plan always exists with action_plan fallback
+    if "compliance_plan" not in analysis_data or not analysis_data["compliance_plan"]:
+        # Build action_plan from compliance_actions if available
+        raw_actions = analysis_data.get("compliance_actions", [])
+        action_plan = []
+        for idx, act in enumerate(raw_actions):
+            if isinstance(act, str):
+                action_plan.append({"step_number": idx + 1, "action": act, "priority": "MEDIUM"})
+            elif isinstance(act, dict):
+                action_plan.append({"step_number": idx + 1, **act})
+        analysis_data["compliance_plan"] = {"action_plan": action_plan}
+    elif "action_plan" not in analysis_data.get("compliance_plan", {}):
+        # compliance_plan exists but has no action_plan - add from compliance_actions
+        raw_actions = analysis_data.get("compliance_actions", [])
+        action_plan = []
+        for idx, act in enumerate(raw_actions):
+            if isinstance(act, str):
+                action_plan.append({"step_number": idx + 1, "action": act, "priority": "MEDIUM"})
+            elif isinstance(act, dict):
+                action_plan.append({"step_number": idx + 1, **act})
+        analysis_data["compliance_plan"]["action_plan"] = action_plan
+
+    # Ensure obligations key always present
+    if "obligations" not in analysis_data:
+        analysis_data["obligations"] = analysis_data.get("compliance_obligations", [])
 
     # ── Step 3: v3 Scoring Engines ──
     try:
