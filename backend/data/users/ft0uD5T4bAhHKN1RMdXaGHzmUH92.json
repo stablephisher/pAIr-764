@@ -1,5 +1,5 @@
 {
-  "business_name": "geethika",
+  "business_name": "Kirana Store",
   "business_type": "Technology",
   "sector": "IT/Software",
   "employees": "51-200",
@@ -9,7 +9,7 @@
   "products_services": "IT Consulting",
   "compliance_concerns": "GST Compliance",
   "years_in_business": "1-3 years",
-  "updated_at": "2026-03-02T16:39:58.553922",
+  "updated_at": "2026-03-05T15:24:29.450769",
   "uid": "ft0uD5T4bAhHKN1RMdXaGHzmUH92",
   "businesses": [
     {
@@ -21,10 +21,10 @@
       "udyam": ""
     },
     {
-      "business_name": "geethika",
-      "sector": "Technology",
-      "business_type": "OPC (One Person Company)",
-      "state": "Madhya Pradesh",
+      "business_name": "Kirana Store",
+      "sector": "Food & Beverage",
+      "business_type": "Proprietorship",
+      "state": "Telangana",
       "gstin": "",
       "udyam": ""
     }

@@ -1,18 +1,21 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 export default function MainLayout() {
-    const location = useLocation();
-
     return (
-        <div className="flex flex-col min-h-screen font-sans" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+        <div className="flex flex-col min-h-screen" style={{ position: 'relative' }}>
+            {/* Animated background blobs */}
+            <div className="gradient-bg-blobs" aria-hidden="true">
+                <div className="blob blob-1" />
+                <div className="blob blob-2" />
+                <div className="blob blob-3" />
+            </div>
+
             <Navbar />
-            <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 pt-10 pb-16">
-                <div key={location.pathname} className="animate-fade-in-up">
-                    <Outlet />
-                </div>
+            <main className="flex-1" style={{ position: 'relative', zIndex: 1 }}>
+                <Outlet />
             </main>
             <Footer />
         </div>

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
     Zap, BarChart3, Briefcase, Globe, Bell, ChevronDown,
     Languages, LogOut, User, Settings, Building2, Menu, X,
-    Moon, Sun, FileText, Clock, Upload
+    Moon, Sun, FileText, Clock
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
@@ -29,8 +29,14 @@ export default function Navbar() {
         return location.pathname.startsWith(path);
     };
 
+    const closeAllDropdowns = () => {
+        setLangDropdown(false);
+        setNotifDropdown(false);
+        setProfileDropdown(false);
+    };
+
     const NavItem = ({ to, icon: Icon, label }) => (
-        <Link to={to}
+        <Link to={to} onClick={() => setMobileMenu(false)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium ${isActive(to)
                 ? 'text-white shadow-md'
                 : 'hover:opacity-80'
@@ -44,9 +50,31 @@ export default function Navbar() {
         </Link>
     );
 
+    /* Avatar: Google photo with fallback to letter initial */
+    const Avatar = ({ size = 32, className = '' }) => {
+        if (user?.photoURL) {
+            return (
+                <img
+                    src={user.photoURL}
+                    alt={user.displayName || 'User'}
+                    className={`rounded-full object-cover shadow-sm ${className}`}
+                    style={{ width: size, height: size }}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                />
+            );
+        }
+        return (
+            <div className={`rounded-full flex items-center justify-center font-bold text-sm text-white shadow-sm ${className}`}
+                style={{ width: size, height: size, background: 'linear-gradient(135deg, var(--accent), var(--purple))' }}>
+                {user?.displayName?.[0]?.toUpperCase() || 'U'}
+            </div>
+        );
+    };
+
     return (
         <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--bg-glass)', borderColor: 'var(--border)' }}>
-            <div className="w-full max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
                 {/* Logo & Mobile Menu */}
                 <div className="flex items-center gap-3">
@@ -54,7 +82,7 @@ export default function Navbar() {
                         {mobileMenu ? <X size={20} /> : <Menu size={20} />}
                     </button>
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--gradient-accent)' }}>
                             <Zap size={18} color="white" fill="white" />
                         </div>
                         <div className="flex flex-col leading-none">
@@ -88,16 +116,18 @@ export default function Navbar() {
                         {langDropdown && (
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setLangDropdown(false)} />
-                                <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl border py-1 z-20 overflow-hidden max-h-80 overflow-y-auto" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-                                    {LANGUAGES.map(l => (
-                                        <button key={l.code}
-                                            onClick={() => { setLanguage(l); setLangDropdown(false); }}
-                                            className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors"
-                                            style={{ color: language.code === l.code ? 'var(--accent)' : 'var(--text)', background: language.code === l.code ? 'var(--accent-light)' : 'transparent' }}>
-                                            <span className="font-medium">{l.name}</span>
-                                            <span className="text-xs opacity-60">{l.native}</span>
-                                        </button>
-                                    ))}
+                                <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-xl border py-1 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                                    <div className="max-h-[320px] overflow-y-auto overscroll-contain">
+                                        {LANGUAGES.map(l => (
+                                            <button key={l.code}
+                                                onClick={() => { setLanguage(l); setLangDropdown(false); }}
+                                                className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors"
+                                                style={{ color: language.code === l.code ? 'var(--accent)' : 'var(--text)', background: language.code === l.code ? 'var(--accent-light)' : 'transparent' }}>
+                                                <span className="font-medium">{l.name}</span>
+                                                <span className="text-xs opacity-60">{l.native}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </>
                         )}
@@ -157,10 +187,7 @@ export default function Navbar() {
                             <button onClick={() => { setProfileDropdown(!profileDropdown); setLangDropdown(false); setNotifDropdown(false); }}
                                 className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors"
                                 style={{ color: 'var(--text)' }}>
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-sm"
-                                    style={{ background: 'linear-gradient(135deg, var(--accent), var(--purple))' }}>
-                                    {user.displayName ? user.displayName[0] : 'U'}
-                                </div>
+                                <Avatar size={32} />
                                 <div className="hidden sm:flex flex-col items-start leading-tight">
                                     <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>{user.displayName || 'User'}</span>
                                     <span className="text-[10px] truncate max-w-[120px]" style={{ color: 'var(--text-tertiary)' }}>
@@ -174,9 +201,12 @@ export default function Navbar() {
                                 <>
                                     <div className="fixed inset-0 z-10" onClick={() => setProfileDropdown(false)} />
                                     <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-                                        <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-tertiary)' }}>
-                                            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{user.displayName}</p>
-                                            <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }}>{user.email}</p>
+                                        <div className="px-4 py-3 border-b flex items-center gap-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-tertiary)' }}>
+                                            <Avatar size={36} />
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{user.displayName}</p>
+                                                <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }}>{user.email}</p>
+                                            </div>
                                         </div>
                                         <div className="py-1">
                                             <Link to="/profile" onClick={() => setProfileDropdown(false)}
@@ -209,9 +239,9 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             {mobileMenu && (
-                <div className="md:hidden border-t" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                <div className="md:hidden border-t animate-fade-in" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                     <div className="p-3 space-y-1">
-                        {[  
+                        {[
                             { to: '/', icon: Zap, label: t('Home', lang) },
                             { to: '/dashboard', icon: BarChart3, label: t('Dashboard', lang) },
                             { to: '/competitor-analysis', icon: Briefcase, label: t('Competitor Analysis', lang) },

@@ -1,6 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload, Shield, Zap, BarChart3, Globe, ArrowRight, Sparkles, FileCheck, TrendingUp } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+    Zap, Shield, Search, FileCheck, BarChart3, Brain,
+    ArrowRight, Sparkles, Bot, Globe, Mic, ChevronRight,
+    CheckCircle, Clock, TrendingUp, Users, Rocket, Star
+} from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { t } from '../i18n/translations';
 
@@ -9,89 +13,219 @@ export default function Home() {
     const { user, language } = useAppContext();
     const lang = language?.code || 'en';
 
+    const agents = [
+        { icon: Search, name: t('Ingestion Agent', lang), desc: t('Monitors government portals and fetches latest policies automatically', lang), color: '#6366f1' },
+        { icon: Brain, name: t('Reasoning Agent', lang), desc: t('Analyzes policies using AI to extract obligations and deadlines', lang), color: '#7c3aed' },
+        { icon: FileCheck, name: t('Planning Agent', lang), desc: t('Creates personalized compliance action plans for your business', lang), color: '#059669' },
+        { icon: BarChart3, name: t('Scoring Agent', lang), desc: t('Calculates risk, sustainability, and profitability scores', lang), color: '#d97706' },
+        { icon: Shield, name: t('Execution Agent', lang), desc: t('Generates templates, checklists, and filing guides', lang), color: '#dc2626' },
+        { icon: CheckCircle, name: t('Verification Agent', lang), desc: t('Cross-checks results for accuracy and completeness', lang), color: '#0891b2' },
+        { icon: Globe, name: t('Explanation Agent', lang), desc: t('Translates everything into your preferred Indian language', lang), color: '#ec4899' },
+    ];
+
+    const features = [
+        { icon: Bot, title: t('Autonomous AI', lang), desc: t('No uploading PDFs. Just tell us about your business — pAIr does everything automatically.', lang) },
+        { icon: Shield, title: t('Real-time Compliance', lang), desc: t('Stay ahead with automatic policy monitoring and instant alerts on regulatory changes.', lang) },
+        { icon: Globe, title: t('16 Indian Languages', lang), desc: t('Get everything in your language — Hindi, Tamil, Telugu, Bengali, Marathi, and more.', lang) },
+        { icon: TrendingUp, title: t('Smart Scoring', lang), desc: t('Risk, sustainability, profitability, and ethics scores powered by AI scoring engines.', lang) },
+    ];
+
     return (
-        <div className="max-w-5xl mx-auto relative">
-            {/* Decorative orbs */}
-            <div className="orb orb-accent" style={{ width: 280, height: 280, top: -60, right: -80 }} />
-            <div className="orb orb-purple" style={{ width: 200, height: 200, top: 300, left: -100, animationDelay: '3s' }} />
+        <div className="animate-fade-in">
+            {/* Hero Section */}
+            <section className="hero-blur-section py-20 md:py-28 px-4" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="max-w-5xl mx-auto text-center" style={{ position: 'relative', zIndex: 2 }}>
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 animate-fade-in-up"
+                        style={{ background: 'var(--accent-light)', color: 'var(--accent)', border: '1px solid var(--accent-muted)' }}>
+                        <Sparkles size={14} />
+                        <span>{t('Powered by 7 Autonomous AI Agents', lang)}</span>
+                    </div>
 
-            {/* Hero */}
-            <section className="text-center py-16 md:py-20 relative z-10">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8 badge-gradient">
-                    <span className="w-2 h-2 rounded-full bg-white/60"></span>
-                    <span>{t('AI-Powered Compliance for Startup India', lang)}</span>
+                    {/* Headline */}
+                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s', lineHeight: 1.1 }}>
+                        {t('Compliance Made', lang)}{' '}
+                        <span className="text-gradient">{t('Effortless', lang)}</span>
+                        <br />
+                        {t('for Indian MSMEs', lang)}
+                    </h1>
+
+                    {/* Subheadline */}
+                    <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: '0.2s', color: 'var(--text-secondary)' }}>
+                        {t('Tell us about your business — pAIr automatically finds relevant policies, analyzes compliance requirements, and creates personalized action plans in your language.', lang)}
+                    </p>
+
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                        <button onClick={() => navigate(user ? '/dashboard' : '/login')}
+                            className="btn btn-primary px-8 py-4 text-lg gap-2 group">
+                            {user ? t('Go to Dashboard', lang) : t('Get Started Free', lang)}
+                            <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                        </button>
+                        <Link to="/about" className="btn btn-secondary px-6 py-4 gap-2">
+                            {t('Learn More', lang)} <ChevronRight size={16} />
+                        </Link>
+                    </div>
+
+                    {/* Trust indicators */}
+                    <div className="flex flex-wrap items-center justify-center gap-6 mt-10 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                            <Shield size={16} style={{ color: 'var(--green)' }} /> {t('100% Secure', lang)}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                            <Globe size={16} style={{ color: 'var(--accent)' }} /> {t('16 Languages', lang)}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                            <Zap size={16} style={{ color: 'var(--orange)' }} /> {t('Real-time Updates', lang)}
+                        </div>
+                    </div>
                 </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-[1.1] tracking-tight" style={{ color: 'var(--text)' }}>
-                    {t('Compliance Made', lang)} <br />
-                    <span className="text-gradient">
-                        {t('Simple & Intelligent', lang)}
-                    </span>
-                </h1>
-                <p className="text-lg mb-10 max-w-2xl mx-auto leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                    {t('Upload your policy documents and let our AI agents analyze risks, ensure compliance, and unlock growth opportunities for your MSME.', lang)}
-                </p>
+            </section>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button onClick={() => navigate('/analysis/new')}
-                        className="btn btn-primary w-full sm:w-auto flex items-center gap-2 px-8 py-3.5 text-base">
-                        <Upload size={20} /> {t('Start Free Analysis', lang)}
-                    </button>
-                    <button onClick={() => navigate('/dashboard')}
-                        className="btn btn-secondary w-full sm:w-auto flex items-center gap-2 px-8 py-3.5 text-base">
-                        <BarChart3 size={20} /> {t('View Dashboard', lang)}
-                    </button>
+            {/* How it Works */}
+            <section className="py-16 px-4" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold mb-4">{t('How pAIr Works', lang)}</h2>
+                        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
+                            {t('No uploading. No manual work. Fully autonomous compliance.', lang)}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
+                        {[
+                            { step: '01', icon: Users, title: t('Set Up Your Profile', lang), desc: t('Answer a few questions about your business — type, sector, location, and size.', lang) },
+                            { step: '02', icon: Bot, title: t('AI Agents Analyze', lang), desc: t('7 AI agents automatically find, analyze, and score relevant policies and schemes.', lang) },
+                            { step: '03', icon: CheckCircle, title: t('Get Your Action Plan', lang), desc: t('Receive a personalized compliance roadmap with deadlines, templates, and alerts.', lang) },
+                        ].map((item, i) => (
+                            <div key={i} className="card card-hover p-8 text-center group">
+                                <div className="text-5xl font-extrabold mb-4" style={{ color: 'var(--accent-muted)' }}>{item.step}</div>
+                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all group-hover:scale-110"
+                                    style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                                    <item.icon size={24} />
+                                </div>
+                                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
             {/* Features Grid */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16 stagger-children">
-                {[
-                    { icon: Shield, titleKey: "Risk Detection", descKey: "Spot compliance gaps and legal risks instantly — before they become costly problems.", gradient: "from-red-500 to-orange-500" },
-                    { icon: BarChart3, titleKey: "Smart Scoring", descKey: "Get clear scores on Risk, Profitability, Sustainability, and Ethics — all in one place.", gradient: "from-blue-500 to-indigo-500" },
-                    { icon: Globe, titleKey: "Gov Schemes", descKey: "Automatically find government schemes, subsidies, and grants you're actually eligible for.", gradient: "from-emerald-500 to-teal-500" }
-                ].map((f, i) => (
-                    <div key={i} className="card card-hover p-6 hover-lift">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-4 text-white shadow-md`}>
-                            <f.icon size={22} />
-                        </div>
-                        <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text)' }}>{t(f.titleKey, lang)}</h3>
-                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{t(f.descKey, lang)}</p>
+            <section className="py-16 px-4" style={{ background: 'var(--bg-secondary)', position: 'relative', zIndex: 1 }}>
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold mb-4">{t('Why pAIr?', lang)}</h2>
+                        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
+                            {t('Built specifically for Indian MSMEs who need compliance help, not more paperwork.', lang)}
+                        </p>
                     </div>
-                ))}
-            </section>
-
-            {/* How it works */}
-            <section className="mb-16">
-                <h2 className="text-2xl font-bold text-center mb-10" style={{ color: 'var(--text)' }}>{t('How It Works', lang)}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 stagger-children">
-                    {[
-                        { step: "1", icon: Upload, titleKey: "Upload PDF", descKey: "Drop any government policy document" },
-                        { step: "2", icon: Sparkles, titleKey: "AI Analysis", descKey: "7 AI agents work together on your document" },
-                        { step: "3", icon: FileCheck, titleKey: "Get Scores", descKey: "Risk, sustainability, ethics — all scored" },
-                        { step: "4", icon: TrendingUp, titleKey: "Take Action", descKey: "Clear steps with deadlines you can follow" },
-                    ].map((item, i) => (
-                        <div key={i} className="card card-hover text-center p-5">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
-                                style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                                <item.icon size={18} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
+                        {features.map((f, i) => (
+                            <div key={i} className="card card-hover p-6 flex gap-4 group">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110"
+                                    style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                                    <f.icon size={22} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold mb-1">{f.title}</h3>
+                                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
+                                </div>
                             </div>
-                            <h4 className="font-semibold text-sm mb-1" style={{ color: 'var(--text)' }}>{t(item.titleKey, lang)}</h4>
-                            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t(item.descKey, lang)}</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            {/* CTA */}
-            <section className="text-center mb-16 card p-10">
-                <Sparkles size={32} className="mx-auto mb-4" style={{ color: 'var(--accent)' }} />
-                <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text)' }}>{t('Ready to get started?', lang)}</h2>
-                <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-                    {t('Upload your first policy document and see pAIr in action.', lang)}
-                </p>
-                <button onClick={() => navigate('/analysis/new')} className="btn btn-primary gap-2 px-8 py-3">
-                    {t('Get Started', lang)} <ArrowRight size={16} />
-                </button>
+            {/* 7 AI Agents */}
+            <section className="py-16 px-4" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold mb-4">{t('Meet Your 7 AI Agents', lang)}</h2>
+                        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
+                            {t('Each agent specializes in a critical part of compliance analysis.', lang)}
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
+                        {agents.map((agent, i) => (
+                            <div key={i} className="card card-hover p-5 group">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
+                                        style={{ background: `${agent.color}15`, color: agent.color }}>
+                                        <agent.icon size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-sm mb-1">{agent.name}</h4>
+                                        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{agent.desc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Voice Assistant Coming Soon + Future Plans */}
+            <section className="py-16 px-4" style={{ background: 'var(--bg-secondary)', position: 'relative', zIndex: 1 }}>
+                <div className="max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Voice Assistant Teaser */}
+                        <div className="card p-8 text-center" style={{ border: '1px solid var(--accent-muted)' }}>
+                            <div className="badge badge-accent mx-auto mb-4">{t('Coming Soon', lang)}</div>
+                            <div className="flex items-center justify-center gap-1.5 mb-6 h-10">
+                                {[1, 2, 3, 4, 5].map(i => (
+                                    <div key={i} className="voice-wave-bar" style={{ animationDelay: `${i * 0.15}s` }} />
+                                ))}
+                            </div>
+                            <h3 className="text-xl font-bold mb-3 flex items-center justify-center gap-2">
+                                <Mic size={22} style={{ color: 'var(--accent)' }} />
+                                {t('Voice Assistant', lang)}
+                            </h3>
+                            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                {t('Ask compliance questions in your language using voice. Get instant answers from our AI agents — hands-free.', lang)}
+                            </p>
+                        </div>
+
+                        {/* Future Roadmap */}
+                        <div className="card p-8">
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <Rocket size={22} style={{ color: 'var(--accent)' }} />
+                                {t('Future Plans', lang)}
+                            </h3>
+                            <div className="space-y-4">
+                                {[
+                                    { icon: Mic, label: t('Voice-powered compliance queries', lang), badge: 'Q3 2026' },
+                                    { icon: Star, label: t('Mobile app (Android & iOS)', lang), badge: 'Q4 2026' },
+                                    { icon: Clock, label: t('WhatsApp & SMS compliance alerts', lang), badge: 'Q1 2027' },
+                                    { icon: TrendingUp, label: t('Predictive compliance forecasting', lang), badge: 'Q2 2027' },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl transition-colors"
+                                        style={{ background: 'var(--bg-secondary)' }}>
+                                        <item.icon size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                                        <span className="text-sm font-medium flex-1">{item.label}</span>
+                                        <span className="badge badge-gray text-[10px]">{item.badge}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Final CTA */}
+            <section className="hero-blur-section py-20 px-4 text-center" style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('Ready to simplify compliance?', lang)}</h2>
+                    <p className="text-base mb-8 max-w-xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+                        {t('Join Indian MSMEs who trust pAIr to handle their compliance — so they can focus on growing their business.', lang)}
+                    </p>
+                    <button onClick={() => navigate(user ? '/dashboard' : '/login')}
+                        className="btn btn-primary px-8 py-4 text-lg gap-2 group">
+                        {user ? t('Go to Dashboard', lang) : t('Start for Free', lang)}
+                        <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                    </button>
+                </div>
             </section>
         </div>
     );

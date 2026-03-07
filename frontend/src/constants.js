@@ -14,4 +14,5 @@ export const LANGUAGES = [
     { code: 'ur', name: 'Urdu', native: 'اردو' },
     { code: 'ne', name: 'Nepali', native: 'नेपाली' },
     { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' },
+    { code: 'kok', name: 'Konkani', native: 'कोंकणी' },
 ];

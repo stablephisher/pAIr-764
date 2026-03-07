@@ -14,6 +14,7 @@ export function useAppContext() {
 export function AppProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [profileChecked, setProfileChecked] = useState(false);
     const [language, setLanguageState] = useState(() => {
         try {
             const saved = localStorage.getItem('pair-language');
@@ -39,11 +40,13 @@ export function AppProvider({ children }) {
         } else {
             setProfileState(profileData);
         }
+        // Once profile is explicitly set, mark as checked
+        setProfileChecked(true);
     }, []);
 
     // Auth Listener — Firestore-first
     useEffect(() => {
-        if (!auth) { setLoading(false); return; }
+        if (!auth) { setLoading(false); setProfileChecked(true); return; }
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
             if (currentUser) {
@@ -52,6 +55,8 @@ export function AppProvider({ children }) {
                     const profileRes = await axios.get(`${API}/api/profile/${currentUser.uid}`);
                     if (profileRes.data && Object.keys(profileRes.data).length > 0 && profileRes.data.business_name) {
                         setProfileState(profileRes.data);
+                    } else {
+                        setProfileState(null);
                     }
                 } catch (e) {
                     console.warn("Profile fetch failed — trying localStorage fallback", e);
@@ -60,6 +65,7 @@ export function AppProvider({ children }) {
                         if (cached) { const l = JSON.parse(cached); if (l?.business_name) setProfileState(l); }
                     } catch (_) { /* */ }
                 }
+                setProfileChecked(true);
 
                 // 2. Fetch history & notifications in parallel
                 try {
@@ -72,6 +78,7 @@ export function AppProvider({ children }) {
                 } catch (_) { /* */ }
             } else {
                 setProfileState(null);
+                setProfileChecked(true);
                 setHistory([]);
                 setNotifications([]);
             }
@@ -157,7 +164,7 @@ export function AppProvider({ children }) {
 
     return (
         <AppContext.Provider value={{
-            user, loading,
+            user, loading, profileChecked,
             language, setLanguage,
             profile, setProfile, saveProfile,
             history, setHistory, refreshHistory, deleteHistoryItem, clearHistory,

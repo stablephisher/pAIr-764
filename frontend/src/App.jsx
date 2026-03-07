@@ -34,18 +34,43 @@ function LoadingScreen() {
 
 /* Guard wrapper — redirects to login for protected routes */
 function RequireAuth({ children }) {
-    const { user, profile, setProfile } = useAppContext();
-    const navigate = useNavigate();
+    const { user, profile, profileChecked, setProfile } = useAppContext();
 
     if (!user) {
         return <Navigate to="/login" replace />;
     }
 
+    // Wait until profile check is complete
+    if (!profileChecked) {
+        return <LoadingScreen />;
+    }
+
+    // No profile → show onboarding (outside MainLayout to avoid double navbar)
     if (!profile) {
-        return <ProfileSetup user={user} onComplete={setProfile} />;
+        return <Navigate to="/onboarding" replace />;
     }
 
     return children;
+}
+
+/* Onboarding route — only for users without a profile */
+function OnboardingRoute() {
+    const { user, profile, profileChecked, setProfile } = useAppContext();
+    const navigate = useNavigate();
+
+    if (!user) return <Navigate to="/login" replace />;
+    if (!profileChecked) return <LoadingScreen />;
+    if (profile) return <Navigate to="/dashboard" replace />;
+
+    return (
+        <ProfileSetup
+            user={user}
+            onComplete={(p) => {
+                setProfile(p);
+                navigate('/dashboard', { replace: true });
+            }}
+        />
+    );
 }
 
 function AppContent() {
@@ -55,7 +80,10 @@ function AppContent() {
 
     return (
         <Routes>
-            {/* Public routes — no login needed */}
+            {/* Onboarding — outside MainLayout (no navbar) */}
+            <Route path="/onboarding" element={<OnboardingRoute />} />
+
+            {/* Public + Protected routes inside MainLayout */}
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<Home />} />
                 <Route path="about" element={<About />} />
