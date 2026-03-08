@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { FileText, ChevronRight, Trash2, Clock, Upload, AlertCircle, Search } from 'lucide-react';
-import { t } from '../i18n/translations';
+import { FileText, ChevronRight, Trash2, ScrollText, Search, AlertCircle, Plus } from 'lucide-react';
+import useTranslate from '../hooks/useTranslate';
 
-export default function History() {
+export default function Policies() {
     const { history, deleteHistoryItem, clearHistory, language } = useAppContext();
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [deleting, setDeleting] = useState(null);
@@ -18,7 +19,7 @@ export default function History() {
         setDeleting(null);
     };
 
-    const filteredHistory = history.filter(item => {
+    const filteredPolicies = history.filter(item => {
         const name = item.policy_metadata?.policy_name || item.policy_name || '';
         return name.toLowerCase().includes(search.toLowerCase());
     });
@@ -28,34 +29,39 @@ export default function History() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text)' }}>
-                        <Clock size={24} style={{ color: 'var(--accent)' }} /> {t('Analysis History', lang)}
+                        <ScrollText size={24} style={{ color: 'var(--accent)' }} /> {gt('All Policies')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-tertiary)' }}>
-                        {history.length} {t('analysis records', lang)}
+                        {history.length} {gt('policies analyzed')}
                     </p>
                 </div>
-                {history.length > 0 && (
-                    <button onClick={clearHistory} className="btn btn-sm gap-1.5"
-                        style={{ background: 'var(--red-light)', color: 'var(--red)', border: '1px solid transparent' }}>
-                        <Trash2 size={14} /> {t('Clear All', lang)}
+                <div className="flex items-center gap-2">
+                    <button onClick={() => navigate('/analysis/new')} className="btn btn-primary btn-sm gap-1.5">
+                        <Plus size={14} /> {gt('Analyze New Policy')}
                     </button>
-                )}
+                    {history.length > 0 && (
+                        <button onClick={clearHistory} className="btn btn-sm gap-1.5"
+                            style={{ background: 'var(--red-light)', color: 'var(--red)', border: '1px solid transparent' }}>
+                            <Trash2 size={14} /> {gt('Clear All')}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Search */}
             {history.length > 0 && (
                 <div className="relative mb-6">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-tertiary)' }} />
-                    <input type="text" placeholder={t('Search by policy name...', lang)} value={search}
+                    <input type="text" placeholder={gt('Search policies...')} value={search}
                         onChange={e => setSearch(e.target.value)}
                         className="input w-full pl-10"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text)' }} />
                 </div>
             )}
 
-            {filteredHistory.length > 0 ? (
+            {filteredPolicies.length > 0 ? (
                 <div className="space-y-3">
-                    {filteredHistory.map(item => (
+                    {filteredPolicies.map(item => (
                         <div key={item.id}
                             onClick={() => navigate(`/analysis/${item.id}`)}
                             className="card p-4 flex items-center justify-between cursor-pointer transition-all card-hover">
@@ -83,7 +89,7 @@ export default function History() {
                                     <p className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
                                         {item.risk_score?.overall_score || 0}%
                                     </p>
-                                    <p className="text-[10px] uppercase font-medium" style={{ color: 'var(--text-tertiary)' }}>Risk</p>
+                                    <p className="text-[10px] uppercase font-medium" style={{ color: 'var(--text-tertiary)' }}>{gt('Risk')}</p>
                                 </div>
                                 <button onClick={(e) => handleDelete(e, item.id)}
                                     disabled={deleting === item.id}
@@ -98,20 +104,20 @@ export default function History() {
             ) : history.length > 0 ? (
                 <div className="text-center py-16 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                     <AlertCircle size={32} className="mx-auto mb-3" style={{ color: 'var(--text-tertiary)' }} />
-                    <p style={{ color: 'var(--text-secondary)' }}>No results for "{search}"</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>{gt('No results for')} "{search}"</p>
                 </div>
             ) : (
                 <div className="text-center py-20 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
                         style={{ background: 'var(--accent-light)' }}>
-                        <Upload size={28} style={{ color: 'var(--accent)' }} />
+                        <ScrollText size={28} style={{ color: 'var(--accent)' }} />
                     </div>
-                    <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>{t('No Analysis Yet', lang)}</h3>
+                    <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>{gt('No Policies Analyzed Yet')}</h3>
                     <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-                        {t('Upload your first policy document to get started.', lang)}
+                        {gt('Start analyzing government policies to see compliance insights, risk scores, and action plans.')}
                     </p>
                     <button onClick={() => navigate('/analysis/new')} className="btn btn-primary gap-2">
-                        <Upload size={16} /> {t('Start Your First Analysis', lang)}
+                        <Plus size={16} /> {gt('Analyze Your First Policy')}
                     </button>
                 </div>
             )}

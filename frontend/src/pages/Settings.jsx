@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { LANGUAGES } from '../constants';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 import {
     Settings as SettingsIcon, Moon, Sun, Globe, Bell, Shield, Database,
     Download, Trash2, Save, Loader2, ChevronRight, Check, Monitor
@@ -11,6 +11,7 @@ import {
 export default function Settings() {
     const { user, language, setLanguage, clearHistory, history, saveProfile, profile } = useAppContext();
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
     const { theme, toggleTheme } = useTheme();
 
     const [notifPrefs, setNotifPrefs] = useState({
@@ -78,29 +79,29 @@ export default function Settings() {
         </div>
     );
 
-    if (!user) return <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>{t('Please sign in.', lang)}</div>;
+    if (!user) return <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>{gt('Please sign in.')}</div>;
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
             <div className="flex items-center gap-3 mb-2">
                 <SettingsIcon size={24} style={{ color: 'var(--accent)' }} />
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{t('Settings', lang)}</h1>
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{gt('Settings')}</h1>
             </div>
 
             {/* ═══ APPEARANCE ═══ */}
             <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                    <Monitor size={18} style={{ color: 'var(--accent)' }} /> {t('Appearance', lang)}
+                    <Monitor size={18} style={{ color: 'var(--accent)' }} /> {gt('Appearance')}
                 </h2>
                 <div className="space-y-1">
                     <div className="flex items-center justify-between py-3">
                         <div>
-                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t('Theme', lang)}</p>
-                            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Switch between light and dark mode', lang)}</p>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{gt('Theme')}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{gt('Switch between light and dark mode')}</p>
                         </div>
                         <button onClick={toggleTheme} className="btn btn-secondary btn-sm gap-2">
                             {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-                            {theme === 'light' ? t('Dark Mode', lang) : t('Light Mode', lang)}
+                            {theme === 'light' ? gt('Dark Mode') : gt('Light Mode')}
                         </button>
                     </div>
                 </div>
@@ -109,10 +110,10 @@ export default function Settings() {
             {/* ═══ LANGUAGE ═══ */}
             <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                    <Globe size={18} style={{ color: 'var(--accent)' }} /> {t('Language & Region', lang)}
+                    <Globe size={18} style={{ color: 'var(--accent)' }} /> {gt('Language & Region')}
                 </h2>
                 <div>
-                    <p className="text-sm font-medium mb-3" style={{ color: 'var(--text)' }}>{t('Preferred Language', lang)}</p>
+                    <p className="text-sm font-medium mb-3" style={{ color: 'var(--text)' }}>{gt('Preferred Language')}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                         {LANGUAGES.map(l => (
                             <button key={l.code} onClick={() => setLanguage(l)}
@@ -133,26 +134,26 @@ export default function Settings() {
             {/* ═══ NOTIFICATIONS ═══ */}
             <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                    <Bell size={18} style={{ color: 'var(--accent)' }} /> {t('Notifications', lang)}
+                    <Bell size={18} style={{ color: 'var(--accent)' }} /> {gt('Notifications')}
                 </h2>
                 <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-                    <Toggle label={t('Email Notifications', lang)} description="Receive important updates via email"
+                    <Toggle label={gt('Email Notifications')} description="Receive important updates via email"
                         checked={notifPrefs.email_notifications}
                         onChange={() => setNotifPrefs(p => ({ ...p, email_notifications: !p.email_notifications }))} />
-                    <Toggle label={t('Analysis Alerts', lang)} description="Get notified when your analysis is complete"
+                    <Toggle label={gt('Analysis Alerts')} description="Get notified when your analysis is complete"
                         checked={notifPrefs.analysis_alerts}
                         onChange={() => setNotifPrefs(p => ({ ...p, analysis_alerts: !p.analysis_alerts }))} />
-                    <Toggle label={t('Scheme Updates', lang)} description="Be alerted about new government schemes"
+                    <Toggle label={gt('Scheme Updates')} description="Be alerted about new government schemes"
                         checked={notifPrefs.scheme_updates}
                         onChange={() => setNotifPrefs(p => ({ ...p, scheme_updates: !p.scheme_updates }))} />
-                    <Toggle label={t('Weekly Digest', lang)} description="Receive a weekly summary of compliance updates"
+                    <Toggle label={gt('Weekly Digest')} description="Receive a weekly summary of compliance updates"
                         checked={notifPrefs.weekly_digest}
                         onChange={() => setNotifPrefs(p => ({ ...p, weekly_digest: !p.weekly_digest }))} />
                 </div>
                 <div className="mt-4 flex justify-end">
                     <button onClick={handleSavePrefs} disabled={saving} className="btn btn-primary btn-sm gap-1.5">
                         {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : <Save size={14} />}
-                        {saved ? t('Saved!', lang) : t('Save Preferences', lang)}
+                        {saved ? gt('Saved!') : gt('Save Preferences')}
                     </button>
                 </div>
             </div>
@@ -160,21 +161,21 @@ export default function Settings() {
             {/* ═══ DATA & PRIVACY ═══ */}
             <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                    <Database size={18} style={{ color: 'var(--accent)' }} /> {t('Data & Privacy', lang)}
+                    <Database size={18} style={{ color: 'var(--accent)' }} /> {gt('Data & Privacy')}
                 </h2>
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t('Export Your Data', lang)}</p>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{gt('Export Your Data')}</p>
                             <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Download your profile and analysis history as JSON</p>
                         </div>
                         <button onClick={handleExportData} className="btn btn-secondary btn-sm gap-1.5">
-                            <Download size={14} /> {t('Export', lang)}
+                            <Download size={14} /> {gt('Export')}
                         </button>
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
                         <div>
-                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t('Clear All History', lang)}</p>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{gt('Clear All History')}</p>
                             <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                                 {history.length} analysis record{history.length !== 1 ? 's' : ''} stored
                             </p>
@@ -182,7 +183,7 @@ export default function Settings() {
                         <button onClick={handleClearHistory} disabled={clearing || history.length === 0} className="btn btn-sm gap-1.5"
                             style={{ background: 'var(--red-light)', color: 'var(--red)', border: '1px solid var(--red)' }}>
                             {clearing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                            {t('Clear History', lang)}
+                            {gt('Clear History')}
                         </button>
                     </div>
                 </div>
@@ -191,7 +192,7 @@ export default function Settings() {
             {/* ═══ ABOUT ═══ */}
             <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                    <Shield size={18} style={{ color: 'var(--accent)' }} /> {t('About pAIr', lang)}
+                    <Shield size={18} style={{ color: 'var(--accent)' }} /> {gt('About pAIr')}
                 </h2>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>

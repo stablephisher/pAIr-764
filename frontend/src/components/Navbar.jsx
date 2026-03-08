@@ -3,18 +3,20 @@ import { Link, useLocation } from 'react-router-dom';
 import {
     Zap, BarChart3, Briefcase, Globe, Bell, ChevronDown,
     Languages, LogOut, User, Settings, Building2, Menu, X,
-    Moon, Sun, FileText, Clock
+    Moon, Sun, FileText, ScrollText
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import { LANGUAGES } from '../constants';
 import { logOut } from '../firebase';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 
 export default function Navbar() {
     const { user, profile, language, setLanguage, notifications, markAllNotificationsRead } = useAppContext();
     const { theme, toggleTheme } = useTheme();
     const location = useLocation();
+    const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
 
     const [langDropdown, setLangDropdown] = useState(false);
     const [notifDropdown, setNotifDropdown] = useState(false);
@@ -22,7 +24,6 @@ export default function Navbar() {
     const [mobileMenu, setMobileMenu] = useState(false);
 
     const unreadCount = notifications.filter(n => !n.read).length;
-    const lang = language?.code || 'en';
 
     const isActive = (path) => {
         if (path === '/') return location.pathname === '/';
@@ -82,25 +83,19 @@ export default function Navbar() {
                         {mobileMenu ? <X size={20} /> : <Menu size={20} />}
                     </button>
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--gradient-accent)' }}>
-                            <Zap size={18} color="white" fill="white" />
-                        </div>
-                        <div className="flex flex-col leading-none">
-                            <span className="font-bold text-lg" style={{ color: 'var(--text)' }}>pAIr</span>
-                            <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>BETA</span>
-                        </div>
+                        <img src="/pair-logo.png" alt="pAIr" className="h-9 w-auto" style={{ objectFit: 'contain' }} />
                     </Link>
                 </div>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-1 ml-6 mr-auto">
-                    <NavItem to="/" icon={Zap} label={t('Home', lang)} />
-                    <NavItem to="/dashboard" icon={BarChart3} label={t('Dashboard', lang)} />
-                    <NavItem to="/competitor-analysis" icon={Briefcase} label={t('Competitor', lang)} />
-                    <NavItem to="/resources" icon={Globe} label={t('Resources', lang)} />
-                    <NavItem to="/history" icon={Clock} label={t('History', lang)} />
-                    <NavItem to="/team" icon={User} label={t('Team', lang)} />
-                    <NavItem to="/about" icon={FileText} label={t('About', lang)} />
+                    <NavItem to="/" icon={Zap} label={gt('Home')} />
+                    <NavItem to="/dashboard" icon={BarChart3} label={gt('Dashboard')} />
+                    <NavItem to="/competitor-analysis" icon={Briefcase} label={gt('Competitor')} />
+                    <NavItem to="/resources" icon={Globe} label={gt('Resources')} />
+                    <NavItem to="/policies" icon={ScrollText} label={gt('Policies')} />
+                    <NavItem to="/team" icon={User} label={gt('Team')} />
+                    <NavItem to="/about" icon={FileText} label={gt('About')} />
                 </nav>
 
                 {/* Right Actions */}
@@ -111,7 +106,7 @@ export default function Navbar() {
                         <button onClick={() => { setLangDropdown(!langDropdown); setNotifDropdown(false); setProfileDropdown(false); }}
                             className="btn btn-ghost gap-1.5 px-2 py-1.5 rounded-lg" style={{ color: 'var(--text-secondary)' }}>
                             <Languages size={16} />
-                            <span className="hidden lg:inline text-xs font-medium">{language.native}</span>
+                            <span className="hidden lg:inline text-xs font-medium">{language?.native || 'English'}</span>
                         </button>
                         {langDropdown && (
                             <>
@@ -212,19 +207,19 @@ export default function Navbar() {
                                             <Link to="/profile" onClick={() => setProfileDropdown(false)}
                                                 className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
                                                 style={{ color: 'var(--text-secondary)' }}>
-                                                <Building2 size={16} /> {t('Manage Businesses', lang)}
+                                                <Building2 size={16} /> {gt('Manage Businesses')}
                                             </Link>
                                             <Link to="/settings" onClick={() => setProfileDropdown(false)}
                                                 className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
                                                 style={{ color: 'var(--text-secondary)' }}>
-                                                <Settings size={16} /> {t('Settings', lang)}
+                                                <Settings size={16} /> {gt('Settings')}
                                             </Link>
                                         </div>
                                         <div className="border-t py-1" style={{ borderColor: 'var(--border)' }}>
                                             <button onClick={() => { logOut(); setProfileDropdown(false); }}
                                                 className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors"
                                                 style={{ color: 'var(--red)' }}>
-                                                <LogOut size={16} /> {t('Sign Out', lang)}
+                                                <LogOut size={16} /> {gt('Sign Out')}
                                             </button>
                                         </div>
                                     </div>
@@ -232,7 +227,7 @@ export default function Navbar() {
                             )}
                         </div>
                     ) : (
-                        <Link to="/login" className="btn btn-primary btn-sm ml-2">{t('Sign In', lang)}</Link>
+                        <Link to="/login" className="btn btn-primary btn-sm ml-2">{gt('Sign In')}</Link>
                     )}
                 </div>
             </div>
@@ -242,13 +237,13 @@ export default function Navbar() {
                 <div className="md:hidden border-t animate-fade-in" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                     <div className="p-3 space-y-1">
                         {[
-                            { to: '/', icon: Zap, label: t('Home', lang) },
-                            { to: '/dashboard', icon: BarChart3, label: t('Dashboard', lang) },
-                            { to: '/competitor-analysis', icon: Briefcase, label: t('Competitor Analysis', lang) },
-                            { to: '/resources', icon: Globe, label: t('Resources', lang) },
-                            { to: '/history', icon: Clock, label: t('History', lang) },
-                            { to: '/team', icon: User, label: t('Team', lang) },
-                            { to: '/about', icon: FileText, label: t('About', lang) },
+                            { to: '/', icon: Zap, label: gt('Home') },
+                            { to: '/dashboard', icon: BarChart3, label: gt('Dashboard') },
+                            { to: '/competitor-analysis', icon: Briefcase, label: gt('Competitor Analysis') },
+                            { to: '/resources', icon: Globe, label: gt('Resources') },
+                            { to: '/policies', icon: ScrollText, label: gt('Policies') },
+                            { to: '/team', icon: User, label: gt('Team') },
+                            { to: '/about', icon: FileText, label: gt('About') },
                         ].map(item => (
                             <Link key={item.to} to={item.to} onClick={() => setMobileMenu(false)}
                                 className="flex items-center gap-3 p-3 rounded-lg transition-all"

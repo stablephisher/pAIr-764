@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Home, Plus, AlertCircle, Loader2 } from 'lucide-react';
 import ResultsView from '../components/ResultsView';
 import { useAppContext } from '../context/AppContext';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -13,6 +13,7 @@ export default function AnalysisResult() {
     const navigate = useNavigate();
     const { user, language, profile } = useAppContext();
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -76,10 +77,10 @@ export default function AnalysisResult() {
     return (
         <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">{t('Analysis Results', lang)}</h2>
+                <h2 className="text-2xl font-bold">{gt('Analysis Results')}</h2>
                 <div className="flex items-center gap-2">
                     <button onClick={() => navigate('/')} className="btn btn-ghost">
-                        <Home size={16} /> {t('Home', lang)}
+                        <Home size={16} /> {gt('Home')}
                     </button>
                     <button onClick={() => navigate('/analysis/new')} className="btn btn-secondary">
                         <Plus size={16} /> New Analysis

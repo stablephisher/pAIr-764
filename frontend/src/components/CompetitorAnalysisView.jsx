@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Briefcase, Globe, TrendingUp, TrendingDown, Target, Shield, Users, CheckCircle, AlertCircle, RefreshCw, Loader2, Clock } from 'lucide-react';
 import MiniBarChart from './charts/MiniBarChart';
 import { useAppContext } from '../context/AppContext';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -34,6 +34,7 @@ function setCachedData(profile, data) {
 export default function CompetitorAnalysisView({ profile, onBack }) {
     const { language } = useAppContext();
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -75,17 +76,17 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
     if (loading) return (
         <div className="text-center py-20 animate-fade-in-up">
             <Loader2 size={40} className="animate-spin mx-auto mb-4" style={{ color: 'var(--accent)' }} />
-            <p className="font-medium">{t('Analyzing competitive landscape...', lang)}</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('This may take 15-30 seconds', lang)}</p>
+            <p className="font-medium">{gt('Analyzing competitive landscape...')}</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{gt('This may take 15-30 seconds')}</p>
         </div>
     );
 
     if (error) return (
         <div className="text-center py-16 animate-fade-in-up">
             <AlertCircle size={48} className="mx-auto mb-4" style={{ color: 'var(--red)' }} />
-            <h3 className="font-bold text-lg mb-2">{t('Analysis Failed', lang)}</h3>
+            <h3 className="font-bold text-lg mb-2">{gt('Analysis Failed')}</h3>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-            <button onClick={runAnalysis} className="btn btn-primary gap-2"><RefreshCw size={16} /> {t('Retry', lang)}</button>
+            <button onClick={runAnalysis} className="btn btn-primary gap-2"><RefreshCw size={16} /> {gt('Retry')}</button>
         </div>
     );
 
@@ -102,7 +103,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
                 <div className="flex items-start justify-between">
                     <div>
                         <h3 className="text-xl font-bold flex items-center gap-2">
-                            <Briefcase size={22} style={{ color: 'var(--accent)' }} /> {t('Competitive Intelligence', lang)}
+                            <Briefcase size={22} style={{ color: 'var(--accent)' }} /> {gt('Competitive Intelligence')}
                         </h3>
                         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                             Market analysis for {profile?.sector || 'your sector'} in {profile?.state || 'India'}
@@ -115,31 +116,31 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
                         )}
                     </div>
                     <button onClick={() => runAnalysis(true)} className="btn btn-secondary gap-2 text-sm" title="Force fresh analysis">
-                        <RefreshCw size={14} /> {t('Refresh', lang)}
+                        <RefreshCw size={14} /> {gt('Refresh')}
                     </button>
                 </div>
             </div>
 
             {/* Market Overview */}
             <div className="card p-6">
-                <h4 className="font-semibold mb-4 flex items-center gap-2"><Globe size={18} style={{ color: 'var(--accent)' }} /> {t('Market Overview', lang)}</h4>
+                <h4 className="font-semibold mb-4 flex items-center gap-2"><Globe size={18} style={{ color: 'var(--accent)' }} /> {gt('Market Overview')}</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                     <div className="p-3 rounded-xl text-center" style={{ background: 'var(--accent-light)' }}>
                         <p className="text-lg font-bold" style={{ color: 'var(--accent)' }}>{market.market_size_inr || 'N/A'}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Market Size', lang)}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{gt('Market Size')}</p>
                     </div>
                     <div className="p-3 rounded-xl text-center" style={{ background: 'var(--green-light)' }}>
                         <p className="text-lg font-bold" style={{ color: 'var(--green)' }}>{market.growth_rate || 'N/A'}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Growth Rate', lang)}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{gt('Growth Rate')}</p>
                     </div>
                     <div className="p-3 rounded-xl text-center" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-lg font-bold">{metrics.your_estimated_position || 'N/A'}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('Your Position', lang)}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{gt('Your Position')}</p>
                     </div>
                 </div>
                 {market.key_trends?.length > 0 && (
                     <div>
-                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-tertiary)' }}>{t('KEY TRENDS', lang)}</p>
+                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-tertiary)' }}>{gt('KEY TRENDS')}</p>
                         <div className="flex flex-wrap gap-2">
                             {market.key_trends.map((trend, i) => (
                                 <span key={i} className="px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: 'var(--bg-tertiary)' }}>{trend}</span>
@@ -152,10 +153,10 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             {/* SWOT */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                    { title: t('Strengths', lang), items: swot.strengths || [], color: 'var(--green)', bg: 'var(--green-light)', icon: TrendingUp },
-                    { title: t('Weaknesses', lang), items: swot.weaknesses || [], color: 'var(--red)', bg: 'var(--red-light)', icon: TrendingDown },
-                    { title: t('Opportunities', lang), items: swot.opportunities || [], color: 'var(--accent)', bg: 'var(--accent-light)', icon: Target },
-                    { title: t('Threats', lang), items: swot.threats || [], color: 'var(--orange)', bg: 'var(--orange-light)', icon: Shield },
+                    { title: gt('Strengths'), items: swot.strengths || [], color: 'var(--green)', bg: 'var(--green-light)', icon: TrendingUp },
+                    { title: gt('Weaknesses'), items: swot.weaknesses || [], color: 'var(--red)', bg: 'var(--red-light)', icon: TrendingDown },
+                    { title: gt('Opportunities'), items: swot.opportunities || [], color: 'var(--accent)', bg: 'var(--accent-light)', icon: Target },
+                    { title: gt('Threats'), items: swot.threats || [], color: 'var(--orange)', bg: 'var(--orange-light)', icon: Shield },
                 ].map(({ title, items, color, bg, icon: Icon }) => (
                     <div key={title} className="card p-5">
                         <h5 className="font-semibold mb-3 flex items-center gap-2" style={{ color }}>
@@ -175,7 +176,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
 
             {/* Market Metrics */}
             <div className="card p-6">
-                <h4 className="font-semibold mb-4">{t('Market Metrics', lang)}</h4>
+                <h4 className="font-semibold mb-4">{gt('Market Metrics')}</h4>
                 <MiniBarChart data={[
                     { label: 'Barrier to Entry', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[(metrics.barrier_to_entry || '').toUpperCase()] || 50, color: '#f59e0b', max: 100, suffix: '' },
                     { label: 'Price Sensitivity', value: { LOW: 30, MEDIUM: 60, HIGH: 90 }[(metrics.price_sensitivity || '').toUpperCase()] || 50, color: '#ef4444', max: 100, suffix: '' },
@@ -186,7 +187,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             {/* Competitors */}
             {data.key_competitors?.length > 0 && (
                 <div className="card p-6">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Users size={18} /> {t('Key Competitors', lang)}</h4>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Users size={18} /> {gt('Key Competitors')}</h4>
                     <div className="space-y-3">
                         {data.key_competitors.map((c, i) => (
                             <div key={i} className="p-4 rounded-xl transition-all hover:shadow-md cursor-pointer" style={{ background: 'var(--bg-secondary)' }}>
@@ -218,7 +219,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             {/* Recommendations */}
             {data.recommendations?.length > 0 && (
                 <div className="card p-6">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Target size={18} style={{ color: 'var(--green)' }} /> {t('Strategic Recommendations', lang)}</h4>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2"><Target size={18} style={{ color: 'var(--green)' }} /> {gt('Strategic Recommendations')}</h4>
                     <div className="space-y-3">
                         {data.recommendations.map((r, i) => (
                             <div key={i} className="p-4 rounded-xl flex items-start gap-3 transition-all hover:shadow-md" style={{ background: 'var(--bg-secondary)' }}>

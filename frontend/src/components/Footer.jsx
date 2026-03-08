@@ -2,28 +2,29 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 
 export default function Footer() {
     const year = new Date().getFullYear();
     const { language } = useAppContext();
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
 
     const links = {
-        [t('Product', lang)]: [
-            { label: t('Analyze', lang), page: '/' },
-            { label: t('Dashboard', lang), page: '/dashboard' },
-            { label: t('Resources', lang), page: '/resources' },
+        [gt('Product')]: [
+            { label: gt('Analyze'), page: '/' },
+            { label: gt('Dashboard'), page: '/dashboard' },
+            { label: gt('Resources'), page: '/resources' },
         ],
-        [t('Company', lang)]: [
-            { label: t('Team', lang), page: '/team' },
-            { label: t('History', lang), page: '/history' },
-            { label: t('Settings', lang), page: '/settings' },
+        [gt('Company')]: [
+            { label: gt('Team'), page: '/team' },
+            { label: gt('Policies'), page: '/policies' },
+            { label: gt('Settings'), page: '/settings' },
         ],
-        [t('Support', lang)]: [
-            { label: t('Manage Businesses', lang), page: '/profile' },
-            { label: t('Competitor Analysis', lang), page: '/competitor-analysis' },
-            { label: t('About', lang) + ' pAIr', page: '/about' },
+        [gt('Support')]: [
+            { label: gt('Manage Businesses'), page: '/profile' },
+            { label: gt('Competitor Analysis'), page: '/competitor-analysis' },
+            { label: gt('About') + ' pAIr', page: '/about' },
         ],
     };
 
@@ -34,13 +35,10 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-                                <span className="font-bold text-white">P</span>
-                            </div>
-                            <span className="font-bold text-xl" style={{ color: 'var(--text)' }}>pAIr</span>
+                            <img src="/pair-logo.png" alt="pAIr" className="h-8 w-auto" style={{ objectFit: 'contain' }} />
                         </div>
                         <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                            Helping small businesses navigate government policies — so they can focus on what they do best.
+                            {gt('Helping small businesses navigate government policies so they can focus on what they do best.')}
                         </p>
                     </div>
 

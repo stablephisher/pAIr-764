@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Shield, Globe, Bot, Loader2, Sparkles, CheckCircle } from 'lucide-react';
+import { Shield, Globe, Bot, Loader2, Sparkles } from 'lucide-react';
 import { signInWithGoogle } from '../firebase';
 import { useAppContext } from '../context/AppContext';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 
 export default function Login() {
     const { user, profile, language } = useAppContext();
@@ -11,6 +11,7 @@ export default function Login() {
     const [signingIn, setSigningIn] = useState(false);
     const [error, setError] = useState(null);
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
 
     // Redirect authenticated users away from login page
     useEffect(() => {
@@ -24,7 +25,6 @@ export default function Login() {
         setError(null);
         try {
             await signInWithGoogle();
-            // onAuthStateChanged in AppContext handles the rest
         } catch (e) {
             console.error('Sign-in error:', e);
             setError(e.message || 'Sign-in failed. Please try again.');
@@ -33,17 +33,14 @@ export default function Login() {
     };
 
     return (
-        <div className="hero-blur-section min-h-[80vh] flex items-center justify-center px-4 py-16">
+        <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
             <div className="max-w-md w-full animate-fade-in-up" style={{ position: 'relative', zIndex: 2 }}>
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse-glow"
-                        style={{ background: 'var(--gradient-accent)', color: 'white' }}>
-                        <Zap size={28} fill="white" />
-                    </div>
-                    <h1 className="text-3xl font-bold mb-2">{t('Welcome to pAIr', lang)}</h1>
+                    <img src="/pair-logo.png" alt="pAIr" className="h-14 w-auto mx-auto mb-4" style={{ objectFit: 'contain' }} />
+                    <h1 className="text-3xl font-bold mb-2">{gt('Welcome to pAIr')}</h1>
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {t('Your AI-powered compliance partner for Indian MSMEs', lang)}
+                        {gt('Your AI-powered compliance partner for Indian MSMEs')}
                     </p>
                 </div>
 
@@ -52,9 +49,9 @@ export default function Login() {
                     {/* Features list */}
                     <div className="space-y-3 mb-8">
                         {[
-                            { icon: Bot, text: t('7 AI agents analyze policies automatically', lang) },
-                            { icon: Shield, text: t('Compliance risk scoring & action plans', lang) },
-                            { icon: Globe, text: t('Available in 16 Indian languages', lang) },
+                            { icon: Bot, text: gt('7 AI agents analyze policies automatically') },
+                            { icon: Shield, text: gt('Compliance risk scoring and action plans') },
+                            { icon: Globe, text: gt('Available in 16 Indian languages') },
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -78,7 +75,7 @@ export default function Login() {
                         onMouseEnter={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px var(--accent-muted)'; }}
                         onMouseLeave={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}>
                         {signingIn ? (
-                            <><Loader2 size={18} className="animate-spin" /> {t('Signing in...', lang)}</>
+                            <><Loader2 size={18} className="animate-spin" /> {gt('Signing in...')}</>
                         ) : (
                             <>
                                 <svg width="18" height="18" viewBox="0 0 48 48">
@@ -87,7 +84,7 @@ export default function Login() {
                                     <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                                 </svg>
-                                {t('Continue with Google', lang)}
+                                {gt('Continue with Google')}
                             </>
                         )}
                     </button>
@@ -101,7 +98,7 @@ export default function Login() {
                     {/* Trust note */}
                     <p className="text-center text-xs mt-6" style={{ color: 'var(--text-tertiary)' }}>
                         <Shield size={12} className="inline mr-1" style={{ verticalAlign: 'middle' }} />
-                        {t('Secured with Firebase Auth. We never store your password.', lang)}
+                        {gt('Secured with Firebase Auth. We never store your password.')}
                     </p>
                 </div>
 
@@ -109,7 +106,7 @@ export default function Login() {
                 <div className="text-center mt-6">
                     <span className="inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                         <Sparkles size={12} />
-                        Code Unnati Innovation Marathon 4.0 — Team pAIr
+                        Code Unnati Innovation Marathon 4.0 - Team pAIr
                     </span>
                 </div>
             </div>

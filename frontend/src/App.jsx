@@ -13,7 +13,7 @@ import Analysis from './pages/Analysis';
 import AnalysisResult from './pages/AnalysisResult';
 import CompetitorAnalysis from './pages/CompetitorAnalysis';
 import Resources from './pages/Resources';
-import History from './pages/History';
+import History from './pages/History'; // Renamed to Policies
 import Team from './pages/Team';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -24,7 +24,7 @@ function LoadingScreen() {
     return (
         <div className="loading-screen">
             <div className="loading-logo">
-                <Zap size={36} color="white" fill="white" />
+                <img src="/pair-logo.png" alt="pAIr" style={{ height: 50, width: 'auto', objectFit: 'contain' }} />
             </div>
             <div className="loading-text">pAIr</div>
             <div className="loading-subtext">Your AI Compliance Partner</div>
@@ -96,7 +96,7 @@ function AppContent() {
                 <Route path="analysis/:id" element={<RequireAuth><AnalysisResult /></RequireAuth>} />
                 <Route path="competitor-analysis" element={<RequireAuth><CompetitorAnalysis /></RequireAuth>} />
                 <Route path="resources" element={<RequireAuth><Resources /></RequireAuth>} />
-                <Route path="history" element={<RequireAuth><History /></RequireAuth>} />
+                <Route path="policies" element={<RequireAuth><History /></RequireAuth>} />
                 <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
                 <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />
                 <Route path="*" element={<Navigate to="/" replace />} />

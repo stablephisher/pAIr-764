@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users, Mail, Phone, GraduationCap, MapPin, Code2, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { t } from '../i18n/translations';
+import useTranslate from '../hooks/useTranslate';
 
 const teamMembers = [
     {
@@ -69,6 +69,7 @@ const teamMembers = [
 export default function Team() {
     const { language } = useAppContext();
     const lang = language?.code || 'en';
+    const { gt } = useTranslate(lang);
     return (
         <div className="max-w-6xl mx-auto">
             {/* Header */}
@@ -76,10 +77,10 @@ export default function Team() {
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6"
                     style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
                     <Sparkles size={14} />
-                    <span>Code Unnati Innovation Marathon 4.0 — Team 13494</span>
+                    <span>Code Unnati Innovation Marathon 4.0 - Team 13494</span>
                 </div>
                 <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--text)' }}>
-                    {t('Meet Team pAIr', lang)}
+                    {gt('Meet Team pAIr')}
                 </h1>
                 <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
                     The passionate minds behind pAIr, working to simplify compliance for millions of Indian MSMEs.
