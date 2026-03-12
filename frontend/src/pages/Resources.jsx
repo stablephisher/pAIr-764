@@ -12,7 +12,7 @@ export default function Resources() {
     const { gt } = useTranslate(lang);
 
     return (
-        <div className="max-w-5xl mx-auto animate-fade-in-up">
+        <div className="w-full px-6 animate-fade-in-up">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
                     <Globe size={24} style={{ color: 'var(--accent)' }} /> {gt('Business Resources')}

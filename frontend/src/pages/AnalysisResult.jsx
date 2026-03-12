@@ -61,7 +61,7 @@ export default function AnalysisResult() {
     if (loading) return <div className="text-center py-20"><Loader2 size={40} className="animate-spin mx-auto text-accent" /></div>;
 
     if (error) return (
-        <div className="max-w-md mx-auto text-center py-16 animate-fade-in-up">
+        <div className="w-full px-6 text-center py-16 animate-fade-in-up">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
                 style={{ background: 'var(--red-light)', color: 'var(--red)' }}>
                 <AlertCircle size={32} />
@@ -75,7 +75,7 @@ export default function AnalysisResult() {
     );
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="w-full px-6">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">{gt('Analysis Results')}</h2>
                 <div className="flex items-center gap-2">

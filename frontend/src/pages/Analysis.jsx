@@ -65,7 +65,7 @@ export default function Analysis() {
 
     if (status === 'DONE' && result) {
         return (
-            <div className="max-w-5xl mx-auto">
+            <div className="w-full px-6">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{gt('Analysis Results')}</h2>
                     <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export default function Analysis() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto py-8 animate-fade-in-up">
+        <div className="w-full px-6 py-8 animate-fade-in-up">
             <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-4"
                     style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>

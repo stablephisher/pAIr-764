@@ -154,7 +154,7 @@ export default function Profile() {
     const profilePhoto = profile?.photo_url || null;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full px-6 space-y-6">
             {/* ═══ USER INFO CARD ═══ */}
             <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
                 <div className="flex items-start gap-5">

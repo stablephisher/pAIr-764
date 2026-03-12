@@ -25,7 +25,7 @@ function LoadingScreen() {
     return (
         <div className="loading-screen">
             <div className="loading-logo">
-                <img src="/pair-logo.png" alt="pAIr" style={{ height: 80, width: 'auto', objectFit: 'contain' }} />
+                <img src="/pair-logo.png" alt="pAIr" style={{ height: 100, width: 'auto', objectFit: 'contain' }} />
             </div>
             <div className="loading-text">pAIr</div>
             <div className="loading-subtext">Your AI Compliance Partner</div>

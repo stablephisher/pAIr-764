@@ -67,8 +67,8 @@ export default function Settings() {
     };
 
     const handleRestartTutorial = () => {
-        const tutorialKey = user ? `pair-tutorial-${user.uid}` : 'pair-tutorial';
-        localStorage.removeItem(tutorialKey);
+        const key = user ? `pair-welcome-${user.uid}` : 'pair-welcome';
+        localStorage.removeItem(key);
         navigate('/dashboard');
     };
 
@@ -90,7 +90,7 @@ export default function Settings() {
     if (!user) return <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>{gt('Please sign in.')}</div>;
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="w-full px-6 space-y-6">
             <div className="flex items-center gap-3 mb-2">
                 <SettingsIcon size={24} style={{ color: 'var(--accent)' }} />
                 <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{gt('Settings')}</h1>

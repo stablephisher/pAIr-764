@@ -109,7 +109,7 @@ export default function PolicyDiscovery() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto animate-fade-in-up">
+        <div className="w-full px-6 animate-fade-in-up">
             {/* Header */}
             <div className="flex items-center justify-between mb-6 mt-9">
                 <div>

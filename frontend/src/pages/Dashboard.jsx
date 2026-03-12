@@ -3,7 +3,7 @@ import axios from 'axios';
 import { BarChart3, Home, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AnalyticsView from '../components/AnalyticsView';
-import Tutorial from '../components/Tutorial';
+import WelcomeModal from '../components/WelcomeModal';
 import { useAppContext } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
 
@@ -16,14 +16,12 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showTutorial, setShowTutorial] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(false);
 
     useEffect(() => {
-        // Check if tutorial should be shown for new users
-        const tutorialKey = user ? `pair-tutorial-${user.uid}` : 'pair-tutorial';
-        const tutorialDone = localStorage.getItem(tutorialKey);
-        if (!tutorialDone) {
-            setShowTutorial(true);
+        const key = user ? `pair-welcome-${user.uid}` : 'pair-welcome';
+        if (!localStorage.getItem(key)) {
+            setShowWelcome(true);
         }
     }, [user]);
 
@@ -36,20 +34,15 @@ export default function Dashboard() {
         }
     }, [user]);
 
-    const handleTutorialComplete = () => {
-        const tutorialKey = user ? `pair-tutorial-${user.uid}` : 'pair-tutorial';
-        localStorage.setItem(tutorialKey, 'completed');
-        setShowTutorial(false);
+    const closeWelcome = () => {
+        const key = user ? `pair-welcome-${user.uid}` : 'pair-welcome';
+        localStorage.setItem(key, '1');
+        setShowWelcome(false);
     };
 
     return (
-        <div className="max-w-5xl mx-auto animate-fade-in-up">
-            {showTutorial && (
-                <Tutorial 
-                    onComplete={handleTutorialComplete} 
-                    onSkip={handleTutorialComplete} 
-                />
-            )}
+        <div className="w-full px-6 animate-fade-in-up">
+            {showWelcome && <WelcomeModal onClose={closeWelcome} />}
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
                     <BarChart3 size={24} style={{ color: 'var(--accent)' }} /> {gt('Analytics Dashboard')}
