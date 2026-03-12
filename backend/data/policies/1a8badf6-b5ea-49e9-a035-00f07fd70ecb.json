@@ -1,0 +1,15 @@
+{
+  "id": "1a8badf6-b5ea-49e9-a035-00f07fd70ecb",
+  "detected_at": "2026-03-12T17:39:55.593948",
+  "timestamp": 1773337195.5939486,
+  "discovery_id": "f419d485",
+  "title": "NITI Aayog releases report on \u201cAchieving Efficiencies in MSME ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2214899&reg=3&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:31.036450",
+  "content_hash": "b1cde7b496b6cef6357418c081d67c5d",
+  "relevance_score": 0.9995627
+}

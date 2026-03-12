@@ -1,0 +1,15 @@
+{
+  "id": "4b83314c-c0df-4b35-8b6e-1814961270e1",
+  "detected_at": "2026-03-12T17:39:55.726182",
+  "timestamp": 1773337195.726183,
+  "discovery_id": "fbfa0daf",
+  "title": "Comptroller and Auditor General of india submits the reports on ...",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2230892",
+  "source": "GST Council",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:42.734573",
+  "content_hash": "1f3cd3d9990e4ae2d2038967def3b6a0",
+  "relevance_score": 0.6688803
+}

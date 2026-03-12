@@ -38,7 +38,7 @@ export default function Navbar() {
 
     const NavItem = ({ to, icon: Icon, label }) => (
         <Link to={to} onClick={() => setMobileMenu(false)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium ${isActive(to)
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all text-sm font-medium ${isActive(to)
                 ? 'text-white shadow-md'
                 : 'hover:opacity-80'
                 }`}
@@ -88,7 +88,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-1 ml-6 mr-auto">
+                <nav className="hidden lg:flex items-center gap-1 ml-4 mr-auto overflow-x-auto no-scrollbar">
                     <NavItem to="/" icon={Zap} label={gt('Home')} />
                     <NavItem to="/dashboard" icon={BarChart3} label={gt('Dashboard')} />
                     <NavItem to="/discover" icon={Search} label={gt('Discover')} />
@@ -227,9 +227,9 @@ export default function Navbar() {
                                 </>
                             )}
                         </div>
-                    ) : (
+                    ) : location.pathname !== '/login' ? (
                         <Link to="/login" className="btn btn-primary btn-sm ml-2">{gt('Sign In')}</Link>
-                    )}
+                    ) : null}
                 </div>
             </div>
 

@@ -1,0 +1,15 @@
+{
+  "id": "d76171ee-a3c1-4e66-9c8f-e8cdfecd6203",
+  "detected_at": "2026-03-12T17:39:55.882855",
+  "timestamp": 1773337195.8828554,
+  "discovery_id": "f0dba077",
+  "title": "Buletin-VII-Analysis-of-Udyam-Registration-Data.pdf",
+  "url": "https:///docs/Buletin-VII-Analysis-of-Udyam-Registration-Data.pdf",
+  "source": "Udyam Portal",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:53.781105",
+  "content_hash": "eb27171ebb57ffeeba3bce24f2f7d25f",
+  "relevance_score": 0.0
+}

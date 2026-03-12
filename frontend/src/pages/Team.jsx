@@ -11,7 +11,7 @@ const teamMembers = [
         phone: "8297024365",
         role: "Team Lead",
         color: "from-blue-500 to-indigo-600",
-        college: "Kommuri Pratap Redyy Institute of Technology",
+        college: "Kommuri Pratap Reddy Institute of Technology",
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Male",
@@ -24,7 +24,7 @@ const teamMembers = [
         phone: "7207151440",
         role: "Frontend Developer",
         color: "from-pink-500 to-rose-600",
-        college: "Kommuri Pratap Redyy Institute of Technology",
+        college: "Kommuri Pratap Reddy Institute of Technology",
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Female",
@@ -37,7 +37,7 @@ const teamMembers = [
         phone: "9392304799",
         role: "Backend Developer",
         color: "from-emerald-500 to-teal-600",
-        college: "Kommuri Pratap Redyy Institute of Technology",
+        college: "Kommuri Pratap Reddy Institute of Technology",
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Male",
@@ -50,7 +50,7 @@ const teamMembers = [
         phone: "9063639896",
         role: "AI/ML Engineer",
         color: "from-amber-500 to-orange-600",
-        college: "Kommuri Pratap Redyy Institute of Technology",
+        college: "Kommuri Pratap Reddy Institute of Technology",
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Male",
@@ -63,7 +63,7 @@ const teamMembers = [
         phone: "8125806694",
         role: "UI/UX Designer",
         color: "from-violet-500 to-purple-600",
-        college: "Kommuri Pratap Redyy Institute of Technology",
+        college: "Kommuri Pratap Reddy Institute of Technology",
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Female",
@@ -118,25 +118,25 @@ export default function Team() {
 
                         {/* Content */}
                         <div className="pt-14 pb-6 px-6 text-center">
-                            <h3 className="font-bold text-lg mb-1" style={{ color: 'var(--text)' }}>{member.name}</h3>
-                            <p className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--accent)' }}>{member.role}</p>
+                            <h3 className="font-bold text-lg mb-1" style={{ color: 'var(--text)' }}>{gt(member.name)}</h3>
+                            <p className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--accent)' }}>{gt(member.role)}</p>
 
-                            <div className="space-y-3 text-sm text-left p-4 rounded-xl" style={{ background: 'var(--bg-tertiary)' }}>
-                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text-secondary)' }}>
+                            <div className="space-y-3 text-sm text-left p-4 rounded-xl font-medium" style={{ background: 'var(--bg-tertiary)' }}>
+                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text)' }}>
                                     <Mail size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
                                     <span className="truncate text-xs">{member.email}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text)' }}>
                                     <Phone size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
                                     <span className="text-xs">{member.phone}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text)' }}>
                                     <GraduationCap size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                                    <span className="text-xs">{member.college}</span>
+                                    <span className="text-xs">{gt(member.college)}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                <div className="flex items-center gap-2.5" style={{ color: 'var(--text)' }}>
                                     <Code2 size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                                    <span className="text-xs">{member.year} • {member.branch}</span>
+                                    <span className="text-xs">{gt(member.year)} • {gt(member.branch)}</span>
                                 </div>
                             </div>
                         </div>
@@ -147,7 +147,7 @@ export default function Team() {
             {/* Footer note */}
             <div className="text-center mt-12 mb-8 p-6 rounded-2xl" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    All members from <strong>Kommuri Pratap Redyy Institute of Technology</strong> •
+                    All members from <strong>Kommuri Pratap Reddy Institute of Technology</strong> •
                     Semester 8, Computer Science • CU Students • Advance Course Track
                 </p>
             </div>

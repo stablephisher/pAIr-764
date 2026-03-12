@@ -1,0 +1,15 @@
+{
+  "id": "62d18cab-fa49-47d7-8b62-17927ada117f",
+  "detected_at": "2026-03-12T17:39:55.633678",
+  "timestamp": 1773337195.633679,
+  "discovery_id": "146b2cb5",
+  "title": "MSME - Reserve Bank of India",
+  "url": "https://www.rbi.org.in/commonperson/english/scripts/FAQs.aspx?Id=966",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:35.711261",
+  "content_hash": "758dbdb526757e423aa3e8a2c6c37b42",
+  "relevance_score": 0.9978677
+}

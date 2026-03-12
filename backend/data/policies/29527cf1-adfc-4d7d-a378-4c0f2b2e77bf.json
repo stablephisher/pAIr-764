@@ -1,0 +1,15 @@
+{
+  "id": "29527cf1-adfc-4d7d-a378-4c0f2b2e77bf",
+  "detected_at": "2026-03-12T17:39:55.832589",
+  "timestamp": 1773337195.8325894,
+  "discovery_id": "6ce25129",
+  "title": "Fee Structure - CGTMSE",
+  "url": "https://www.cgtmse.in/Home/VS/47",
+  "source": "CGTMSE",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:51.441869",
+  "content_hash": "48083f557ae5dbf4f19ce4d649e48638",
+  "relevance_score": 0.57952
+}

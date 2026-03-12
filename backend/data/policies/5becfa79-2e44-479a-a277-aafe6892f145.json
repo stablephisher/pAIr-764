@@ -1,0 +1,15 @@
+{
+  "id": "5becfa79-2e44-479a-a277-aafe6892f145",
+  "detected_at": "2026-03-12T17:39:55.622804",
+  "timestamp": 1773337195.6228042,
+  "discovery_id": "d73b7c86",
+  "title": "Reserve Bank of India",
+  "url": "https://www.rbi.org.in/commonman/English/scripts/mastercircular.aspx",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:33.269070",
+  "content_hash": "20a94ebb119dcf02a2359d7033527ee9",
+  "relevance_score": 0.994615
+}

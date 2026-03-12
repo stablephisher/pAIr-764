@@ -1,0 +1,15 @@
+{
+  "id": "cbabfc10-6d90-4e45-9d24-9d1254cc88a0",
+  "detected_at": "2026-03-12T17:39:55.897624",
+  "timestamp": 1773337195.8976245,
+  "discovery_id": "1a248443",
+  "title": "225669.pdf",
+  "url": "https://udyamregistration.gov.in/docs/225669.pdf",
+  "source": "Udyam Portal",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:53.781105",
+  "content_hash": "1c8ed9b9fc455e180a657770b7578cc0",
+  "relevance_score": 0.0
+}

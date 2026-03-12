@@ -1,0 +1,15 @@
+{
+  "id": "8231a992-e076-4393-91f0-124469164945",
+  "detected_at": "2026-03-12T17:39:55.713186",
+  "timestamp": 1773337195.7131865,
+  "discovery_id": "c9bd5a66",
+  "title": "[PDF] Instruction No. 03/2025-GST F. No. CBIC",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/apr/doc2025418542101.pdf",
+  "source": "GST Council",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:42.734573",
+  "content_hash": "d3bd38b504eb8b4ef12bcda830bb6932",
+  "relevance_score": 0.9912209
+}

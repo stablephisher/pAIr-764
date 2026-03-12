@@ -1,0 +1,16 @@
+{
+  "id": "fe079248-7e12-4590-83a4-78247802c76a",
+  "detected_at": "2026-03-12T17:39:55.549484",
+  "timestamp": 1773337195.5494845,
+  "discovery_id": "12f0ac6b",
+  "title": "Building an Integrated Pathway for MSMEs in Global Trade - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2232079&reg=3&lang=1",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:26.937309",
+  "content_hash": "a3e9a9d57f1afc922cc8824fe0f6aaaa",
+  "relevance_score": 0.60274047
+}

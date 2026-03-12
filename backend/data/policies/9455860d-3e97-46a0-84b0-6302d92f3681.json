@@ -1,0 +1,15 @@
+{
+  "id": "9455860d-3e97-46a0-84b0-6302d92f3681",
+  "detected_at": "2026-03-12T17:39:55.661798",
+  "timestamp": 1773337195.661799,
+  "discovery_id": "bb6a8475",
+  "title": "GST Reforms in MSME - PIB",
+  "url": "https://www.pib.gov.in/FactsheetDetails.aspx?Id=149281&reg=3&lang=1",
+  "source": "GST Council",
+  "sectors": [
+    "manufacturing"
+  ],
+  "discovered_at": "2026-03-12T17:39:38.216116",
+  "content_hash": "10c49fb27a5cc82b1b677dbed3bf11a2",
+  "relevance_score": 0.92468774
+}

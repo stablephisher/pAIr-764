@@ -1,0 +1,15 @@
+{
+  "id": "b40c94a6-40cb-4b44-ad80-447e393f5683",
+  "detected_at": "2026-03-12T17:39:55.786186",
+  "timestamp": 1773337195.786186,
+  "discovery_id": "842cfd2a",
+  "title": "Circulars - CGTMSE",
+  "url": "https://www.cgtmse.in/Circulars",
+  "source": "CGTMSE",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:51.440886",
+  "content_hash": "5caca489a953161be02fdd6605858279",
+  "relevance_score": 0.79637206
+}

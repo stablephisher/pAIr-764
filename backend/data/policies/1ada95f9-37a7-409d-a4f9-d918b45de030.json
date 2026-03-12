@@ -1,0 +1,15 @@
+{
+  "id": "1ada95f9-37a7-409d-a4f9-d918b45de030",
+  "detected_at": "2026-03-12T17:39:55.597448",
+  "timestamp": 1773337195.597448,
+  "discovery_id": "38d3b678",
+  "title": "Government Periodically Assesses Digital Adoption Among MSMEs ...",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2236872",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-12T17:39:31.036450",
+  "content_hash": "3e3ca01d21f472d1a86d961bebc22cbc",
+  "relevance_score": 0.9975274
+}

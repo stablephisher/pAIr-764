@@ -1,0 +1,15 @@
+{
+  "id": "f17e3cfa-cb32-4c73-814b-dc0cfe974172",
+  "detected_at": "2026-03-12T17:39:55.619402",
+  "timestamp": 1773337195.6194022,
+  "discovery_id": "83b448cd",
+  "title": "[PDF] FAQs on Priority Sector Lending (PSL) - RBI",
+  "url": "https://www.rbi.org.in/commonman/Upload/English/FAQs/PDFs/FAQPSL08052025.pdf",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:33.269070",
+  "content_hash": "50a601ff3fda33de30507034327b0241",
+  "relevance_score": 0.99701905
+}

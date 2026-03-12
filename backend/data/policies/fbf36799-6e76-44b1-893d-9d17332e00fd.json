@@ -1,0 +1,16 @@
+{
+  "id": "fbf36799-6e76-44b1-893d-9d17332e00fd",
+  "detected_at": "2026-03-12T17:39:55.767460",
+  "timestamp": 1773337195.7674606,
+  "discovery_id": "373783e5",
+  "title": "Press Note Details: Press Information Bureau - PIB",
+  "url": "https://www.pib.gov.in/PressNoteDetails.aspx?NoteId=156784&ModuleId=3&reg=3&lang=1",
+  "source": "e-Gazette of India",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:49.378188",
+  "content_hash": "f3d99e065c425b13981881b2f10dbecc",
+  "relevance_score": 0.9462003
+}

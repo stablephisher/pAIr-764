@@ -1,0 +1,15 @@
+{
+  "id": "55ce558e-b666-4fc1-9aaf-5fda9582719f",
+  "detected_at": "2026-03-12T17:39:55.838876",
+  "timestamp": 1773337195.8388767,
+  "discovery_id": "3d0181b1",
+  "title": "Press Note Details: Press Information Bureau",
+  "url": "https://pib.gov.in/PressNoteDetails.aspx?id=157540&NoteId=157540&ModuleId=3&reg=20&lang=1",
+  "source": "Udyam Registration",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:53.369124",
+  "content_hash": "0f69fd8b772f7c9a88e5e0db5f9c8293",
+  "relevance_score": 0.47285444
+}

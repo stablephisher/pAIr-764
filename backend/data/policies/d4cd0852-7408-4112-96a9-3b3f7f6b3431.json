@@ -1,0 +1,16 @@
+{
+  "id": "d4cd0852-7408-4112-96a9-3b3f7f6b3431",
+  "detected_at": "2026-03-12T17:39:55.536977",
+  "timestamp": 1773337195.5369768,
+  "discovery_id": "b96d997d",
+  "title": "[PDF] Schemes for MSMEs",
+  "url": "https://msme.gov.in/sites/default/files/Scheme-booklet-Eng.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:26.937309",
+  "content_hash": "adaad3af62abbbab40b260363b09857f",
+  "relevance_score": 0.62742686
+}

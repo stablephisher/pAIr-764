@@ -1,0 +1,15 @@
+{
+  "id": "59702ba0-585c-4f43-a5d8-472241513e96",
+  "detected_at": "2026-03-12T17:39:55.825233",
+  "timestamp": 1773337195.825234,
+  "discovery_id": "1ba997f6",
+  "title": "Eligible Borrowers - CGTMSE",
+  "url": "https://www.cgtmse.in/Home/VS/95",
+  "source": "CGTMSE",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:51.440886",
+  "content_hash": "068dd14d0d3f18ca69c1759a84a4b9aa",
+  "relevance_score": 0.6455898
+}

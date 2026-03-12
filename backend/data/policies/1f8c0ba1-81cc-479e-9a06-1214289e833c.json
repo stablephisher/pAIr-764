@@ -1,0 +1,15 @@
+{
+  "id": "1f8c0ba1-81cc-479e-9a06-1214289e833c",
+  "detected_at": "2026-03-12T17:39:55.683553",
+  "timestamp": 1773337195.6925464,
+  "discovery_id": "6cfbe646",
+  "title": "[PDF] One Nation-One Tax Goods and Services Tax",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2022/mar/doc202232933001.pdf",
+  "source": "GST Council",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-12T17:39:40.545110",
+  "content_hash": "e67e0598255b1040b702d67e50280736",
+  "relevance_score": 0.62742686
+}

@@ -1,0 +1,15 @@
+{
+  "id": "84776c20-2c40-4c5f-bf8d-63552a7d263d",
+  "detected_at": "2026-03-12T17:39:55.848265",
+  "timestamp": 1773337195.848266,
+  "discovery_id": "f9c3aed0",
+  "title": "UdyamApplication.pdf",
+  "url": "https:///docs/UdyamApplication.pdf",
+  "source": "Udyam Portal",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:53.781105",
+  "content_hash": "d6e741c4db738e6cf6d3ca31f472fd35",
+  "relevance_score": 0.0
+}

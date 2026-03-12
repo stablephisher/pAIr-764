@@ -1,0 +1,15 @@
+{
+  "id": "c8a91ac7-8943-41f2-87c2-39b8c94cb4eb",
+  "detected_at": "2026-03-12T17:39:55.701480",
+  "timestamp": 1773337195.7014802,
+  "discovery_id": "dff8f2c3",
+  "title": "Due date for furnishing of GSTR-9 and GSTR-9C for the financial ...",
+  "url": "https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1701546",
+  "source": "GST Council",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:42.732609",
+  "content_hash": "5fdb4d20016b66284b4c6d5c7c270538",
+  "relevance_score": 0.9997367
+}

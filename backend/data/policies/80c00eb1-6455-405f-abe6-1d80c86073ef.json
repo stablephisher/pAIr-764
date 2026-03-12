@@ -1,0 +1,15 @@
+{
+  "id": "80c00eb1-6455-405f-abe6-1d80c86073ef",
+  "detected_at": "2026-03-12T17:39:55.707139",
+  "timestamp": 1773337195.7071395,
+  "discovery_id": "e893ba22",
+  "title": "Recommendations of the 55th Meeting of the GST Council",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2086873",
+  "source": "GST Council",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:42.733376",
+  "content_hash": "58fe29f0ef9b46766897bfd6ae6ffd1c",
+  "relevance_score": 0.99341017
+}

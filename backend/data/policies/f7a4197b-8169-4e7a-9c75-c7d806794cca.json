@@ -1,0 +1,15 @@
+{
+  "id": "f7a4197b-8169-4e7a-9c75-c7d806794cca",
+  "detected_at": "2026-03-12T17:39:55.591052",
+  "timestamp": 1773337195.591052,
+  "discovery_id": "17a94b0c",
+  "title": "Press Release: Press Information Bureau",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2233187&reg=3&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T17:39:31.036450",
+  "content_hash": "c4f5b382ed7a41c047c0d3560d051338",
+  "relevance_score": 0.9995627
+}

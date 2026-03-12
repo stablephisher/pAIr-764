@@ -1,0 +1,15 @@
+{
+  "id": "8350d9e9-4f5d-4410-8db3-4e0d78b1d34f",
+  "detected_at": "2026-03-12T17:39:55.793794",
+  "timestamp": 1773337195.7937946,
+  "discovery_id": "2f697d58",
+  "title": "Policy Reforms That Transformed Business Environment - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2235433&reg=3&lang=1",
+  "source": "CGTMSE",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T17:39:51.440886",
+  "content_hash": "9d8f6ad21505fd08bd446329bceecc66",
+  "relevance_score": 0.6625569
+}

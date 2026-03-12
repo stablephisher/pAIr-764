@@ -1,5 +1,20 @@
 [
   {
+    "id": "f4d0fd22-c42f-4fe2-ab0f-100e382bf1af",
+    "type": "policy_discovery",
+    "title": "\ud83d\udd0d 52 New Policies Discovered",
+    "body": "Scanned 8 government sources. 52 relevant policies found.",
+    "metadata": {
+      "scan_id": "e21bfbcb",
+      "new_policies": 52,
+      "sources_scanned": 8
+    },
+    "read": false,
+    "created_at": "2026-03-12T19:24:00.419829",
+    "timestamp": 1773343440.419829,
+    "uid": "ft0uD5T4bAhHKN1RMdXaGHzmUH92"
+  },
+  {
     "id": "56df0f45-4081-4990-b649-faa8ad7f11f0",
     "type": "analysis_complete",
     "title": "\u2705 Profile Analysis Complete",
