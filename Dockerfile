@@ -22,15 +22,15 @@ ENV PYTHONUNBUFFERED=1
 ENV DEMO_MODE=TRUE
 ENV PORT=8000
 
-# Create directory for monitored policies
-RUN mkdir -p monitored_policies
+# Create directories for runtime data
+RUN mkdir -p monitored_policies data/policies data/users
 
 # Expose port
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/history')" || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
 # Run the server
 CMD ["python", "main.py"]

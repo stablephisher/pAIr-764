@@ -18,6 +18,7 @@ import Team from './pages/Team';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import About from './pages/About';
+import PolicyDiscovery from './pages/PolicyDiscovery';
 import ProfileSetup from './components/ProfileSetup';
 
 function LoadingScreen() {
@@ -96,6 +97,7 @@ function AppContent() {
                 <Route path="analysis/:id" element={<RequireAuth><AnalysisResult /></RequireAuth>} />
                 <Route path="competitor-analysis" element={<RequireAuth><CompetitorAnalysis /></RequireAuth>} />
                 <Route path="resources" element={<RequireAuth><Resources /></RequireAuth>} />
+                <Route path="discover" element={<RequireAuth><PolicyDiscovery /></RequireAuth>} />
                 <Route path="policies" element={<RequireAuth><History /></RequireAuth>} />
                 <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
                 <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />

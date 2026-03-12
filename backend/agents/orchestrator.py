@@ -376,3 +376,105 @@ class Orchestrator:
             "registered_agents": list(self._agents.keys()),
             "v3_engines": ["risk_scorer", "sustainability", "profitability", "ethics"],
         }
+
+    async def run_text_pipeline(
+        self,
+        text: str,
+        business_profile: Dict[str, Any] = None,
+        source: str = "auto-discovered",
+        user_uid: Optional[str] = None,
+    ) -> PipelineContext:
+        """
+        Execute the pipeline on pre-extracted text (from web discovery).
+
+        Skips the ingestion stage since text is already available.
+        Used by the v5 discovery flow where policies are fetched from the web.
+        """
+        self.context = PipelineContext(
+            extracted_text=text,
+            business_profile=business_profile or {},
+            source=source,
+            demo_mode=self.demo_mode,
+            user_uid=user_uid,
+        )
+
+        pipeline_start = time.time()
+
+        try:
+            # Web text quality check via ingestion agent
+            self.state = AgentState.INGESTING
+            self.context.timestamps['ingestion_start'] = time.time()
+            ingestion_agent = self.get_agent('ingestion')
+            if ingestion_agent and hasattr(ingestion_agent, 'process_web_text'):
+                result = await ingestion_agent.process_web_text(text)
+                self.context.extracted_text = result.get('cleaned_text', text)
+            self.context.timestamps['ingestion_end'] = time.time()
+
+            # Stages 2-7: same as PDF pipeline
+            self.state = AgentState.REASONING
+            self.context.timestamps['reasoning_start'] = time.time()
+            reasoning_agent = self.get_agent('reasoning')
+            if reasoning_agent:
+                result = await reasoning_agent.analyze(
+                    self.context.extracted_text,
+                    self.context.business_profile,
+                )
+                self.context.policy_analysis = result.get('analysis', {})
+                self.context.eligible_schemes = result.get('eligible_schemes', [])
+            self.context.timestamps['reasoning_end'] = time.time()
+
+            self.state = AgentState.PLANNING
+            self.context.timestamps['planning_start'] = time.time()
+            planning_agent = self.get_agent('planning')
+            if planning_agent:
+                self.context.compliance_plan = await planning_agent.generate_plan(
+                    self.context.policy_analysis,
+                    self.context.eligible_schemes,
+                )
+            self.context.timestamps['planning_end'] = time.time()
+
+            self.state = AgentState.SCORING
+            self.context.timestamps['scoring_start'] = time.time()
+            await self._run_scoring_engines()
+            self.context.timestamps['scoring_end'] = time.time()
+
+            self.state = AgentState.EXECUTING
+            self.context.timestamps['execution_start'] = time.time()
+            execution_agent = self.get_agent('execution')
+            if execution_agent:
+                self.context.execution_output = await execution_agent.prepare_outputs(
+                    self.context.compliance_plan,
+                    self.context.business_profile,
+                )
+            self.context.timestamps['execution_end'] = time.time()
+
+            self.state = AgentState.VERIFYING
+            self.context.timestamps['verification_start'] = time.time()
+            verification_agent = self.get_agent('verification')
+            if verification_agent:
+                self.context.verification_result = await verification_agent.validate(
+                    self.context
+                )
+            self.context.timestamps['verification_end'] = time.time()
+
+            self.state = AgentState.EXPLAINING
+            self.context.timestamps['explanation_start'] = time.time()
+            explanation_agent = self.get_agent('explanation')
+            if explanation_agent:
+                self.context.explanation = await explanation_agent.generate_summary(
+                    self.context
+                )
+            self.context.timestamps['explanation_end'] = time.time()
+
+            self.state = AgentState.COMPLETE
+
+        except Exception as e:
+            self.state = AgentState.ERROR
+            self.context.errors.append(str(e))
+            print(f"[Orchestrator] Text pipeline error: {traceback.format_exc()}")
+            raise
+
+        finally:
+            self.context.timestamps['total_time'] = time.time() - pipeline_start
+
+        return self.context

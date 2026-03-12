@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
     Zap, BarChart3, Briefcase, Globe, Bell, ChevronDown,
     Languages, LogOut, User, Settings, Building2, Menu, X,
-    Moon, Sun, FileText, ScrollText
+    Moon, Sun, FileText, ScrollText, Search
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
@@ -91,6 +91,7 @@ export default function Navbar() {
                 <nav className="hidden md:flex items-center gap-1 ml-6 mr-auto">
                     <NavItem to="/" icon={Zap} label={gt('Home')} />
                     <NavItem to="/dashboard" icon={BarChart3} label={gt('Dashboard')} />
+                    <NavItem to="/discover" icon={Search} label={gt('Discover')} />
                     <NavItem to="/competitor-analysis" icon={Briefcase} label={gt('Competitor')} />
                     <NavItem to="/resources" icon={Globe} label={gt('Resources')} />
                     <NavItem to="/policies" icon={ScrollText} label={gt('Policies')} />

@@ -32,15 +32,19 @@ class AIConfig:
 
 @dataclass
 class PolicyConfig:
-    """Policy monitoring and search configuration."""
+    """Policy monitoring, discovery, and search configuration."""
     tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
     serper_api_key: str = os.getenv("SERPER_API_KEY", "")
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
     monitor_dir: str = "monitored_policies"
     monitor_interval_seconds: int = 5
     vector_db_path: str = "data/vector_store"
     embedding_model: str = "models/text-embedding-004"
     max_search_results: int = 10
     scrape_interval_hours: int = 6
+    discovery_enabled: bool = os.getenv("DISCOVERY_ENABLED", "TRUE").upper() == "TRUE"
+    discovery_interval_hours: int = int(os.getenv("DISCOVERY_INTERVAL_HOURS", "6"))
+    dedup_similarity_threshold: float = 0.92
 
 
 @dataclass
@@ -72,7 +76,10 @@ class ServerConfig:
     host: str = os.getenv("HOST", "0.0.0.0")
     port: int = int(os.getenv("PORT", "8000"))
     demo_mode: bool = os.getenv("DEMO_MODE", "FALSE").upper() == "TRUE"
-    cors_origins: list = field(default_factory=lambda: ["*"])
+    cors_origins: list = field(default_factory=lambda: [
+        origin.strip() for origin in
+        os.getenv("CORS_ORIGINS", "*").split(",")
+    ] if os.getenv("CORS_ORIGINS") else ["*"])
     history_max_items: int = 50
 
 

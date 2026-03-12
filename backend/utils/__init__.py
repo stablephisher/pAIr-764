@@ -474,6 +474,8 @@ def validate_environment() -> Dict[str, Any]:
         "FIREBASE_PROJECT_ID",
         "TAVILY_API_KEY",
         "SERPER_API_KEY",
+        "GEMINI_API_KEY",
+        "CORS_ORIGINS",
         "PORT",
     ]
 

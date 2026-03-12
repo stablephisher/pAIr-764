@@ -47,6 +47,7 @@ from pypdf import PdfReader
 from config import config
 from schemas import PolicyAnalysis
 from db.firestore import FirestoreDB
+from middleware import register_error_handlers
 from utils import (
     setup_structured_logging,
     HealthMonitor,
@@ -95,8 +96,11 @@ class HealthResponse(BaseModel):
 app = FastAPI(
     title="pAIr — Policy AI Regulator",
     description="Autonomous Regulatory & Sustainability Intelligence Companion for MSMEs. GRC for India's 63 Million MSMEs.",
-    version="4.0.0",
+    version="5.0.0",
 )
+
+# Central error handlers
+register_error_handlers(app)
 
 # CORS
 app.add_middleware(
@@ -1853,14 +1857,60 @@ def get_business_resources(sector: Optional[str] = None, category: Optional[str]
 
 
 # ═══════════════════════════════════════════════════════════════════
+#  v5: VOICE ASSIST API
+# ═══════════════════════════════════════════════════════════════════
+
+class VoiceQueryRequest(BaseModel):
+    text: str
+    language: str = "en"
+    user_uid: Optional[str] = None
+
+@app.post("/api/voice/query")
+async def voice_query(request: VoiceQueryRequest):
+    """
+    Process a voice query (text after STT) and return a structured response.
+    Frontend handles speech-to-text; backend handles intent + response.
+    """
+    try:
+        from innovation.voice_assist import VoiceAssistEngine
+
+        engine = VoiceAssistEngine(ai_client=ai_client)
+        profile = None
+        if request.user_uid:
+            profile = db.get_user_profile(request.user_uid)
+
+        response = await engine.process_query(
+            text=request.text,
+            language=request.language,
+            user_uid=request.user_uid,
+            business_profile=profile,
+        )
+
+        # Translate if needed
+        if request.language != "en":
+            response = await engine.translate_response(response, request.language)
+
+        return {
+            "text": response.text,
+            "language": response.language,
+            "intent": response.intent,
+            "action": response.action_taken,
+            "data": response.data,
+        }
+    except Exception as e:
+        logger.error(f"Voice query failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Voice processing failed: {str(e)}")
+
+
+# ═══════════════════════════════════════════════════════════════════
 #  STARTUP
 # ═══════════════════════════════════════════════════════════════════
 
 @app.on_event("startup")
 async def startup_event():
     print("\n" + "=" * 60)
-    print("  pAIr v4.0 — Policy AI Regulator")
-    print("  Autonomous Regulatory & Sustainability Intelligence")
+    print("  pAIr v5.0 — Regulatory Intelligence Platform")
+    print("  Autonomous Policy Discovery & Compliance Intelligence")
     print("  'Always in pAIr with your business.'")
     print("=" * 60)
     masked_key = f"******{api_key[-4:]}" if api_key else "NONE"
@@ -1871,8 +1921,213 @@ async def startup_event():
     print(f"  📡 Policy Monitor: {os.path.abspath(MONITOR_DIR)}")
     print(f"  🏗️  Engines: Risk | Sustainability | Profitability | Ethics | Impact")
     print(f"  🚀 Innovation: Predictive Alerts | Policy Diff | Benchmarking")
+    print(f"  🔍 Discovery: {'Enabled' if config.policy.discovery_enabled else 'Disabled'}")
     print("=" * 60 + "\n")
     asyncio.create_task(monitor_policies_task())
+    # v5: Start background policy discovery
+    if config.policy.discovery_enabled:
+        from policy.discovery import background_discovery_loop
+        asyncio.create_task(background_discovery_loop(
+            db_instance=db,
+            interval_hours=config.policy.discovery_interval_hours,
+        ))
+        logger.info("Background policy discovery started")
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  v5: POLICY DISCOVERY API
+# ═══════════════════════════════════════════════════════════════════
+
+class DiscoverRequest(BaseModel):
+    source_ids: Optional[List[str]] = None
+    business_profile: Optional[Dict[str, Any]] = None
+    user_uid: Optional[str] = None
+
+
+@app.post("/api/discover/policies")
+async def discover_policies(request: DiscoverRequest):
+    """
+    Trigger an on-demand policy discovery scan.
+
+    Returns newly discovered policies with relevance scores.
+    This is the core v5 feature — MSMEs don't need to upload policies,
+    the system discovers them automatically.
+    """
+    try:
+        from policy.discovery import get_discovery_engine
+
+        engine = get_discovery_engine()
+
+        # Get business profile from request or from DB
+        profile = request.business_profile
+        if not profile and request.user_uid:
+            profile = db.get_user_profile(request.user_uid)
+
+        result = await engine.run_discovery_scan(
+            source_ids=request.source_ids,
+            business_profile=profile,
+        )
+
+        # Notify user about new discoveries
+        if request.user_uid and result.new_policies > 0:
+            db.create_notification(
+                uid=request.user_uid,
+                notif_type="policy_discovery",
+                title=f"🔍 {result.new_policies} New Policies Discovered",
+                body=f"Scanned {result.sources_scanned} government sources. "
+                     f"{result.new_policies} relevant policies found.",
+                metadata={
+                    "scan_id": result.scan_id,
+                    "new_policies": result.new_policies,
+                    "sources_scanned": result.sources_scanned,
+                },
+            )
+
+        return {
+            "scan_id": result.scan_id,
+            "sources_scanned": result.sources_scanned,
+            "total_results": result.total_results,
+            "new_policies": result.new_policies,
+            "duplicates_filtered": result.duplicates_filtered,
+            "errors": result.errors,
+            "policies": [
+                {
+                    "discovery_id": p.discovery_id,
+                    "title": p.title,
+                    "url": p.url,
+                    "source": p.source_name,
+                    "content_snippet": p.content_snippet[:300],
+                    "relevance_score": round(p.relevance_score, 2),
+                    "sectors": p.sectors,
+                    "discovered_at": p.discovered_at,
+                }
+                for p in result.policies[:50]  # Cap at 50 results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Policy discovery failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Discovery failed: {str(e)}")
+
+
+@app.get("/api/discover/status")
+def discover_status():
+    """Get the current status of policy discovery system."""
+    try:
+        from policy.discovery import get_discovery_engine
+        engine = get_discovery_engine()
+        status = engine.get_scan_status()
+        status["enabled"] = config.policy.discovery_enabled
+        return status
+    except Exception as e:
+        return {
+            "enabled": config.policy.discovery_enabled,
+            "last_scan": None,
+            "total_scans": 0,
+            "error": str(e),
+        }
+
+
+@app.post("/api/discover/analyze")
+async def discover_and_analyze(request: DiscoverRequest):
+    """
+    Discover policies AND run them through the analysis pipeline.
+
+    This is the full lifecycle endpoint:
+    1. Discover new policies via search APIs
+    2. Score relevance against business profile
+    3. Auto-analyze top relevant policies via multi-agent pipeline
+    4. Return scored analysis results
+
+    This enables the zero-upload experience.
+    """
+    try:
+        from policy.discovery import get_discovery_engine
+
+        engine = get_discovery_engine()
+        profile = request.business_profile
+        if not profile and request.user_uid:
+            profile = db.get_user_profile(request.user_uid)
+
+        # Step 1: Discover
+        scan = await engine.run_discovery_scan(
+            source_ids=request.source_ids,
+            business_profile=profile,
+        )
+
+        # Step 2: Analyze top 3 most relevant policies with content
+        analyzed = []
+        top_policies = [p for p in scan.policies if p.content_snippet and len(p.content_snippet) > 100][:3]
+
+        for policy in top_policies:
+            try:
+                result = await run_policy_analysis_pipeline(
+                    policy_text=policy.content_snippet,
+                    source="auto-discovered",
+                    user_uid=request.user_uid,
+                    business_profile=profile,
+                )
+                result["discovery_metadata"] = {
+                    "discovery_id": policy.discovery_id,
+                    "source_url": policy.url,
+                    "source_name": policy.source_name,
+                    "relevance_score": policy.relevance_score,
+                }
+                analyzed.append(result)
+            except Exception as e:
+                logger.warning(f"Auto-analysis failed for {policy.title}: {e}")
+
+        return {
+            "scan_id": scan.scan_id,
+            "policies_discovered": scan.new_policies,
+            "policies_analyzed": len(analyzed),
+            "analyses": analyzed,
+        }
+    except Exception as e:
+        logger.error(f"Discover-and-analyze failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Discovery analysis failed: {str(e)}")
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  v5: SEMANTIC SEARCH API
+# ═══════════════════════════════════════════════════════════════════
+
+class SemanticSearchRequest(BaseModel):
+    query: str
+    top_k: int = 5
+
+@app.post("/api/search/policies")
+async def semantic_policy_search(request: SemanticSearchRequest):
+    """
+    Semantic search across indexed policy documents.
+    Uses FAISS + Gemini embeddings for meaning-based retrieval.
+    """
+    try:
+        from policy.embeddings import PolicyEmbedding
+        from policy.vector_store import PolicyVectorStore
+
+        embedder = PolicyEmbedding()
+        store = PolicyVectorStore()
+
+        if store.get_document_count() == 0:
+            return {"results": [], "total": 0, "message": "No policies indexed yet. Run a discovery scan first."}
+
+        query_vec = await embedder.embed_query(request.query)
+        if not query_vec:
+            raise HTTPException(status_code=500, detail="Failed to generate query embedding")
+
+        results = store.search(query_vec, top_k=request.top_k)
+
+        return {
+            "results": [
+                {"metadata": meta, "similarity_score": round(score, 3)}
+                for meta, score in results
+            ],
+            "total": len(results),
+            "indexed_documents": store.get_document_count(),
+        }
+    except Exception as e:
+        logger.error(f"Semantic search failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
 if __name__ == "__main__":
