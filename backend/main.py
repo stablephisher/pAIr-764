@@ -2006,7 +2006,16 @@ async def discover_policies(request: DiscoverRequest):
         }
     except Exception as e:
         logger.error(f"Policy discovery failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Discovery failed: {str(e)}")
+        # Return empty result instead of crashing — no API keys or network issues are common
+        return {
+            "scan_id": "error",
+            "sources_scanned": 0,
+            "total_results": 0,
+            "new_policies": 0,
+            "duplicates_filtered": 0,
+            "errors": [str(e)],
+            "policies": [],
+        }
 
 
 @app.get("/api/discover/status")

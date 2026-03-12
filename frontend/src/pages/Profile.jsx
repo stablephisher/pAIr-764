@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { User, Building2, Save, Plus, Trash2, Check, Edit3, Briefcase, Camera, Loader2, Phone, Mail } from 'lucide-react';
 
@@ -10,6 +11,7 @@ const emptyBusiness = { business_name: '', sector: '', business_type: '', state:
 
 export default function Profile() {
     const { user, profile, setProfile, saveProfile } = useAppContext();
+    const navigate = useNavigate();
     const photoInputRef = useRef(null);
 
     // User info editing
@@ -113,9 +115,21 @@ export default function Profile() {
     };
 
     const handleDelete = async (index) => {
-        if (businesses.length <= 1) return;
         const updated = businesses.filter((_, i) => i !== index);
         setBusinesses(updated);
+        
+        // If all businesses deleted, clear profile and redirect to onboarding
+        if (updated.length === 0) {
+            try {
+                await saveProfile({ businesses: [], business_name: '' });
+                setProfile(null);
+                navigate('/onboarding', { replace: true });
+            } catch (e) {
+                console.error(e);
+            }
+            return;
+        }
+        
         const newActive = activeBizIndex >= updated.length ? updated.length - 1 : activeBizIndex;
         setActiveBizIndex(newActive);
         try {
@@ -316,11 +330,9 @@ export default function Profile() {
                                     <button onClick={() => handleEdit(idx)} className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--text-secondary)' }}>
                                         <Edit3 size={14} />
                                     </button>
-                                    {businesses.length > 1 && (
-                                        <button onClick={() => handleDelete(idx)} className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--red)' }}>
-                                            <Trash2 size={14} />
-                                        </button>
-                                    )}
+                                    <button onClick={() => handleDelete(idx)} className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--red)' }}>
+                                        <Trash2 size={14} />
+                                    </button>
                                 </div>
                             </div>
                         )}

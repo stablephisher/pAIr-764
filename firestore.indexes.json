@@ -53,6 +53,11 @@
             ]
         },
         {
+            "collectionGroup": "policies",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "sector",
                     "order": "ASCENDING"
                 },
                 {

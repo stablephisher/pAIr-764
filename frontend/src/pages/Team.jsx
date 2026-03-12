@@ -15,6 +15,7 @@ const teamMembers = [
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Male",
+        image: "/Team-Shiva.JPG",
     },
     {
         id: 2,
@@ -27,6 +28,7 @@ const teamMembers = [
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Female",
+        image: "/Team-Sanobar.png",
     },
     {
         id: 3,
@@ -39,6 +41,7 @@ const teamMembers = [
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Male",
+        image: "/Team-Harsha.png",
     },
     {
         id: 4,
@@ -51,6 +54,7 @@ const teamMembers = [
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Male",
+        image: "/Team-Dinesh.png",
     },
     {
         id: 5,
@@ -63,6 +67,7 @@ const teamMembers = [
         year: "Semester 8",
         branch: "Computer Science",
         gender: "Female",
+        image: "/Team-Geethika.png",
     },
 ];
 
@@ -96,7 +101,15 @@ export default function Team() {
                         {/* Gradient header */}
                         <div className={`h-24 bg-gradient-to-r ${member.color} relative`}>
                             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
-                                <div className="w-20 h-20 rounded-full border-4 flex items-center justify-center text-2xl font-bold shadow-lg"
+                                <img src={member.image} alt={member.name}
+                                    className="w-20 h-20 rounded-full border-4 object-cover shadow-lg"
+                                    style={{ borderColor: 'var(--bg)' }}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                                <div className="w-20 h-20 rounded-full border-4 items-center justify-center text-2xl font-bold shadow-lg hidden"
                                     style={{ borderColor: 'var(--bg)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
                                     {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
                                 </div>

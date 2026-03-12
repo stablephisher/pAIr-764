@@ -3,6 +3,8 @@ import { BarChart3, Shield, Leaf, Activity, CheckCircle, Building2, Loader2 } fr
 import useTranslate from '../hooks/useTranslate';
 
 export default function AnalyticsView({ analytics, loading, lang = 'en' }) {
+    const { gt } = useTranslate(lang);
+
     if (loading) {
         return (
             <div className="text-center py-16">

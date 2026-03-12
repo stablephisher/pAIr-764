@@ -739,13 +739,12 @@ a:hover {
 }
 
 .loading-logo {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--accent), var(--purple));
   animation: logo-breathe 2s ease-in-out infinite;
   margin-bottom: 1.5rem;
 }
@@ -785,6 +784,8 @@ a:hover {
   width: 90%;
   border-radius: 24px;
   overflow: hidden;
+  padding: 1.5rem;
+  position: relative;
   animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

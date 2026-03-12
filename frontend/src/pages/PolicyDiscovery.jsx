@@ -34,15 +34,19 @@ export default function PolicyDiscovery() {
         try {
             const res = await axios.post(`${API}/api/discover/policies`, {
                 user_uid: user?.uid,
-            });
+            }, { timeout: 60000 });
             setPolicies(res.data.policies || []);
             setScanStatus(prev => ({
                 ...prev,
                 last_scan: new Date().toISOString(),
                 total_scans: (prev?.total_scans || 0) + 1,
             }));
+            // If scan returned errors internally (no API keys etc), show soft warning
+            if (res.data.errors?.length > 0 && res.data.policies?.length === 0) {
+                setError('Search API keys not configured. Please add TAVILY_API_KEY or SERPER_API_KEY to the backend environment.');
+            }
         } catch (err) {
-            setError(err.response?.data?.detail || 'Discovery scan failed');
+            setError(err.response?.data?.detail || 'Discovery scan failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -107,7 +111,7 @@ export default function PolicyDiscovery() {
     return (
         <div className="max-w-5xl mx-auto animate-fade-in-up">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 mt-9">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-3">
                         <Globe size={24} style={{ color: 'var(--accent)' }} />
@@ -128,27 +132,25 @@ export default function PolicyDiscovery() {
             </div>
 
             {/* Search Bar */}
-            <div className="card mb-6">
-                <div className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && runSearch()}
-                            placeholder={gt('Search policies by keyword, sector, or compliance area...')}
-                            className="input input-bordered w-full pl-10"
-                        />
-                    </div>
+            <div className="card mb-3">
+                <div className="flex items-center gap-2 p-4">
+                    <Search size={18} className="opacity-50 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && runSearch()}
+                        placeholder={gt('Search policies by keyword, sector, or compliance area...')}
+                        className="input input-bordered flex-1 min-w-0"
+                    />
                     <button
                         onClick={toggleVoice}
-                        className={`btn ${listening ? 'btn-error' : 'btn-ghost'}`}
+                        className={`btn btn-ghost btn-icon flex-shrink-0 ${listening ? 'btn-error' : ''}`}
                         title={gt('Voice search')}
                     >
                         {listening ? <MicOff size={18} /> : <Mic size={18} />}
                     </button>
-                    <button onClick={runSearch} disabled={loading} className="btn btn-secondary">
+                    <button onClick={runSearch} disabled={loading} className="btn btn-secondary flex-shrink-0">
                         {gt('Search')}
                     </button>
                 </div>

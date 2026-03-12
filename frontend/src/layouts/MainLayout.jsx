@@ -14,7 +14,7 @@ export default function MainLayout() {
             </div>
 
             <Navbar />
-            <main className="flex-1" style={{ position: 'relative', zIndex: 1 }}>
+            <main className="flex-1 pb-12" style={{ position: 'relative', zIndex: 1 }}>
                 <Outlet />
             </main>
             <Footer />

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { LANGUAGES } from '../constants';
 import useTranslate from '../hooks/useTranslate';
 import {
     Settings as SettingsIcon, Moon, Sun, Globe, Bell, Shield, Database,
-    Download, Trash2, Save, Loader2, ChevronRight, Check, Monitor
+    Download, Trash2, Save, Loader2, ChevronRight, Check, Monitor, HelpCircle, RefreshCw
 } from 'lucide-react';
 
 export default function Settings() {
+    const navigate = useNavigate();
     const { user, language, setLanguage, clearHistory, history, saveProfile, profile } = useAppContext();
     const lang = language?.code || 'en';
     const { gt } = useTranslate(lang);
@@ -62,6 +64,12 @@ export default function Settings() {
         a.download = `pair-data-export-${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
+    };
+
+    const handleRestartTutorial = () => {
+        const tutorialKey = user ? `pair-tutorial-${user.uid}` : 'pair-tutorial';
+        localStorage.removeItem(tutorialKey);
+        navigate('/dashboard');
     };
 
     const Toggle = ({ checked, onChange, label, description }) => (
@@ -184,6 +192,24 @@ export default function Settings() {
                             style={{ background: 'var(--red-light)', color: 'var(--red)', border: '1px solid var(--red)' }}>
                             {clearing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                             {gt('Clear History')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══ HELP & SUPPORT ═══ */}
+            <div className="card p-6" style={{ border: '1px solid var(--border)' }}>
+                <h2 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
+                    <HelpCircle size={18} style={{ color: 'var(--accent)' }} /> {gt('Help & Support')}
+                </h2>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{gt('Restart Tutorial')}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>View the onboarding tutorial again</p>
+                        </div>
+                        <button onClick={handleRestartTutorial} className="btn btn-secondary btn-sm gap-1.5">
+                            <RefreshCw size={14} /> {gt('Restart')}
                         </button>
                     </div>
                 </div>

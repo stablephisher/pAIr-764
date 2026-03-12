@@ -75,7 +75,7 @@ export default function Navbar() {
 
     return (
         <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--bg-glass)', borderColor: 'var(--border)' }}>
-            <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
                 {/* Logo & Mobile Menu */}
                 <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export default function Navbar() {
                         {mobileMenu ? <X size={20} /> : <Menu size={20} />}
                     </button>
                     <Link to="/" className="flex items-center gap-2">
-                        <img src="/pair-logo.png" alt="pAIr" className="h-11 w-auto" style={{ objectFit: 'contain' }} />
+                        <img src="/pair-logo.png" alt="pAIr" className="h-14 w-auto" style={{ objectFit: 'contain' }} />
                     </Link>
                 </div>
 
@@ -143,16 +143,16 @@ export default function Navbar() {
                                 <div className="fixed inset-0 z-10" onClick={() => setNotifDropdown(false)} />
                                 <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                                     <div className="p-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{t('Notifications', lang)}</span>
+                                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{gt('Notifications')}</span>
                                         {unreadCount > 0 && (
-                                            <button onClick={markAllNotificationsRead} className="text-xs font-medium" style={{ color: 'var(--accent)' }}>{t('Mark all read', lang)}</button>
+                                            <button onClick={markAllNotificationsRead} className="text-xs font-medium" style={{ color: 'var(--accent)' }}>{gt('Mark all read')}</button>
                                         )}
                                     </div>
                                     <div className="max-h-64 overflow-y-auto">
                                         {notifications.length === 0 ? (
                                             <div className="p-8 text-center" style={{ color: 'var(--text-tertiary)' }}>
                                                 <Bell size={24} className="mx-auto mb-2 opacity-40" />
-                                                <p className="text-sm">{t('No notifications yet', lang)}</p>
+                                                <p className="text-sm">{gt('No notifications yet')}</p>
                                             </div>
                                         ) : (
                                             notifications.map(n => (
