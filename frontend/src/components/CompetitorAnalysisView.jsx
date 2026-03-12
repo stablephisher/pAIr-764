@@ -1,12 +1,44 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Briefcase, Globe, TrendingUp, TrendingDown, Target, Shield, Users, CheckCircle, AlertCircle, RefreshCw, Loader2, Clock } from 'lucide-react';
+import { Briefcase, Globe, TrendingUp, TrendingDown, Target, Shield, Users, CheckCircle, AlertCircle, RefreshCw, Loader2, Clock, Zap, BarChart3, Building2, Lightbulb } from 'lucide-react';
 import MiniBarChart from './charts/MiniBarChart';
 import { useAppContext } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+// Demo data when API fails
+const DEMO_COMPETITOR_DATA = {
+    market_overview: {
+        market_size: "₹15,000 Crore",
+        growth_rate: "12.5%",
+        key_trends: ["Digital transformation accelerating", "Sustainability focus increasing", "Government schemes driving growth", "Export opportunities expanding"]
+    },
+    competitive_position: {
+        strengths: ["Low operational costs", "Government MSME incentives", "Local market knowledge", "Agile decision making"],
+        weaknesses: ["Limited access to capital", "Technology adoption gaps", "Skilled workforce shortage"],
+        opportunities: ["Digital marketplace expansion", "Government procurement (GeM)", "Export incentives under PLI", "Green manufacturing incentives"],
+        threats: ["Large corporate competition", "Import competition", "Regulatory compliance burden", "Rising input costs"]
+    },
+    market_metrics: {
+        competitor_count: "2,500+",
+        market_share_potential: "0.5-2%",
+        entry_barriers: "Medium",
+        price_sensitivity: "High"
+    },
+    recommendations: [
+        "Register on GeM portal for government contracts",
+        "Apply for CGTMSE collateral-free loan",
+        "Get ZED certification for quality advantage",
+        "Explore PLI scheme benefits for your sector"
+    ],
+    key_competitors: [
+        { name: "Regional MSMEs", strength: "Price competitiveness", market_share: "45%" },
+        { name: "Large Corporates", strength: "Brand & distribution", market_share: "35%" },
+        { name: "Imports", strength: "Technology/quality", market_share: "20%" }
+    ]
+};
 
 function getCacheKey(profile) {
     return `pair-competitor-${profile?.sector || 'default'}-${profile?.state || 'India'}`;
@@ -37,7 +69,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
     const { gt } = useTranslate(lang);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [isDemo, setIsDemo] = useState(false);
     const [cachedAt, setCachedAt] = useState(null);
     const didInit = useRef(false);
 
@@ -47,11 +79,12 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
             if (cached) {
                 setData(cached.data);
                 setCachedAt(new Date(cached.timestamp));
+                setIsDemo(false);
                 return;
             }
         }
         setLoading(true);
-        setError(null);
+        setIsDemo(false);
         try {
             const res = await axios.post(`${API}/api/competitor-analysis`, {
                 sector: profile?.sector || 'Manufacturing',
@@ -59,12 +92,22 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
                 location: profile?.state || 'India',
                 products_services: profile?.products_services || '',
                 years_in_business: parseInt(profile?.years_in_business) || 1,
-            });
+            }, { timeout: 30000 });
             setData(res.data);
             setCachedAt(new Date());
             setCachedData(profile, res.data);
         } catch (e) {
-            setError(e.response?.data?.detail || 'Failed to generate analysis');
+            // Use demo data on failure
+            const demoData = {
+                ...DEMO_COMPETITOR_DATA,
+                market_overview: {
+                    ...DEMO_COMPETITOR_DATA.market_overview,
+                    sector: profile?.sector || 'Manufacturing',
+                    location: profile?.state || 'India'
+                }
+            };
+            setData(demoData);
+            setIsDemo(true);
         }
         setLoading(false);
     }, [profile]);
@@ -81,15 +124,6 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
         </div>
     );
 
-    if (error) return (
-        <div className="text-center py-16 animate-fade-in-up">
-            <AlertCircle size={48} className="mx-auto mb-4" style={{ color: 'var(--red)' }} />
-            <h3 className="font-bold text-lg mb-2">{gt('Analysis Failed')}</h3>
-            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-            <button onClick={runAnalysis} className="btn btn-primary gap-2"><RefreshCw size={16} /> {gt('Retry')}</button>
-        </div>
-    );
-
     if (!data) return null;
 
     const swot = data.competitive_position || {};
@@ -98,6 +132,22 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
 
     return (
         <div className="space-y-6 animate-fade-in-up">
+            {/* Demo Mode Banner */}
+            {isDemo && (
+                <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'linear-gradient(135deg, var(--accent-light), var(--purple-light, #f3e8ff))' }}>
+                    <div className="flex items-center gap-3">
+                        <Zap size={20} style={{ color: 'var(--accent)' }} />
+                        <div>
+                            <p className="font-semibold" style={{ color: 'var(--text)' }}>{gt('Demo Analysis')}</p>
+                            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{gt('Showing sample competitive data for')} {profile?.sector || 'your sector'}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => runAnalysis(true)} className="btn btn-primary btn-sm gap-1.5">
+                        <RefreshCw size={14} /> {gt('Retry Live')}
+                    </button>
+                </div>
+            )}
+
             {/* Header */}
             <div className="card p-6">
                 <div className="flex items-start justify-between">
