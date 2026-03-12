@@ -64,7 +64,7 @@ export default function Footer() {
                 </div>
 
                 <div className="pt-8 flex flex-col md:flex-row items-center justify-between border-t" style={{ borderColor: 'var(--border)' }}>
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>© {year} pAIr Inc. All rights reserved.</p>
+                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>© {year} pAIr Team-13494. All rights reserved.</p>
                     <div className="flex items-center gap-1 text-xs mt-4 md:mt-0" style={{ color: 'var(--text-tertiary)' }}>
                         Made with <Heart size={12} fill="var(--red)" stroke="none" /> by <span className="font-semibold" style={{ color: 'var(--text)' }}>Team pAIr</span>
                     </div>

@@ -71,7 +71,7 @@ export default function Team() {
     const lang = language?.code || 'en';
     const { gt } = useTranslate(lang);
     return (
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto mt-9">
             {/* Header */}
             <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6"

@@ -83,7 +83,7 @@ export default function Navbar() {
                         {mobileMenu ? <X size={20} /> : <Menu size={20} />}
                     </button>
                     <Link to="/" className="flex items-center gap-2">
-                        <img src="/pair-logo.png" alt="pAIr" className="h-9 w-auto" style={{ objectFit: 'contain' }} />
+                        <img src="/pair-logo.png" alt="pAIr" className="h-11 w-auto" style={{ objectFit: 'contain' }} />
                     </Link>
                 </div>
 
