@@ -8,6 +8,7 @@ import useTranslate from '../hooks/useTranslate';
 export default function ResultsView({ data, language, profile }) {
     const [tab, setTab] = useState('overview');
     const lang = language || 'en';
+    const { gt } = useTranslate(lang);
 
     // Backend returns flat structure  - map to display format
     const policyMeta = data.policy_metadata || {};

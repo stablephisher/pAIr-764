@@ -1,0 +1,17 @@
+{
+  "id": "18f0e084-ae48-4763-b730-08776d5b90d5",
+  "detected_at": "2026-03-13T06:02:47.304979",
+  "timestamp": 1773381767.304979,
+  "discovery_id": "94d42436",
+  "title": "Union Budget 2026-27: Building Champion MSMEs for a Global India",
+  "url": "https://www.pib.gov.in/PressNoteDetails.aspx?NoteId=157367&ModuleId=3&reg=20&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "manufacturing",
+    "trading",
+    "handicraft"
+  ],
+  "discovered_at": "2026-03-13T06:02:11.361300",
+  "content_hash": "894ae85076746e1b40272478dbb96bc1",
+  "relevance_score": 0.9968273
+}

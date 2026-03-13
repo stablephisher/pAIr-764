@@ -1,0 +1,16 @@
+{
+  "id": "3ad7ec0b-8266-478e-9cd6-07e053a697a1",
+  "detected_at": "2026-03-13T06:02:47.304979",
+  "timestamp": 1773381767.304979,
+  "discovery_id": "ef3d45a3",
+  "title": "Reserve Bank of India",
+  "url": "https://www.rbi.org.in/commonperson/english/Scripts/PressReleases.aspx?Id=2627",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:02:12.178216",
+  "content_hash": "e29ff37ab0dc38fb97390a7a3baa98f1",
+  "relevance_score": 0.9996898
+}

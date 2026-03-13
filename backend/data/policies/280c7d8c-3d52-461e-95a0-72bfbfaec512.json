@@ -1,0 +1,15 @@
+{
+  "id": "280c7d8c-3d52-461e-95a0-72bfbfaec512",
+  "detected_at": "2026-03-13T06:02:47.296683",
+  "timestamp": 1773381767.2966835,
+  "discovery_id": "6ab0f887",
+  "title": "press release on the 333rd report of the department-related ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2238242&reg=1&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:02:10.470413",
+  "content_hash": "4a1ec09a1831420562effb8cb3a8b0e8",
+  "relevance_score": 0.8877607
+}
