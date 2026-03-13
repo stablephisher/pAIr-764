@@ -1,0 +1,15 @@
+{
+  "id": "6c9d5b1e-9044-4a0c-87ce-b830bddf0215",
+  "detected_at": "2026-03-13T07:00:34.992840",
+  "timestamp": 1773385234.992841,
+  "discovery_id": "e86db26e",
+  "title": "12 Key Announcements - MSME Dashboard",
+  "url": "https://dashboard.msme.gov.in/12_nnouncements.aspx",
+  "source": "GST Council",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:59:55.707768",
+  "content_hash": "4af5b3bd8b83dcb22aad3f795a2831b7",
+  "relevance_score": 0.99135584
+}

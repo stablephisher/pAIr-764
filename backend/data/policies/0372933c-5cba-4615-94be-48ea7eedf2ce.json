@@ -1,0 +1,16 @@
+{
+  "id": "0372933c-5cba-4615-94be-48ea7eedf2ce",
+  "detected_at": "2026-03-13T06:38:35.982073",
+  "timestamp": 1773383915.9820733,
+  "discovery_id": "1ef0de02",
+  "title": "Year End Review 2025: Ministry of Micro, Small & Medium Enterprises",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2209712&reg=3&lang=1",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:37:55.733096",
+  "content_hash": "a2be51349b598446834ac7d26cec4087",
+  "relevance_score": 0.99857855
+}

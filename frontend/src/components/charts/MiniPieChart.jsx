@@ -3,6 +3,7 @@ import React from 'react';
 export default function MiniPieChart({ data, size = 180, title }) {
     // data = [{ label, value, color }]
     const total = data.reduce((s, d) => s + d.value, 0) || 1;
+    const centerValue = 100;
     let cumulative = 0;
     const radius = size / 2 - 10;
     const center = size / 2;
@@ -29,8 +30,8 @@ export default function MiniPieChart({ data, size = 180, title }) {
                     </path>
                 ))}
                 <circle cx={center} cy={center} r={radius * 0.55} fill="var(--bg)" />
-                <text x={center} y={center - 4} textAnchor="middle" fill="var(--text)" fontWeight="800" fontSize="22">{total}</text>
-                <text x={center} y={center + 14} textAnchor="middle" fill="var(--text-tertiary)" fontSize="10">total</text>
+                <text x={center} y={center - 4} textAnchor="middle" fill="var(--text)" fontWeight="800" fontSize="22">{centerValue}</text>
+                <text x={center} y={center + 14} textAnchor="middle" fill="var(--text-tertiary)" fontSize="10">mix</text>
             </svg>
             <div className="flex flex-wrap gap-3 mt-3 justify-center">
                 {slices.map((s, i) => (

@@ -47,11 +47,30 @@ export default function ResultsView({ data, language, profile }) {
     const profData = sourceData.profitability || {};
     const ethicsData = sourceData.ethics || {};
 
+    const toFinite = (value) => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : null;
+    };
+
+    const clamp = (value, min = 0, max = 100) => Math.min(max, Math.max(min, value));
+
+    const normalizeRoiToScore = (roiMultiplier) => {
+        const roi = toFinite(roiMultiplier);
+        if (roi === null) return null;
+        const capped = Math.min(Math.max(roi, 0), 20);
+        return Math.round((1 - Math.exp(-capped / 4)) * 100);
+    };
+
+    const rawRisk = toFinite(riskData.overall_score);
+    const rawSustainability = toFinite(susData.green_score);
+    const rawProfitability = toFinite(profData.profitability_score);
+    const rawEthics = toFinite(ethicsData.overall_score);
+
     const scores = {
-        risk_score: riskData.overall_score || 0,
-        sustainability_score: susData.green_score || 0,
-        profitability_score: Math.min(100, Math.round((profData.roi_multiplier || 0) * 10)),
-        ethics_score: ethicsData.overall_score || 0,
+        risk_score: rawRisk === null ? null : clamp(rawRisk),
+        sustainability_score: rawSustainability === null ? null : clamp(rawSustainability),
+        profitability_score: rawProfitability === null ? normalizeRoiToScore(profData.roi_multiplier) : clamp(rawProfitability),
+        ethics_score: rawEthics === null ? null : clamp(rawEthics),
     };
 
     const obligations = sourceData.obligations || sourceData.compliance_obligations || [];
@@ -69,7 +88,7 @@ export default function ResultsView({ data, language, profile }) {
     const riskAssessment = data.risk_assessment || {};
     const policyTitle = sourceData.policy_name || policyMeta.policy_name || 'Policy Analysis';
     const riskBand = String(riskData.overall_band || riskAssessment.overall_risk_level || '').toUpperCase();
-    const plainLevel = (scores.risk_score || 0) > 70 ? gt('High attention needed') : (scores.risk_score || 0) > 40 ? gt('Some care needed') : gt('Looks safe for now');
+    const plainLevel = (scores.risk_score ?? 0) > 70 ? gt('High attention needed') : (scores.risk_score ?? 0) > 40 ? gt('Some care needed') : gt('Looks safe for now');
     const nextAction = actionPlan[0]?.action || obligations[0]?.obligation || obligations[0]?.description || gt('Review obligations and complete the first step.');
 
     const riskTone = riskBand === 'HIGH' || riskBand === 'CRITICAL'
@@ -81,7 +100,8 @@ export default function ResultsView({ data, language, profile }) {
     // Score ring component
     const ScoreRing = ({ value, label, color }) => {
         const circumference = 2 * Math.PI * 40;
-        const offset = circumference - (value / 100) * circumference;
+        const safeValue = value === null ? 0 : value;
+        const offset = circumference - (safeValue / 100) * circumference;
 
         return (
             <div className="text-center">
@@ -91,12 +111,19 @@ export default function ResultsView({ data, language, profile }) {
                         <circle cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
                             strokeDasharray={circumference} strokeDashoffset={offset} className="progress" />
                     </svg>
-                    <span className="score-value" style={{ color }}>{value}</span>
+                    <span className="score-value" style={{ color }}>{value === null ? 'N/A' : value}</span>
                 </div>
                 <p className="text-sm font-medium">{label}</p>
             </div>
         );
     };
+
+    const pieData = [
+        { label: 'Risk', value: scores.risk_score, color: (scores.risk_score ?? 0) > 70 ? '#ef4444' : (scores.risk_score ?? 0) > 40 ? '#f97316' : '#22c55e' },
+        { label: 'Sustainability', value: scores.sustainability_score, color: '#22c55e' },
+        { label: 'Profitability', value: scores.profitability_score, color: '#6366f1' },
+        { label: 'Ethics', value: scores.ethics_score, color: '#8b5cf6' },
+    ].filter((item) => item.value !== null && item.value > 0);
 
     return (
         <div className="space-y-6 animate-fade-in-up">
@@ -131,15 +158,15 @@ export default function ResultsView({ data, language, profile }) {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Risk Score')}</p>
-                        <p className="text-xl font-bold" style={{ color: riskTone.text }}>{scores.risk_score || 0}</p>
+                        <p className="text-xl font-bold" style={{ color: riskTone.text }}>{scores.risk_score ?? 'N/A'}</p>
                     </div>
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Green Score')}</p>
-                        <p className="text-xl font-bold" style={{ color: 'var(--green)' }}>{scores.sustainability_score || 0}</p>
+                        <p className="text-xl font-bold" style={{ color: 'var(--green)' }}>{scores.sustainability_score ?? 'N/A'}</p>
                     </div>
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Profitability')}</p>
-                        <p className="text-xl font-bold" style={{ color: 'var(--accent)' }}>{scores.profitability_score || 0}</p>
+                        <p className="text-xl font-bold" style={{ color: 'var(--accent)' }}>{scores.profitability_score ?? 'N/A'}</p>
                     </div>
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Obligations')}</p>
@@ -173,30 +200,25 @@ export default function ResultsView({ data, language, profile }) {
             <div className="card p-6">
                 <h3 className="font-semibold mb-6">{gt('Analysis Scores')}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <ScoreRing value={scores.risk_score || 0} label={gt('Risk Score')}
-                        color={scores.risk_score > 70 ? 'var(--red)' : scores.risk_score > 40 ? 'var(--orange)' : 'var(--green)'} />
-                    <ScoreRing value={scores.sustainability_score || 0} label={gt('Sustainability')} color="var(--green)" />
-                    <ScoreRing value={scores.profitability_score || 0} label={gt('Profitability')} color="var(--accent)" />
-                    <ScoreRing value={scores.ethics_score || 0} label={gt('Ethics')} color="var(--purple)" />
+                    <ScoreRing value={scores.risk_score} label={gt('Risk Score')}
+                        color={(scores.risk_score ?? 0) > 70 ? 'var(--red)' : (scores.risk_score ?? 0) > 40 ? 'var(--orange)' : 'var(--green)'} />
+                    <ScoreRing value={scores.sustainability_score} label={gt('Sustainability')} color="var(--green)" />
+                    <ScoreRing value={scores.profitability_score} label={gt('Profitability')} color="var(--accent)" />
+                    <ScoreRing value={scores.ethics_score} label={gt('Ethics')} color="var(--purple)" />
                 </div>
             </div>
 
             {/* Score Charts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="card p-5">
-                    <MiniPieChart title={gt('Score Distribution')} data={[
-                        { label: 'Risk', value: scores.risk_score || 1, color: (scores.risk_score || 0) > 70 ? '#ef4444' : (scores.risk_score || 0) > 40 ? '#f97316' : '#22c55e' },
-                        { label: 'Sustainability', value: scores.sustainability_score || 1, color: '#22c55e' },
-                        { label: 'Profitability', value: scores.profitability_score || 1, color: '#6366f1' },
-                        { label: 'Ethics', value: scores.ethics_score || 1, color: '#8b5cf6' },
-                    ]} />
+                    <MiniPieChart title={gt('Score Distribution')} data={pieData} />
                 </div>
                 <div className="card p-5">
                     <MiniBarChart title={gt('Score Breakdown')} data={[
-                        { label: 'Risk Score', value: scores.risk_score || 0, color: (scores.risk_score || 0) > 70 ? '#ef4444' : (scores.risk_score || 0) > 40 ? '#f97316' : '#22c55e', max: 100, suffix: '/100' },
-                        { label: 'Green Score', value: scores.sustainability_score || 0, color: '#22c55e', max: 100, suffix: '/100' },
-                        { label: 'Profitability', value: scores.profitability_score || 0, color: '#6366f1', max: 100, suffix: '/100' },
-                        { label: 'Ethics', value: scores.ethics_score || 0, color: '#8b5cf6', max: 100, suffix: '/100' },
+                        { label: 'Risk Score', value: scores.risk_score, color: (scores.risk_score ?? 0) > 70 ? '#ef4444' : (scores.risk_score ?? 0) > 40 ? '#f97316' : '#22c55e', max: 100, suffix: '/100' },
+                        { label: 'Green Score', value: scores.sustainability_score, color: '#22c55e', max: 100, suffix: '/100' },
+                        { label: 'Profitability', value: scores.profitability_score, color: '#6366f1', max: 100, suffix: '/100' },
+                        { label: 'Ethics', value: scores.ethics_score, color: '#8b5cf6', max: 100, suffix: '/100' },
                     ]} />
                 </div>
             </div>

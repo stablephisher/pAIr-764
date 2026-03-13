@@ -1,0 +1,16 @@
+{
+  "id": "0bebee5f-6ca3-47cd-b83c-f528deea3136",
+  "detected_at": "2026-03-13T06:38:35.982073",
+  "timestamp": 1773383915.9820733,
+  "discovery_id": "25a157be",
+  "title": "[PDF] Schemes for MSMEs - Ministry of Micro, Small & Medium Enterprises",
+  "url": "https://msme.gov.in/sites/default/files/Scheme-booklet-Eng.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "service",
+    "handicraft"
+  ],
+  "discovered_at": "2026-03-13T06:37:56.445026",
+  "content_hash": "2c4343e2be2ce8f7db644f4067b82d87",
+  "relevance_score": 0.9991768
+}

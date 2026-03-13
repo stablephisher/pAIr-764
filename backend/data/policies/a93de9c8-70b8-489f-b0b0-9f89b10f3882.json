@@ -1,0 +1,15 @@
+{
+  "id": "a93de9c8-70b8-489f-b0b0-9f89b10f3882",
+  "detected_at": "2026-03-13T06:38:35.991656",
+  "timestamp": 1773383915.9916565,
+  "discovery_id": "d5ced53f",
+  "title": "Press Note Details: Press Information Bureau - PIB",
+  "url": "https://www.pib.gov.in/PressNoteDetails.aspx?NoteId=157661&ModuleId=3&reg=3&lang=1",
+  "source": "Startup India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:38:03.327427",
+  "content_hash": "c77df7888aa031fdde0ae054ffe28b86",
+  "relevance_score": 0.9995005
+}

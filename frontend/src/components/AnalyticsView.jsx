@@ -30,6 +30,15 @@ export default function AnalyticsView({ analytics, loading, error, onRetry, lang
     // Show demo only if explicitly requested
     const data = showDemo ? DEMO_ANALYTICS : analytics;
 
+    const safeNumber = (v, fallback = 0) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : fallback;
+    };
+
+    const roiMultiplier = safeNumber(data?.avg_profitability_multiplier, 0);
+    const roiLabel = roiMultiplier > 20 ? '20+' : roiMultiplier.toFixed(1);
+    const profitabilityIndex = safeNumber(data?.profitability_index, Math.round((1 - Math.exp(-Math.min(Math.max(roiMultiplier, 0), 20) / 4)) * 100));
+
     if (loading) {
         return (
             <div className="text-center py-16">
@@ -135,8 +144,9 @@ export default function AnalyticsView({ analytics, loading, error, onRetry, lang
                         <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
                             <TrendingUp size={24} style={{ color: 'var(--accent)' }} />
                         </div>
-                        <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{data.avg_profitability_multiplier || '2.4'}x</div>
+                        <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{roiLabel}x</div>
                         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{gt('ROI Multiplier')}</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{gt('Benefit Index')}: {profitabilityIndex}/100</p>
                     </div>
                 </div>
 

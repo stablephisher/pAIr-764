@@ -1681,7 +1681,12 @@ def get_user_analytics(user_uid: str):
         # Profitability
         prof = a.get("profitability", {})
         if isinstance(prof, dict) and "roi_multiplier" in prof:
-            profitability_scores.append(prof["roi_multiplier"])
+            try:
+                roi_val = float(prof["roi_multiplier"])
+                if roi_val >= 0:
+                    profitability_scores.append(roi_val)
+            except (TypeError, ValueError):
+                pass
 
         # Schemes
         schemes = a.get("matched_schemes", [])
@@ -1703,11 +1708,24 @@ def get_user_analytics(user_uid: str):
             "policy_name": pm.get("policy_name", "Unknown") if isinstance(pm, dict) else "Unknown",
         })
 
+    # Robust ROI cleanup for dashboard readability.
+    # ROI can occasionally spike due to partial/malformed analysis payloads.
+    roi_clean = [v for v in profitability_scores if 0 <= v <= 50]
+    if not roi_clean and profitability_scores:
+        roi_clean = [min(max(v, 0), 50) for v in profitability_scores]
+
+    avg_roi = (sum(roi_clean) / len(roi_clean)) if roi_clean else 0
+
+    # Convert ROI multiplier into an intuitive 0-100 benefit index.
+    profitability_index = round((1 - pow(2.718281828, -min(max(avg_roi, 0), 20) / 4.0)) * 100, 1) if avg_roi else 0
+
     return {
         "total_analyses": total_analyses,
         "avg_risk_score": round(sum(risk_scores) / len(risk_scores), 1) if risk_scores else 0,
         "avg_sustainability_score": round(sum(sustainability_scores) / len(sustainability_scores), 1) if sustainability_scores else 0,
-        "avg_profitability_multiplier": round(sum(profitability_scores) / len(profitability_scores), 2) if profitability_scores else 0,
+        "avg_profitability_multiplier": round(avg_roi, 2),
+        "profitability_index": profitability_index,
+        "profitability_sample_size": len(roi_clean),
         "risk_breakdown": risk_breakdown,
         "sectors_covered": list(sectors),
         "schemes_matched": all_schemes,
