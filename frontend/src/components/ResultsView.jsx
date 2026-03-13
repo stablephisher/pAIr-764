@@ -37,6 +37,14 @@ export default function ResultsView({ data, language, profile }) {
         }));
     }
     const riskAssessment = data.risk_assessment || {};
+    const policyTitle = data.policy_name || policyMeta.policy_name || 'Policy Analysis';
+    const riskBand = String(riskData.overall_band || riskAssessment.overall_risk_level || '').toUpperCase();
+
+    const riskTone = riskBand === 'HIGH' || riskBand === 'CRITICAL'
+        ? { bg: 'var(--red-light)', text: 'var(--red)' }
+        : riskBand === 'MEDIUM'
+            ? { bg: 'var(--orange-light)', text: 'var(--orange)' }
+            : { bg: 'var(--green-light)', text: 'var(--green)' };
 
     // Score ring component
     const ScoreRing = ({ value, label, color }) => {
@@ -61,17 +69,43 @@ export default function ResultsView({ data, language, profile }) {
     return (
         <div className="space-y-6 animate-fade-in-up">
             {/* Header */}
-            <div className="card p-6 flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                    <FileText size={28} />
+            <div className="card p-5 md:p-6" style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--accent-light))' }}>
+                <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                        <FileText size={28} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h2 className="text-xl md:text-2xl font-bold mb-2 truncate">{policyTitle}</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {policyMeta.geographical_scope && <span className="badge badge-gray">{policyMeta.geographical_scope}</span>}
+                            {policyMeta.policy_type && <span className="badge badge-accent">{policyMeta.policy_type}</span>}
+                            {policyMeta.issuing_authority && <span className="badge badge-green">{policyMeta.issuing_authority}</span>}
+                            {riskBand && (
+                                <span className="badge" style={{ background: riskTone.bg, color: riskTone.text }}>
+                                    {gt('Risk')}: {riskBand}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                <div className="flex-1">
-                    <h2 className="text-2xl font-bold mb-2">{data.policy_name || policyMeta.policy_name || 'Policy Analysis'}</h2>
-                    <div className="flex flex-wrap gap-2">
-                        {policyMeta.geographical_scope && <span className="badge badge-gray">{policyMeta.geographical_scope}</span>}
-                        {policyMeta.policy_type && <span className="badge badge-accent">{policyMeta.policy_type}</span>}
-                        {policyMeta.issuing_authority && <span className="badge badge-green">{policyMeta.issuing_authority}</span>}
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Risk Score')}</p>
+                        <p className="text-xl font-bold" style={{ color: riskTone.text }}>{scores.risk_score || 0}</p>
+                    </div>
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Green Score')}</p>
+                        <p className="text-xl font-bold" style={{ color: 'var(--green)' }}>{scores.sustainability_score || 0}</p>
+                    </div>
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Profitability')}</p>
+                        <p className="text-xl font-bold" style={{ color: 'var(--accent)' }}>{scores.profitability_score || 0}</p>
+                    </div>
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Obligations')}</p>
+                        <p className="text-xl font-bold" style={{ color: 'var(--text)' }}>{obligations.length}</p>
                     </div>
                 </div>
             </div>
