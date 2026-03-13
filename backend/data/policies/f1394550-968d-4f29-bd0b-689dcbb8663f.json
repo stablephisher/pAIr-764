@@ -1,0 +1,15 @@
+{
+  "id": "f1394550-968d-4f29-bd0b-689dcbb8663f",
+  "detected_at": "2026-03-13T07:03:44.984330",
+  "timestamp": 1773385424.9843304,
+  "discovery_id": "a7821c66",
+  "title": "Government Undertakes Multiple Initiatives to Strengthen Rural ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2238984&reg=6&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:02:53.728751",
+  "content_hash": "cfa37cf6186b9d62a9f9b3999911eafd",
+  "relevance_score": 0.8306082
+}

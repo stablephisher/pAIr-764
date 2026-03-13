@@ -529,8 +529,13 @@ PERSONALIZATION INSTRUCTIONS:
         num_schemes = len(analysis_data.get("compliance_actions", []))
         sus_engine = SustainabilityEngine()
         sus_report = sus_engine.calculate(1, num_schemes, business_profile)
+        obligation_count = len(analysis_data.get("obligations", analysis_data.get("compliance_obligations", [])))
+        penalty_count = len(analysis_data.get("penalties", []))
+        # Policy-specific adjustment to avoid flat, repetitive sustainability scores.
+        green_adjust = min(10.0, obligation_count * 1.2) - min(6.0, penalty_count * 1.5)
+        green_score = max(0.0, min(100.0, float(sus_report.green_score) + green_adjust))
         analysis_data["sustainability"] = {
-            "green_score": sus_report.green_score,
+            "green_score": round(green_score, 1),
             "grade": sus_report.grade,
             "paper_saved": sus_report.paper.pages_saved,
             "co2_saved_kg": sus_report.carbon.net_co2_saved_kg,
@@ -1872,13 +1877,15 @@ async def competitor_analysis(request: CompetitorAnalysisRequest):
             if not isinstance(p, dict):
                 continue
             try:
-                if p.get("risk_score") is not None:
-                    risk_values.append(float(p.get("risk_score")))
+                risk_raw = p.get("risk_score")
+                if risk_raw is not None:
+                    risk_values.append(float(risk_raw))
             except (TypeError, ValueError):
                 pass
             try:
-                if p.get("green_score") is not None:
-                    green_values.append(float(p.get("green_score")))
+                green_raw = p.get("green_score")
+                if green_raw is not None:
+                    green_values.append(float(green_raw))
             except (TypeError, ValueError):
                 pass
         avg_risk = round(sum(risk_values) / len(risk_values), 1) if risk_values else 45.0

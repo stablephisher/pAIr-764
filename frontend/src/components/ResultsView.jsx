@@ -57,14 +57,37 @@ export default function ResultsView({ data, language, profile }) {
     const normalizeRoiToScore = (roiMultiplier) => {
         const roi = toFinite(roiMultiplier);
         if (roi === null) return null;
-        const capped = Math.min(Math.max(roi, 0), 20);
-        return Math.round((1 - Math.exp(-capped / 4)) * 100);
+        const capped = Math.min(Math.max(roi, 0), 10);
+        // Conservative normalization: 0x-10x ROI maps to roughly 20-80 score.
+        return Math.round(20 + (Math.log1p(capped) / Math.log1p(10)) * 60);
+    };
+
+    const deriveEthicsScore = () => {
+        const explicit = toFinite(ethicsData.overall_score);
+        if (explicit !== null) return clamp(explicit);
+
+        const passed = toFinite(ethicsData.checks_passed);
+        const total = toFinite(ethicsData.total_checks);
+        if (passed !== null && total !== null && total > 0) {
+            return clamp(Math.round((passed / total) * 100));
+        }
+
+        const missing = Array.isArray(sourceData?.confidence_notes?.missing_information)
+            ? sourceData.confidence_notes.missing_information.length
+            : 0;
+        const ambiguous = Array.isArray(sourceData?.confidence_notes?.ambiguous_sections)
+            ? sourceData.confidence_notes.ambiguous_sections.length
+            : 0;
+
+        // Fallback confidence-based ethics proxy to avoid empty/undefined scores.
+        const proxy = 78 - (missing * 2.5) - (ambiguous * 2);
+        return clamp(Math.round(proxy), 45, 90);
     };
 
     const rawRisk = toFinite(riskData.overall_score);
     const rawSustainability = toFinite(susData.green_score);
     const rawProfitability = toFinite(profData.profitability_score);
-    const rawEthics = toFinite(ethicsData.overall_score);
+    const rawEthics = deriveEthicsScore();
 
     const scores = {
         risk_score: rawRisk === null ? null : clamp(rawRisk),
@@ -167,6 +190,11 @@ export default function ResultsView({ data, language, profile }) {
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Profitability')}</p>
                         <p className="text-xl font-bold" style={{ color: 'var(--accent)' }}>{scores.profitability_score ?? 'N/A'}</p>
+                        {toFinite(profData.roi_multiplier) !== null && (
+                            <p className="text-[11px] font-medium" style={{ color: 'var(--text-tertiary)' }}>
+                                ROI {Number(profData.roi_multiplier).toFixed(1)}x
+                            </p>
+                        )}
                     </div>
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Obligations')}</p>

@@ -131,6 +131,16 @@ export default function Policies() {
         return 'var(--green)';
     };
 
+    const formatPolicyDate = (value) => {
+        if (!value) return 'Unknown date';
+        const numeric = Number(value);
+        if (Number.isFinite(numeric)) {
+            const ms = numeric < 1e12 ? numeric * 1000 : numeric;
+            return new Date(ms).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        return new Date(value).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
     return (
         <div className="w-full px-4 md:px-6 py-2 md:py-4 space-y-5">
             <div className="card p-5 md:p-6" style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--accent-light))' }}>
@@ -232,7 +242,7 @@ export default function Policies() {
                                         </div>
                                         <div className="flex items-center gap-2 md:gap-3 mt-1 flex-wrap">
                                             <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                                                {item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown date'}
+                                                {formatPolicyDate(item.timestamp)}
                                             </span>
                                             {item.source && (
                                                 <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-tertiary)' }}>{item.source}</span>

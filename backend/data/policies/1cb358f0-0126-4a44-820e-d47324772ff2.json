@@ -1,0 +1,15 @@
+{
+  "id": "1cb358f0-0126-4a44-820e-d47324772ff2",
+  "detected_at": "2026-03-13T07:03:44.973690",
+  "timestamp": 1773385424.973691,
+  "discovery_id": "5a56ff11",
+  "title": "12 Key Announcements - MSME Dashboard",
+  "url": "https://dashboard.msme.gov.in/12_nnouncements.aspx",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:02:44.925372",
+  "content_hash": "a1d7493e62b775a16c83ba6cce623145",
+  "relevance_score": 0.9981178
+}
