@@ -1,0 +1,15 @@
+{
+  "id": "5799626d-289b-483c-9464-2a9b58864127",
+  "detected_at": "2026-03-13T05:55:18.970857",
+  "timestamp": 1773381318.9708571,
+  "discovery_id": "eb98e7fb",
+  "title": "[PDF] Scheme Guidelines - MSME - ODR",
+  "url": "https://odr.msme.gov.in/assets/pdf/MSE_Scheme_on_ODR_for_Delayed_Payment_Guidelines.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-13T05:54:17.594082",
+  "content_hash": "ef98c9053fe90dcd0e920fdd338929d5",
+  "relevance_score": 0.5414337
+}

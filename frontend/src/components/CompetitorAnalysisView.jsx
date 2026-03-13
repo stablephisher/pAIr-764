@@ -64,53 +64,82 @@ function setCachedData(profile, data) {
 }
 
 export default function CompetitorAnalysisView({ profile, onBack }) {
-    const { language } = useAppContext();
+    const { language, user, history } = useAppContext();
     const lang = language?.code || 'en';
     const { gt } = useTranslate(lang);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [isDemo, setIsDemo] = useState(false);
+    const [showDemo, setShowDemo] = useState(false);
+    const [error, setError] = useState(null);
     const [cachedAt, setCachedAt] = useState(null);
     const didInit = useRef(false);
 
+    const getActiveBusiness = useCallback(() => {
+        if (!profile) return null;
+        if (Array.isArray(profile.businesses) && profile.businesses.length > 0) {
+            const selected = profile.businesses.find((b) => b?.business_name === profile.business_name);
+            return selected || profile.businesses[0];
+        }
+        return {
+            business_name: profile.business_name,
+            sector: profile.sector,
+            business_type: profile.business_type,
+            state: profile.state || profile.location,
+            products_services: profile.products_services,
+            years_in_business: profile.years_in_business,
+        };
+    }, [profile]);
+
     const runAnalysis = useCallback(async (forceRefresh = false) => {
+        const activeBusiness = getActiveBusiness();
+
         if (!forceRefresh) {
-            const cached = getCachedData(profile);
+            const cached = getCachedData(activeBusiness || profile);
             if (cached) {
                 setData(cached.data);
                 setCachedAt(new Date(cached.timestamp));
-                setIsDemo(false);
+                setShowDemo(false);
+                setError(null);
                 return;
             }
         }
+
         setLoading(true);
-        setIsDemo(false);
+        setShowDemo(false);
+        setError(null);
+
+        const recentPolicies = (Array.isArray(history) ? history : []).slice(0, 12).map((item) => {
+            const analysis = item?.analysis && typeof item.analysis === 'object' ? item.analysis : item;
+            return {
+                policy_name: analysis?.policy_metadata?.policy_name || 'Unknown Policy',
+                policy_type: analysis?.policy_metadata?.policy_type || '',
+                issuing_authority: analysis?.policy_metadata?.issuing_authority || '',
+                risk_score: analysis?.risk_score?.overall_score ?? null,
+                risk_band: analysis?.risk_score?.overall_band || '',
+                green_score: analysis?.sustainability?.green_score ?? null,
+            };
+        });
+
         try {
             const res = await axios.post(`${API}/api/competitor-analysis`, {
-                sector: profile?.sector || 'Manufacturing',
-                business_type: profile?.business_type || 'MSME',
-                location: profile?.state || 'India',
-                products_services: profile?.products_services || '',
-                years_in_business: parseInt(profile?.years_in_business) || 1,
+                user_uid: user?.uid,
+                sector: activeBusiness?.sector || profile?.sector || 'MSME',
+                business_type: activeBusiness?.business_type || profile?.business_type || 'MSME',
+                location: activeBusiness?.state || profile?.state || profile?.location || 'India',
+                products_services: activeBusiness?.products_services || profile?.products_services || profile?.business_description || '',
+                years_in_business: parseInt(activeBusiness?.years_in_business, 10) || parseInt(profile?.years_in_business, 10) || 1,
+                policy_context: recentPolicies,
             }, { timeout: 30000 });
+
             setData(res.data);
             setCachedAt(new Date());
-            setCachedData(profile, res.data);
+            setCachedData(activeBusiness || profile, res.data);
         } catch (e) {
-            // Use demo data on failure
-            const demoData = {
-                ...DEMO_COMPETITOR_DATA,
-                market_overview: {
-                    ...DEMO_COMPETITOR_DATA.market_overview,
-                    sector: profile?.sector || 'Manufacturing',
-                    location: profile?.state || 'India'
-                }
-            };
-            setData(demoData);
-            setIsDemo(true);
+            const detail = e?.response?.data?.detail;
+            setError(typeof detail === 'string' ? detail : 'Failed to fetch live competitor analysis.');
         }
         setLoading(false);
-    }, [profile]);
+    }, [getActiveBusiness, history, profile, user]);
 
     useEffect(() => {
         if (!didInit.current) { didInit.current = true; runAnalysis(false); }
@@ -124,6 +153,27 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
         </div>
     );
 
+    if (error && !showDemo) {
+        return (
+            <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                    style={{ background: 'var(--red-light)', color: 'var(--red)' }}>
+                    <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2">{gt('Live Competitor Analysis Failed')}</h3>
+                <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+                <div className="flex items-center justify-center gap-3">
+                    <button onClick={() => runAnalysis(true)} className="btn btn-primary gap-2">
+                        <RefreshCw size={16} /> {gt('Try Again')}
+                    </button>
+                    <button onClick={() => { setShowDemo(true); setData(DEMO_COMPETITOR_DATA); }} className="btn btn-secondary gap-2">
+                        <Zap size={16} /> {gt('Show Demo Data')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     if (!data) return null;
 
     const swot = data.competitive_position || {};
@@ -133,7 +183,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
     return (
         <div className="space-y-6 animate-fade-in-up">
             {/* Demo Mode Banner */}
-            {isDemo && (
+            {showDemo && (
                 <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'linear-gradient(135deg, var(--accent-light), var(--purple-light, #f3e8ff))' }}>
                     <div className="flex items-center gap-3">
                         <Zap size={20} style={{ color: 'var(--accent)' }} />

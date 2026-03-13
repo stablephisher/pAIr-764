@@ -1,0 +1,16 @@
+{
+  "id": "d151ab25-6319-4fc1-9b4b-8ce6ab4ea129",
+  "detected_at": "2026-03-13T05:55:18.970857",
+  "timestamp": 1773381318.9708571,
+  "discovery_id": "e92ccfe1",
+  "title": "[PDF] MSME) Schemes - Ministry of Micro, Small & Medium Enterprises",
+  "url": "https://msme.gov.in/sites/default/files/MSME_Schemes_English_0.pdf",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T05:54:22.120759",
+  "content_hash": "3bbc115e16095443e6c3b3205e48b926",
+  "relevance_score": 0.99908185
+}

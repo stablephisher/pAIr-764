@@ -1,0 +1,15 @@
+{
+  "id": "ddf4fcb0-f3cd-492d-bba4-293709c26951",
+  "detected_at": "2026-03-13T05:55:18.988254",
+  "timestamp": 1773381318.9882545,
+  "discovery_id": "4c49bed4",
+  "title": "Extension of Due Dates for filing of FORM GSTR-1 and FORM ... - PIB",
+  "url": "https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1545562",
+  "source": "GST Council",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-13T05:54:35.294421",
+  "content_hash": "77e9e383b5aef2cde2f2ab6c3c255ab6",
+  "relevance_score": 0.99931216
+}

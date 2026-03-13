@@ -1,0 +1,16 @@
+{
+  "id": "9dab1eac-5a68-4e14-b8f9-f21836d058df",
+  "detected_at": "2026-03-13T06:00:35.712544",
+  "timestamp": 1773381635.712544,
+  "discovery_id": "dcc38e5b",
+  "title": "Year End Review 2025: Ministry of Micro, Small & Medium Enterprises",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2209712&reg=3&lang=1",
+  "source": "Startup India",
+  "sectors": [
+    "manufacturing",
+    "service"
+  ],
+  "discovered_at": "2026-03-13T06:00:28.621558",
+  "content_hash": "5aee3149deb9c7ca45ddaddc73d95f98",
+  "relevance_score": 0.9994253
+}

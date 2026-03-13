@@ -1,0 +1,15 @@
+{
+  "id": "d3ebc458-ede0-46cd-bc2e-ebccc53ae383",
+  "detected_at": "2026-03-13T05:55:18.988254",
+  "timestamp": 1773381318.9882545,
+  "discovery_id": "8be5385d",
+  "title": "CBIC extends due date for filing GSTR-3B for July 2025 to 27th ...",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2158991",
+  "source": "GST Council",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T05:54:35.294421",
+  "content_hash": "61812d0dc7d922b12dfb046746e8e1fc",
+  "relevance_score": 0.99940693
+}

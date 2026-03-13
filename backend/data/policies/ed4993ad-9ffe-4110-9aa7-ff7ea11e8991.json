@@ -1,0 +1,16 @@
+{
+  "id": "ed4993ad-9ffe-4110-9aa7-ff7ea11e8991",
+  "detected_at": "2026-03-13T05:55:18.976223",
+  "timestamp": 1773381318.9762235,
+  "discovery_id": "56d1db96",
+  "title": "[PDF] GST Reforms 2025: Relief for Common Man, Boost for ...",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/sep/doc202594628401.pdf",
+  "source": "GST Council",
+  "sectors": [
+    "manufacturing",
+    "handicraft"
+  ],
+  "discovered_at": "2026-03-13T05:54:29.620750",
+  "content_hash": "a5367c2d4db86b0a1ce83aca5f1f4305",
+  "relevance_score": 0.9263037
+}

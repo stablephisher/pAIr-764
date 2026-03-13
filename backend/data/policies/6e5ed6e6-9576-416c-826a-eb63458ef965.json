@@ -1,0 +1,17 @@
+{
+  "id": "6e5ed6e6-9576-416c-826a-eb63458ef965",
+  "detected_at": "2026-03-13T05:55:18.993365",
+  "timestamp": 1773381318.9933655,
+  "discovery_id": "b0b04f7c",
+  "title": "[PDF] A Decade of Startup India - Press Information Bureau",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/jan/doc2026115757801.pdf",
+  "source": "Startup India",
+  "sectors": [
+    "manufacturing",
+    "service",
+    "handicraft"
+  ],
+  "discovered_at": "2026-03-13T05:54:37.668042",
+  "content_hash": "bfa476f1b4111af41f595c38184cdf27",
+  "relevance_score": 0.990732
+}

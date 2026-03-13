@@ -1,0 +1,16 @@
+{
+  "id": "8dfd2702-a3d1-4ec7-82fe-ab511a04f4f4",
+  "detected_at": "2026-03-13T05:55:18.969433",
+  "timestamp": 1773381318.9694335,
+  "discovery_id": "323efc57",
+  "title": "press release on the 333rd report of the department-related ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2238242&reg=1&lang=1",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T05:54:17.594082",
+  "content_hash": "ff395df64ea8642ea83246b746a5e0cc",
+  "relevance_score": 0.5521781
+}
