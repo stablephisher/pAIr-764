@@ -1,0 +1,15 @@
+{
+  "id": "8b65202a-4c83-464d-932c-99d9165fabc9",
+  "detected_at": "2026-03-13T06:36:12.976398",
+  "timestamp": 1773383772.976398,
+  "discovery_id": "a80b8880",
+  "title": "5th National MSME Council Reviews Progress of World Bank ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2232474&reg=3&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:35:20.701732",
+  "content_hash": "a44b9816fa9663311b1d2d3fc4fcecbb",
+  "relevance_score": 0.657033
+}

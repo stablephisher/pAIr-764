@@ -1526,8 +1526,6 @@ async def translate_content(request: TranslateRequest):
             raise HTTPException(status_code=500, detail="API key not configured")
 
         target_lang = request.target_language
-        if target_lang.lower() in ('en', 'english'):
-            return request.data
 
         lang_names = {
             'hi': 'Hindi', 'ta': 'Tamil', 'te': 'Telugu', 'kn': 'Kannada',
@@ -1795,6 +1793,8 @@ async def competitor_analysis(request: CompetitorAnalysisRequest):
     """Generate competitive intelligence analysis using AI."""
     if not ai_client:
         raise HTTPException(status_code=500, detail="AI API key not set")
+
+    effective_policy_context: List[Dict[str, Any]] = []
     
     try:
         business_profile_context = {}
@@ -1848,16 +1848,21 @@ async def competitor_analysis(request: CompetitorAnalysisRequest):
 
         # Personalized non-demo fallback based on user profile + policy history context.
         # This keeps the feature usable when upstream AI providers are temporarily unavailable.
-        risk_values = [
-            float(p.get("risk_score"))
-            for p in effective_policy_context
-            if isinstance(p, dict) and p.get("risk_score") is not None
-        ]
-        green_values = [
-            float(p.get("green_score"))
-            for p in effective_policy_context
-            if isinstance(p, dict) and p.get("green_score") is not None
-        ]
+        risk_values = []
+        green_values = []
+        for p in effective_policy_context:
+            if not isinstance(p, dict):
+                continue
+            try:
+                if p.get("risk_score") is not None:
+                    risk_values.append(float(p.get("risk_score")))
+            except (TypeError, ValueError):
+                pass
+            try:
+                if p.get("green_score") is not None:
+                    green_values.append(float(p.get("green_score")))
+            except (TypeError, ValueError):
+                pass
         avg_risk = round(sum(risk_values) / len(risk_values), 1) if risk_values else 45.0
         avg_green = round(sum(green_values) / len(green_values), 1) if green_values else 60.0
 
@@ -1866,7 +1871,7 @@ async def competitor_analysis(request: CompetitorAnalysisRequest):
         price_sensitivity = "HIGH" if request.business_type.upper() in {"MSME", "PROPRIETORSHIP", "TRADING"} else "MEDIUM"
 
         policy_names = [
-            p.get("policy_name")
+            str(p.get("policy_name"))
             for p in effective_policy_context
             if isinstance(p, dict) and p.get("policy_name")
         ][:4]

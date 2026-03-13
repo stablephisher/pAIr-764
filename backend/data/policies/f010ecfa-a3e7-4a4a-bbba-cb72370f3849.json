@@ -1,0 +1,15 @@
+{
+  "id": "f010ecfa-a3e7-4a4a-bbba-cb72370f3849",
+  "detected_at": "2026-03-13T06:36:12.963507",
+  "timestamp": 1773383772.9635077,
+  "discovery_id": "087a0028",
+  "title": "[PDF] Circular No.08/2026-Customs F. No. 450/81/2016-Cus IV ...",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/mar/doc202631807301.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:35:12.360952",
+  "content_hash": "7829278b97cc6d2b93e8a62a38d920e5",
+  "relevance_score": 0.99879336
+}

@@ -1,0 +1,16 @@
+{
+  "id": "06575c5b-ff05-46e7-b239-c85f7b1fca72",
+  "detected_at": "2026-03-13T06:37:34.961715",
+  "timestamp": 1773383854.9617157,
+  "discovery_id": "1d78002f",
+  "title": "press release on the 333rd report of the department-related ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2238242&reg=1&lang=1",
+  "source": "Udyam Registration",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:37:04.221452",
+  "content_hash": "1f6acfb5a126469b9ca67e67744b5966",
+  "relevance_score": 0.64719695
+}

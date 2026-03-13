@@ -1,21 +1,51 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, Zap, TrendingUp, CheckCircle, Clock, AlertCircle, ArrowRight } from 'lucide-react';
 import MiniPieChart from './charts/MiniPieChart';
 import MiniBarChart from './charts/MiniBarChart';
 import { Briefcase } from 'lucide-react';
 import useTranslate from '../hooks/useTranslate';
+import { useAppContext } from '../context/AppContext';
 
 export default function ResultsView({ data, language, profile }) {
     const [tab, setTab] = useState('overview');
     const lang = language || 'en';
     const { gt } = useTranslate(lang);
+    const { translateContent } = useAppContext();
+    const [displayData, setDisplayData] = useState(data);
+    const [translating, setTranslating] = useState(false);
+
+    useEffect(() => {
+        let alive = true;
+
+        const adaptLanguage = async () => {
+            if (!data) {
+                if (alive) setDisplayData(data);
+                return;
+            }
+
+            setTranslating(true);
+            try {
+                const translated = await translateContent(data, lang);
+                if (alive) setDisplayData(translated || data);
+            } catch (_) {
+                if (alive) setDisplayData(data);
+            } finally {
+                if (alive) setTranslating(false);
+            }
+        };
+
+        adaptLanguage();
+        return () => { alive = false; };
+    }, [data, lang, translateContent]);
+
+    const sourceData = displayData || data || {};
 
     // Backend returns flat structure  - map to display format
-    const policyMeta = data.policy_metadata || {};
-    const riskData = data.risk_score || {};
-    const susData = data.sustainability || {};
-    const profData = data.profitability || {};
-    const ethicsData = data.ethics || {};
+    const policyMeta = sourceData.policy_metadata || {};
+    const riskData = sourceData.risk_score || {};
+    const susData = sourceData.sustainability || {};
+    const profData = sourceData.profitability || {};
+    const ethicsData = sourceData.ethics || {};
 
     const scores = {
         risk_score: riskData.overall_score || 0,
@@ -24,12 +54,12 @@ export default function ResultsView({ data, language, profile }) {
         ethics_score: ethicsData.overall_score || 0,
     };
 
-    const obligations = data.obligations || data.compliance_obligations || [];
-    const compliancePlan = data.compliance_plan || {};
+    const obligations = sourceData.obligations || sourceData.compliance_obligations || [];
+    const compliancePlan = sourceData.compliance_plan || {};
     // Fallback chain: compliance_plan.action_plan → compliance_actions (mapped) → []
     let actionPlan = compliancePlan.action_plan || [];
-    if (actionPlan.length === 0 && data.compliance_actions?.length > 0) {
-        actionPlan = data.compliance_actions.map((act, i) => ({
+    if (actionPlan.length === 0 && sourceData.compliance_actions?.length > 0) {
+        actionPlan = sourceData.compliance_actions.map((act, i) => ({
             step_number: i + 1,
             action: typeof act === 'string' ? act : (act.action || ''),
             priority: act.priority || 'MEDIUM',
@@ -37,8 +67,10 @@ export default function ResultsView({ data, language, profile }) {
         }));
     }
     const riskAssessment = data.risk_assessment || {};
-    const policyTitle = data.policy_name || policyMeta.policy_name || 'Policy Analysis';
+    const policyTitle = sourceData.policy_name || policyMeta.policy_name || 'Policy Analysis';
     const riskBand = String(riskData.overall_band || riskAssessment.overall_risk_level || '').toUpperCase();
+    const plainLevel = (scores.risk_score || 0) > 70 ? gt('High attention needed') : (scores.risk_score || 0) > 40 ? gt('Some care needed') : gt('Looks safe for now');
+    const nextAction = actionPlan[0]?.action || obligations[0]?.obligation || obligations[0]?.description || gt('Review obligations and complete the first step.');
 
     const riskTone = riskBand === 'HIGH' || riskBand === 'CRITICAL'
         ? { bg: 'var(--red-light)', text: 'var(--red)' }
@@ -68,6 +100,12 @@ export default function ResultsView({ data, language, profile }) {
 
     return (
         <div className="space-y-6 animate-fade-in-up">
+            {translating && (
+                <div className="text-xs px-3 py-2 rounded-lg inline-flex items-center gap-2" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                    <Zap size={12} /> {gt('Adapting language to your selected preset...')}
+                </div>
+            )}
+
             {/* Header */}
             <div className="card p-5 md:p-6" style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--accent-light))' }}>
                 <div className="flex items-start gap-4">
@@ -106,6 +144,27 @@ export default function ResultsView({ data, language, profile }) {
                     <div className="p-3 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                         <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Obligations')}</p>
                         <p className="text-xl font-bold" style={{ color: 'var(--text)' }}>{obligations.length}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Simple Summary */}
+            <div className="card p-5 md:p-6">
+                <h3 className="font-semibold mb-4">{gt('Simple Summary')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-4 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-xs font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Safety Level')}</p>
+                        <p className="text-base font-bold" style={{ color: riskTone.text }}>{plainLevel}</p>
+                    </div>
+                    <div className="p-4 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-xs font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Do This First')}</p>
+                        <p className="text-base font-semibold" style={{ color: 'var(--text)' }}>{nextAction}</p>
+                    </div>
+                    <div className="p-4 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+                        <p className="text-xs font-semibold uppercase" style={{ color: 'var(--text-tertiary)' }}>{gt('Expected Benefit')}</p>
+                        <p className="text-base font-semibold" style={{ color: 'var(--green)' }}>
+                            {susData.narrative || gt('Better compliance and lower business risk over time.')}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -172,10 +231,10 @@ export default function ResultsView({ data, language, profile }) {
                     {tab === 'overview' && (
                         <div className="space-y-6">
                             {/* Who is affected */}
-                            {data.applicability?.who_is_affected && (
+                            {sourceData.applicability?.who_is_affected && (
                                 <div>
                                     <h4 className="font-semibold mb-3">Who Is Affected</h4>
-                                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{data.applicability.who_is_affected}</p>
+                                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{sourceData.applicability.who_is_affected}</p>
                                 </div>
                             )}
 
@@ -242,11 +301,11 @@ export default function ResultsView({ data, language, profile }) {
                             )}
 
                             {/* Matched Schemes */}
-                            {data.matched_schemes?.length > 0 && (
+                            {sourceData.matched_schemes?.length > 0 && (
                                 <div>
                                     <h4 className="font-semibold mb-3">Matched Government Schemes</h4>
                                     <div className="space-y-3">
-                                        {data.matched_schemes.map((s, i) => (
+                                        {sourceData.matched_schemes.map((s, i) => (
                                             <div key={i} className="p-4 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
                                                 <p className="font-medium">{s.name || s}</p>
                                                 {s.description && <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{s.description}</p>}

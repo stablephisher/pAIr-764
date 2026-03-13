@@ -119,7 +119,7 @@ export function AppProvider({ children }) {
 
     // Translate content via backend
     const translateContent = useCallback(async (data, targetLang) => {
-        if (!targetLang || targetLang === 'en') return data;
+        if (!targetLang) return data;
         try {
             const res = await axios.post(`${API}/api/translate`, { data, target_language: targetLang });
             return res.data;

@@ -1,0 +1,15 @@
+{
+  "id": "0dcf104c-9d60-4a91-bb14-af7609b33b46",
+  "detected_at": "2026-03-13T06:36:12.992995",
+  "timestamp": 1773383772.9929957,
+  "discovery_id": "68a430c5",
+  "title": "Government Strengthens Startup Growth Through DPIIT Recognition ...",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2197662&reg=3&lang=1",
+  "source": "Startup India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:35:35.876824",
+  "content_hash": "de93d1e55c68e09f953b03aa6361ac79",
+  "relevance_score": 0.9999683
+}

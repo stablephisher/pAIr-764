@@ -1,0 +1,15 @@
+{
+  "id": "4fe82332-186d-40eb-a376-385b2c59f413",
+  "detected_at": "2026-03-13T06:36:12.984664",
+  "timestamp": 1773383772.9846642,
+  "discovery_id": "1b355776",
+  "title": "Eight Years of GST - PIB",
+  "url": "https://www.pib.gov.in/PressNoteDetails.aspx?id=154789&NoteId=154789&ModuleId=3",
+  "source": "GST Council",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-13T06:35:29.527835",
+  "content_hash": "54a7d52023fe3dae6db58dc44567bf6e",
+  "relevance_score": 0.7038554
+}

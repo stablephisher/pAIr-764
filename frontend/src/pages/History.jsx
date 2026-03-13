@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { FileText, ChevronRight, Trash2, ScrollText, Search, AlertCircle, Plus, Zap, Shield, Leaf, TrendingUp } from 'lucide-react';
@@ -54,12 +54,13 @@ const DEMO_POLICIES = [
 ];
 
 export default function Policies() {
-    const { history, deleteHistoryItem, clearHistory, language } = useAppContext();
+    const { history, deleteHistoryItem, clearHistory, language, translateContent } = useAppContext();
     const lang = language?.code || 'en';
     const { gt } = useTranslate(lang);
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [deleting, setDeleting] = useState(null);
+    const [translatedNames, setTranslatedNames] = useState({});
     
     // Use demo data if no real history
     const showDemoData = history.length === 0;
@@ -74,9 +75,47 @@ export default function Policies() {
     };
 
     const filteredPolicies = displayData.filter(item => {
-        const name = item.policy_metadata?.policy_name || item.policy_name || '';
+        const baseName = item.policy_metadata?.policy_name || item.policy_name || '';
+        const name = translatedNames[item.id] || baseName;
         return name.toLowerCase().includes(search.toLowerCase());
     });
+
+    useEffect(() => {
+        let alive = true;
+
+        const adaptPolicyNames = async () => {
+            if (!Array.isArray(displayData) || displayData.length === 0) {
+                if (alive) setTranslatedNames({});
+                return;
+            }
+
+            const nextMap = {};
+            const limited = displayData.slice(0, 30);
+
+            await Promise.all(limited.map(async (item) => {
+                const baseName = item.policy_metadata?.policy_name || item.policy_name || '';
+                if (!baseName) return;
+
+                const hasNonLatin = /[^\u0000-\u00ff]/.test(baseName);
+                if (!hasNonLatin && lang === 'en') {
+                    nextMap[item.id] = baseName;
+                    return;
+                }
+
+                try {
+                    const translated = await translateContent({ text: baseName }, lang);
+                    nextMap[item.id] = translated?.text || baseName;
+                } catch (_) {
+                    nextMap[item.id] = baseName;
+                }
+            }));
+
+            if (alive) setTranslatedNames(nextMap);
+        };
+
+        adaptPolicyNames();
+        return () => { alive = false; };
+    }, [displayData, lang, translateContent]);
 
     const avgRisk = filteredPolicies.length
         ? Math.round(filteredPolicies.reduce((sum, item) => sum + Number(item.risk_score?.overall_score || 0), 0) / filteredPolicies.length)
@@ -187,7 +226,7 @@ export default function Policies() {
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <h3 className="font-semibold truncate" style={{ color: 'var(--text)' }}>
-                                                {item.policy_metadata?.policy_name || item.policy_name || 'Policy Document'}
+                                                {translatedNames[item.id] || item.policy_metadata?.policy_name || item.policy_name || 'Policy Document'}
                                             </h3>
                                             {item.isDemo && <span className="badge badge-gray text-[10px]">Demo</span>}
                                         </div>

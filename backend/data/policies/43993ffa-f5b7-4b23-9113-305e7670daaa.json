@@ -1,0 +1,15 @@
+{
+  "id": "43993ffa-f5b7-4b23-9113-305e7670daaa",
+  "detected_at": "2026-03-13T06:36:12.963507",
+  "timestamp": 1773383772.9635077,
+  "discovery_id": "0e50cc20",
+  "title": "Lending to Micro, Small & Medium Enterprises (MSME) Sector - RBI",
+  "url": "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=13290&Mode=0",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:35:12.360952",
+  "content_hash": "7b77188140bd0dc4527a9a6380d01c7d",
+  "relevance_score": 0.9985221
+}

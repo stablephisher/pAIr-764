@@ -1,0 +1,16 @@
+{
+  "id": "0a1d9579-3118-46cf-a652-98c372df0e7d",
+  "detected_at": "2026-03-13T06:36:12.992995",
+  "timestamp": 1773383772.9929957,
+  "discovery_id": "e08e12d4",
+  "title": "Initiatives under \u201cMake in India\u201d and \u201cStartup\u201dProgrammes; - PIB",
+  "url": "https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1738170",
+  "source": "Startup India",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:35:35.876824",
+  "content_hash": "56eb49755b32ac1f4ec2522a1849ab6a",
+  "relevance_score": 0.9988305
+}

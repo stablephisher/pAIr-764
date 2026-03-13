@@ -1,0 +1,15 @@
+{
+  "id": "7754064f-48a2-4eff-b2ed-1bff8b2daba2",
+  "detected_at": "2026-03-13T06:36:12.967945",
+  "timestamp": 1773383772.967946,
+  "discovery_id": "b75decc6",
+  "title": "[PDF] Policy Reforms That Transformed Business Environment",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/mar/doc202635811201.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-13T06:35:14.569240",
+  "content_hash": "8c28670e454e3ad56919fb39876c2dad",
+  "relevance_score": 0.99771273
+}

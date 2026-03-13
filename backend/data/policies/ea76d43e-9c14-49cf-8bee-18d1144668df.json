@@ -1,0 +1,16 @@
+{
+  "id": "ea76d43e-9c14-49cf-8bee-18d1144668df",
+  "detected_at": "2026-03-13T06:36:12.992995",
+  "timestamp": 1773383772.9929957,
+  "discovery_id": "6b2e1aa9",
+  "title": "Union Budget FY 2026-27: Manufacturing Sector Driving India's ...",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2226828",
+  "source": "e-Gazette of India",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:35:38.421836",
+  "content_hash": "d3c57230b1d0d2f27ba98f64ac2cb329",
+  "relevance_score": 0.2939975
+}

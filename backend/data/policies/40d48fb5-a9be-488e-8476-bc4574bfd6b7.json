@@ -1,0 +1,15 @@
+{
+  "id": "40d48fb5-a9be-488e-8476-bc4574bfd6b7",
+  "detected_at": "2026-03-13T06:36:12.984664",
+  "timestamp": 1773383772.9846642,
+  "discovery_id": "793f5b79",
+  "title": "[PDF] know your lender, grow your business",
+  "url": "https://msme.gov.in/sites/default/files/KYLGYB.pdf",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:35:22.681918",
+  "content_hash": "ba8e4aee31eae8362ea98b1510efd7da",
+  "relevance_score": 0.6437107
+}

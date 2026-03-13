@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     Zap, BarChart3, Briefcase, Globe, Bell, ChevronDown,
@@ -22,6 +22,7 @@ export default function Navbar() {
     const [notifDropdown, setNotifDropdown] = useState(false);
     const [profileDropdown, setProfileDropdown] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
+    const navbarRef = useRef(null);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -35,6 +36,33 @@ export default function Navbar() {
         setNotifDropdown(false);
         setProfileDropdown(false);
     };
+
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (!navbarRef.current) return;
+            if (!navbarRef.current.contains(event.target)) {
+                closeAllDropdowns();
+                setMobileMenu(false);
+            }
+        };
+
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                closeAllDropdowns();
+                setMobileMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('touchstart', handleOutsideClick, { passive: true });
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('touchstart', handleOutsideClick);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, []);
 
     const NavItem = ({ to, icon: Icon, label }) => (
         <Link to={to} onClick={() => setMobileMenu(false)}
@@ -74,8 +102,8 @@ export default function Navbar() {
     };
 
     return (
-        <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--bg-glass)', borderColor: 'var(--border)' }}>
-            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <header ref={navbarRef} className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--bg-glass)', borderColor: 'var(--border)' }}>
+            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between" onClick={closeAllDropdowns}>
 
                 {/* Logo & Mobile Menu */}
                 <div className="flex items-center gap-3">
@@ -104,7 +132,7 @@ export default function Navbar() {
 
                     {/* Language */}
                     <div className="relative">
-                        <button onClick={() => { setLangDropdown(!langDropdown); setNotifDropdown(false); setProfileDropdown(false); }}
+                        <button onClick={(e) => { e.stopPropagation(); setLangDropdown(!langDropdown); setNotifDropdown(false); setProfileDropdown(false); }}
                             className="btn btn-ghost gap-1.5 px-2 py-1.5 rounded-lg" style={{ color: 'var(--text-secondary)' }}>
                             <Languages size={16} />
                             <span className="hidden lg:inline text-xs font-medium">{language?.native || 'English'}</span>
@@ -112,7 +140,7 @@ export default function Navbar() {
                         {langDropdown && (
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setLangDropdown(false)} />
-                                <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-xl border py-1 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                                <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-xl border py-1 z-20 overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                                     <div className="max-h-[320px] overflow-y-auto overscroll-contain">
                                         {LANGUAGES.map(l => (
                                             <button key={l.code}
@@ -131,7 +159,7 @@ export default function Navbar() {
 
                     {/* Notifications */}
                     <div className="relative">
-                        <button onClick={() => { setNotifDropdown(!notifDropdown); setLangDropdown(false); setProfileDropdown(false); }}
+                        <button onClick={(e) => { e.stopPropagation(); setNotifDropdown(!notifDropdown); setLangDropdown(false); setProfileDropdown(false); }}
                             className="btn btn-ghost btn-icon relative" style={{ color: 'var(--text-secondary)' }}>
                             <Bell size={16} />
                             {unreadCount > 0 && (
@@ -141,7 +169,7 @@ export default function Navbar() {
                         {notifDropdown && (
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setNotifDropdown(false)} />
-                                <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                                <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                                     <div className="p-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
                                         <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{gt('Notifications')}</span>
                                         {unreadCount > 0 && (
@@ -180,7 +208,7 @@ export default function Navbar() {
                     {/* User Profile */}
                     {user ? (
                         <div className="relative ml-1">
-                            <button onClick={() => { setProfileDropdown(!profileDropdown); setLangDropdown(false); setNotifDropdown(false); }}
+                            <button onClick={(e) => { e.stopPropagation(); setProfileDropdown(!profileDropdown); setLangDropdown(false); setNotifDropdown(false); }}
                                 className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors"
                                 style={{ color: 'var(--text)' }}>
                                 <Avatar size={32} />
@@ -196,7 +224,7 @@ export default function Navbar() {
                             {profileDropdown && (
                                 <>
                                     <div className="fixed inset-0 z-10" onClick={() => setProfileDropdown(false)} />
-                                    <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                                    <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl border py-0 z-20 overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                                         <div className="px-4 py-3 border-b flex items-center gap-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-tertiary)' }}>
                                             <Avatar size={36} />
                                             <div className="min-w-0">

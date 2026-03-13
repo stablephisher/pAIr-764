@@ -1,0 +1,15 @@
+{
+  "id": "3ce794d7-9fae-4f95-9bc0-d740dd732bd0",
+  "detected_at": "2026-03-13T06:36:12.992995",
+  "timestamp": 1773383772.9929957,
+  "discovery_id": "303219df",
+  "title": "Circulars - Ministry of Micro, Small & Medium Enterprises",
+  "url": "https://msme.gov.in/acts-and-rules/circular-orders",
+  "source": "e-Gazette of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T06:35:38.421836",
+  "content_hash": "4718fa47d6b00688124ab7924cad907f",
+  "relevance_score": 0.52773094
+}

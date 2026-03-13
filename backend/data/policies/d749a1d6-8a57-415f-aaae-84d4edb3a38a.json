@@ -1,0 +1,15 @@
+{
+  "id": "d749a1d6-8a57-415f-aaae-84d4edb3a38a",
+  "detected_at": "2026-03-13T06:36:12.992995",
+  "timestamp": 1773383772.9929957,
+  "discovery_id": "be8d0dd7",
+  "title": "CGTMSE: Home",
+  "url": "https://www.cgtmse.in/",
+  "source": "CGTMSE",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T06:35:40.641134",
+  "content_hash": "52e94930c41b25ef0abf2ac48b750df0",
+  "relevance_score": 0.8497846
+}
