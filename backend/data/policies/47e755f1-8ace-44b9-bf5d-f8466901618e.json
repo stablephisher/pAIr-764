@@ -1,0 +1,15 @@
+{
+  "id": "47e755f1-8ace-44b9-bf5d-f8466901618e",
+  "detected_at": "2026-03-12T20:04:30.150580",
+  "timestamp": 1773345870.1505806,
+  "discovery_id": "2e496690",
+  "title": "[PDF] No. of personnel to be Releasing of fund under various heads of the ...",
+  "url": "https://msme.gov.in/sites/default/files/vacancies/VacancyCircular.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:03:54.834777",
+  "content_hash": "76f98e9ceaf445d88327b23f23aa858c",
+  "relevance_score": 0.6742441
+}

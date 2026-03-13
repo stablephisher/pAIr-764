@@ -1,0 +1,15 @@
+{
+  "id": "a9c8e037-29de-4e54-883f-179487bf7a77",
+  "detected_at": "2026-03-12T20:04:30.264686",
+  "timestamp": 1773345870.2646863,
+  "discovery_id": "e0aef1de",
+  "title": "[PDF] Building an Integrated Pathway for MSMEs in Global Trade - PIB",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/feb/doc2026224799801.pdf",
+  "source": "Udyam Registration",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T20:04:28.164860",
+  "content_hash": "b2a438d31ab771566623d543b56c2dd9",
+  "relevance_score": 0.47256237
+}

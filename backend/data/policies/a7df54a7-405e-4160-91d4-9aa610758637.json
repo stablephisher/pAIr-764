@@ -1,0 +1,15 @@
+{
+  "id": "a7df54a7-405e-4160-91d4-9aa610758637",
+  "detected_at": "2026-03-12T20:04:30.246962",
+  "timestamp": 1773345870.2469628,
+  "discovery_id": "ad0b0f31",
+  "title": "Guarantee Cover - CGTMSE",
+  "url": "https://cgtmse.in/Home/VS/108",
+  "source": "CGTMSE",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:04:26.210866",
+  "content_hash": "75ac4f77a7b5a4ab11d38a60bf7db11a",
+  "relevance_score": 0.74161834
+}

@@ -1,0 +1,15 @@
+{
+  "id": "f3cb56d4-097b-4089-b4c9-a8d0e788b43d",
+  "detected_at": "2026-03-12T20:04:30.204008",
+  "timestamp": 1773345870.2040088,
+  "discovery_id": "63beb3d2",
+  "title": "For loans up to \u20b925 lakh for Micro and Small Enterprises (MSE ... - PIB",
+  "url": "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2110404",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:04:08.837988",
+  "content_hash": "e92fc2e0d33bbe0a27b44aac4b61a054",
+  "relevance_score": 0.7644879
+}

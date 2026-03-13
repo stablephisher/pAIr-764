@@ -1,0 +1,16 @@
+{
+  "id": "414944b4-c12b-4385-8ca3-eea5b23075cf",
+  "detected_at": "2026-03-12T20:04:30.219425",
+  "timestamp": 1773345870.2194257,
+  "discovery_id": "2bbd23a8",
+  "title": "GST Reforms for a New Generation",
+  "url": "https://www.pib.gov.in/FactsheetDetails.aspx?Id=150302&reg=37&lang=1",
+  "source": "GST Council",
+  "sectors": [
+    "trading",
+    "handicraft"
+  ],
+  "discovered_at": "2026-03-12T20:04:12.874841",
+  "content_hash": "b246b4fb0d149f9036059230d24b43ec",
+  "relevance_score": 0.97046465
+}

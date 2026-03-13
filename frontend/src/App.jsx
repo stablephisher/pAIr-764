@@ -23,12 +23,38 @@ import ProfileSetup from './components/ProfileSetup';
 
 function LoadingScreen() {
     return (
-        <div className="loading-screen">
-            <div className="loading-logo">
-                <img src="/pair-logo.png" alt="pAIr" style={{ height: 100, width: 'auto', objectFit: 'contain' }} />
+        <div className="modern-loading-screen">
+            <div className="loading-container">
+                <div className="loading-orbs">
+                    <div className="orb orb-1"></div>
+                    <div className="orb orb-2"></div>
+                    <div className="orb orb-3"></div>
+                </div>
+                <div className="loading-content">
+                    <div className="loading-logo-modern">
+                        <img src="/pair-logo.png" alt="pAIr" style={{ height: 80, width: 'auto', objectFit: 'contain' }} />
+                    </div>
+                    <div className="loading-title-modern">pAIr</div>
+                    <div className="loading-subtitle-modern">AI Compliance Intelligence</div>
+                    <div className="loading-progress">
+                        <div className="progress-bar">
+                            <div className="progress-fill"></div>
+                        </div>
+                        <div className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+                <div className="loading-particles">
+                    <div className="particle particle-1"></div>
+                    <div className="particle particle-2"></div>
+                    <div className="particle particle-3"></div>
+                    <div className="particle particle-4"></div>
+                    <div className="particle particle-5"></div>
+                </div>
             </div>
-            <div className="loading-text">pAIr</div>
-            <div className="loading-subtext">Your AI Compliance Partner</div>
         </div>
     );
 }

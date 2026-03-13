@@ -1,0 +1,15 @@
+{
+  "id": "15a04703-28fe-44d0-b35a-c30ada80d775",
+  "detected_at": "2026-03-12T20:04:30.173298",
+  "timestamp": 1773345870.1732984,
+  "discovery_id": "a472f10a",
+  "title": "Department-Related Parliamentary Standing Committee on Industry",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2238242&reg=3&lang=1",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:03:59.618202",
+  "content_hash": "524c684bf5fed9a87159f15a7a3b974d",
+  "relevance_score": 0.98087597
+}

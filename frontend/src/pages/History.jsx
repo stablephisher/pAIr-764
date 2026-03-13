@@ -137,8 +137,15 @@ export default function Policies() {
                 <div className="space-y-3">
                     {filteredPolicies.map(item => (
                         <div key={item.id}
-                            onClick={() => item.isDemo ? null : navigate(`/analysis/${item.id}`)}
-                            className={`card p-4 flex items-center justify-between transition-all ${item.isDemo ? 'opacity-80' : 'cursor-pointer card-hover'}`}
+                            onClick={() => {
+                                if (item.isDemo) {
+                                    // For demo policies, navigate to analysis result with demo ID
+                                    navigate(`/analysis/${item.id}`);
+                                } else {
+                                    navigate(`/analysis/${item.id}`);
+                                }
+                            }}
+                            className={`card p-4 flex items-center justify-between transition-all ${item.isDemo ? 'opacity-80 cursor-pointer hover:opacity-100' : 'cursor-pointer card-hover'}`}
                             style={item.isDemo ? { border: '1px dashed var(--border)' } : {}}>
                             <div className="flex items-center gap-4 flex-1 min-w-0">
                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"

@@ -1,0 +1,16 @@
+{
+  "id": "2da89ea0-8d33-4566-a082-7af16d0b5600",
+  "detected_at": "2026-03-12T20:04:30.228480",
+  "timestamp": 1773345870.2284808,
+  "discovery_id": "18bd38b4",
+  "title": "Budget 2025-26: Fuelling MSME Expansion - PIB",
+  "url": "https://www.pib.gov.in/FactsheetDetails.aspx?Id=149117",
+  "source": "Startup India",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T20:04:17.738030",
+  "content_hash": "531bc8109cf6fa3c7470a0c0f3a010db",
+  "relevance_score": 0.7407191
+}

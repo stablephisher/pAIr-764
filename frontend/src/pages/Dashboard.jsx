@@ -16,6 +16,7 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showWelcome, setShowWelcome] = useState(false);
 
     useEffect(() => {
@@ -25,13 +26,22 @@ export default function Dashboard() {
         }
     }, [user]);
 
-    useEffect(() => {
-        if (user) {
-            axios.get(`${API}/api/analytics/${user.uid}`)
-                .then(res => setAnalytics(res.data))
-                .catch(err => console.error(err))
-                .finally(() => setLoading(false));
+    const fetchAnalytics = async () => {
+        if (!user) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await axios.get(`${API}/api/analytics/${user.uid}`, { timeout: 10000 });
+            setAnalytics(res.data);
+        } catch (err) {
+            setError('Failed to load analytics. Check your connection.');
+        } finally {
+            setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        fetchAnalytics();
     }, [user]);
 
     const closeWelcome = () => {
@@ -56,7 +66,7 @@ export default function Dashboard() {
                     </button>
                 </div>
             </div>
-            <AnalyticsView analytics={analytics} loading={loading} lang={lang} />
+            <AnalyticsView analytics={analytics} loading={loading} error={error} onRetry={fetchAnalytics} lang={lang} />
         </div>
     );
 }

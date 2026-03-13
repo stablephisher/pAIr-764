@@ -1,5 +1,5 @@
-import React from 'react';
-import { BarChart3, Shield, Leaf, Activity, CheckCircle, Building2, Loader2, TrendingUp, Target, Zap, ArrowUpRight, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart3, Shield, Leaf, Activity, CheckCircle, Building2, Loader2, TrendingUp, Target, Zap, ArrowUpRight, FileText, AlertCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useTranslate from '../hooks/useTranslate';
 
@@ -22,13 +22,13 @@ const DEMO_ANALYTICS = {
     ]
 };
 
-export default function AnalyticsView({ analytics, loading, lang = 'en' }) {
+export default function AnalyticsView({ analytics, loading, error, onRetry, lang = 'en' }) {
     const { gt } = useTranslate(lang);
     const navigate = useNavigate();
+    const [showDemo, setShowDemo] = useState(false);
     
-    // Use demo data if no real analytics
-    const isDemo = !analytics || analytics.total_analyses === 0;
-    const data = isDemo ? DEMO_ANALYTICS : analytics;
+    // Show demo only if explicitly requested
+    const data = showDemo ? DEMO_ANALYTICS : analytics;
 
     if (loading) {
         return (
@@ -39,21 +39,64 @@ export default function AnalyticsView({ analytics, loading, lang = 'en' }) {
         );
     }
 
+    // Show error state with retry and demo options
+    if (error && !showDemo) {
+        return (
+            <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-between mx-auto mb-4"
+                    style={{ background: 'var(--orange-light)', color: 'var(--orange)' }}>
+                    <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2">{gt('Analytics Loading Failed')}</h3>
+                <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+                <div className="flex items-center justify-center gap-3">
+                    <button onClick={onRetry} className="btn btn-primary gap-2">
+                        <RefreshCw size={16} /> {gt('Try Again')}
+                    </button>
+                    <button onClick={() => setShowDemo(true)} className="btn btn-secondary gap-2">
+                        <Zap size={16} /> {gt('Show Demo Data')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Show empty state for no analytics (but no error)
+    if (!data || (!showDemo && (!analytics || analytics.total_analyses === 0))) {
+        return (
+            <div className="text-center py-16">
+                <BarChart3 size={48} className="mx-auto mb-4 opacity-20" />
+                <h3 className="text-xl font-bold mb-2">{gt('No Analytics Data')}</h3>
+                <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+                    {gt('Start analyzing policies to see insights and metrics here.')}
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                    <button onClick={() => navigate('/analysis')} className="btn btn-primary gap-2">
+                        <FileText size={16} /> {gt('Start Analysis')}
+                    </button>
+                    <button onClick={() => setShowDemo(true)} className="btn btn-secondary gap-2">
+                        <Zap size={16} /> {gt('View Demo')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full animate-fade-in-up">
             <div className="space-y-6">
-                {/* Demo Mode Banner */}
-                {isDemo && (
+                {/* Demo Mode Banner - only when explicitly showing demo */}
+                {showDemo && (
                     <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'linear-gradient(135deg, var(--accent-light), var(--purple-light, #f3e8ff))' }}>
                         <div className="flex items-center gap-3">
                             <Zap size={20} style={{ color: 'var(--accent)' }} />
                             <div>
                                 <p className="font-semibold" style={{ color: 'var(--text)' }}>{gt('Demo Analytics')}</p>
-                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{gt('Analyze your business to see real insights')}</p>
+                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{gt('Showing sample data for demonstration')}</p>
                             </div>
                         </div>
-                        <button onClick={() => navigate('/analysis')} className="btn btn-primary btn-sm gap-1.5">
-                            <FileText size={14} /> {gt('Start Analysis')}
+                        <button onClick={() => setShowDemo(false)} className="btn btn-primary btn-sm gap-1.5">
+                            <RefreshCw size={14} /> {gt('Try Real Data')}
                         </button>
                     </div>
                 )}
@@ -197,12 +240,12 @@ export default function AnalyticsView({ analytics, loading, lang = 'en' }) {
                 </div>
 
                 {/* CTA for Demo Mode */}
-                {isDemo && (
+                {showDemo && (
                     <div className="card p-8 text-center" style={{ background: 'linear-gradient(135deg, var(--accent), var(--purple, #7c3aed))' }}>
-                        <h3 className="text-xl font-bold text-white mb-2">{gt('Ready to analyze your business?')}</h3>
-                        <p className="text-white/80 mb-4">{gt('Get personalized compliance insights and scheme recommendations')}</p>
+                        <h3 className="text-xl font-bold text-white mb-2">{gt('Ready to see your real analytics?')}</h3>
+                        <p className="text-white/80 mb-4">{gt('Start analyzing your business policies to get personalized insights')}</p>
                         <button onClick={() => navigate('/analysis')} className="btn bg-white hover:bg-gray-100 gap-2" style={{ color: 'var(--accent)' }}>
-                            <Zap size={16} /> {gt('Start Smart Analysis')}
+                            <FileText size={16} /> {gt('Start Analysis')}
                         </button>
                     </div>
                 )}

@@ -1,0 +1,15 @@
+{
+  "id": "5c34290e-8c9d-4c89-9b56-9ad1e4bb624e",
+  "detected_at": "2026-03-12T20:04:30.167441",
+  "timestamp": 1773345870.1674411,
+  "discovery_id": "dd1b2d7a",
+  "title": "Credit cards to Udyam-registered Micro enterprises provide faster ...",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2220403&reg=3&lang=1",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:03:59.618202",
+  "content_hash": "3850a195e60935e3b0cbaeb8e62d4385",
+  "relevance_score": 0.9978173
+}

@@ -179,18 +179,22 @@ export default function ResourcesView() {
     return (
         <div className="space-y-6 animate-fade-in-up">
             {/* Header with Profile Context */}
-            <div className="card p-6" style={{ background: 'linear-gradient(135deg, var(--accent), var(--purple, #7c3aed))', color: 'white' }}>
+            <div className="card p-6" style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                color: 'white',
+                boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+            }}>
                 <div className="flex items-start justify-between">
                     <div>
                         <h3 className="text-xl font-bold flex items-center gap-2 mb-1">
                             <Rocket size={22} /> {gt('Smart Business Resources')}
                         </h3>
                         <p className="text-sm opacity-90">
-                            {gt('Direct links to forms & portals - not just homepages. Personalized for your business.')}
+                            {gt('Direct links to action forms - AI-powered shortcuts for Indian MSMEs')}
                         </p>
                     </div>
                     {profile?.business_name && (
-                        <div className="text-right">
+                        <div className="text-right bg-white/10 p-3 rounded-lg backdrop-blur-sm">
                             <p className="text-xs opacity-70">{gt('Personalized for')}</p>
                             <p className="font-semibold">{profile.business_name}</p>
                             <p className="text-xs opacity-70">{profile.sector} • {profile.state}</p>
@@ -201,12 +205,18 @@ export default function ResourcesView() {
 
             {/* Autofill Helper Card */}
             {profile?.business_name && (
-                <div className="card p-5" style={{ border: '2px dashed var(--accent)', background: 'var(--accent-light)' }}>
+                <div className="card p-5" style={{ 
+                    border: '2px dashed #667eea', 
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))',
+                    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.1)'
+                }}>
                     <div className="flex items-center gap-3 mb-3">
-                        <Bot size={20} style={{ color: 'var(--accent)' }} />
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#667eea20' }}>
+                            <Bot size={20} style={{ color: '#667eea' }} />
+                        </div>
                         <div>
-                            <h4 className="font-semibold" style={{ color: 'var(--accent)' }}>{gt('Quick Copy for Forms')}</h4>
-                            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{gt('Click to copy your details for quick form filling')}</p>
+                            <h4 className="font-semibold" style={{ color: '#667eea' }}>{gt('Smart Auto-Fill Assistant')}</h4>
+                            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{gt('One-click copy your business details for forms')}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -218,12 +228,16 @@ export default function ResourcesView() {
                         ].filter(f => f.value && f.value !== 'Not set').map((item) => (
                             <button key={item.field}
                                 onClick={() => copyToClipboard(item.value, item.field)}
-                                className="p-2 rounded-lg text-left transition-all hover:scale-105"
-                                style={{ background: 'white', border: '1px solid var(--border)' }}>
+                                className="p-3 rounded-lg text-left transition-all hover:scale-105 hover:shadow-md"
+                                style={{ 
+                                    background: 'white', 
+                                    border: copied === item.field ? '2px solid #10b981' : '1px solid #e5e7eb',
+                                    boxShadow: copied === item.field ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : 'none'
+                                }}>
                                 <p className="text-[10px] uppercase font-medium" style={{ color: 'var(--text-tertiary)' }}>{item.label}</p>
                                 <p className="text-sm font-medium truncate flex items-center gap-1">
                                     {item.value}
-                                    {copied === item.field ? <CheckCircle size={12} style={{ color: 'var(--green)' }} /> : <Copy size={12} className="opacity-50" />}
+                                    {copied === item.field ? <CheckCircle size={12} style={{ color: '#10b981' }} /> : <Copy size={12} className="opacity-50" />}
                                 </p>
                             </button>
                         ))}
@@ -231,12 +245,20 @@ export default function ResourcesView() {
                 </div>
             )}
 
-            {/* Tabs */}
+            {/* Enhanced Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2">
                 {tabs.map(tab => (
                     <button key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`btn btn-sm gap-1.5 whitespace-nowrap ${activeTab === tab.id ? 'btn-primary' : 'btn-secondary'}`}>
+                        className={`px-4 py-2 rounded-xl flex items-center gap-1.5 whitespace-nowrap transition-all font-medium text-sm ${
+                            activeTab === tab.id 
+                                ? 'text-white shadow-lg'
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                        }`}
+                        style={activeTab === tab.id ? {
+                            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                        } : { background: 'white', border: '1px solid #e5e7eb' }}>
                         <tab.icon size={14} />
                         {tab.label}
                         {tab.badge ? <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">{tab.badge}</span> : null}

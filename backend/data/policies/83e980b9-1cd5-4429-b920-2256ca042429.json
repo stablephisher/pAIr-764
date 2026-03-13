@@ -1,0 +1,15 @@
+{
+  "id": "83e980b9-1cd5-4429-b920-2256ca042429",
+  "detected_at": "2026-03-12T20:04:30.188132",
+  "timestamp": 1773345870.1881328,
+  "discovery_id": "405c0713",
+  "title": "Master Direction - Reserve Bank of India",
+  "url": "https://rbi.org.in/commonman/English/scripts/notification.aspx?id=2327",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:04:06.378508",
+  "content_hash": "86aca300e35c582e124e553c746ea824",
+  "relevance_score": 0.91306627
+}

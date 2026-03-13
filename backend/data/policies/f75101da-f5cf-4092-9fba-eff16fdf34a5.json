@@ -1,0 +1,15 @@
+{
+  "id": "f75101da-f5cf-4092-9fba-eff16fdf34a5",
+  "detected_at": "2026-03-12T20:04:30.258788",
+  "timestamp": 1773345870.258788,
+  "discovery_id": "f30a1d27",
+  "title": "The Digital Blueprint for Ease of Doing Business",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2236804&reg=3&lang=2",
+  "source": "Udyam Registration",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-12T20:04:28.158738",
+  "content_hash": "253588ef108f52b3bc6831c20e0e0df1",
+  "relevance_score": 0.76321954
+}

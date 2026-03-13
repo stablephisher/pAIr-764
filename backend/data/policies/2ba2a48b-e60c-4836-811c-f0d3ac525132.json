@@ -1,0 +1,16 @@
+{
+  "id": "2ba2a48b-e60c-4836-811c-f0d3ac525132",
+  "detected_at": "2026-03-12T20:04:30.175822",
+  "timestamp": 1773345870.175822,
+  "discovery_id": "d3c07999",
+  "title": "Government of India - Press Release: Press Information Bureau",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2219984",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T20:04:04.237683",
+  "content_hash": "fa82ffc01622cd4c6aa014d31b72f355",
+  "relevance_score": 0.99990463
+}

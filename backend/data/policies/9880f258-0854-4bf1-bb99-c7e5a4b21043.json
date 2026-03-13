@@ -1,0 +1,15 @@
+{
+  "id": "9880f258-0854-4bf1-bb99-c7e5a4b21043",
+  "detected_at": "2026-03-12T20:04:30.169769",
+  "timestamp": 1773345870.16977,
+  "discovery_id": "81510a42",
+  "title": "[PDF] No. K-02/6/2023-SME-Part (1) Government of India/WT-6 iiicrig ...",
+  "url": "https://sclcss.msme.gov.in/Manual/Guidelines.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:03:59.618202",
+  "content_hash": "60c37720b99060535b93c96a2a0a78c8",
+  "relevance_score": 0.99101454
+}

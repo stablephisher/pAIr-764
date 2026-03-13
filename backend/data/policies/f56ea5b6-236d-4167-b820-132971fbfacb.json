@@ -1,0 +1,17 @@
+{
+  "id": "f56ea5b6-236d-4167-b820-132971fbfacb",
+  "detected_at": "2026-03-12T20:04:30.201000",
+  "timestamp": 1773345870.201,
+  "discovery_id": "ab7bccfc",
+  "title": "[PDF] Micro, Small and Medium Enterprises: Challenges and Way Forward ...",
+  "url": "https://www.rbi.org.in/commonman/Upload/English/speeches/PDFs/MSME06032020.PDF",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "service",
+    "trading",
+    "handicraft"
+  ],
+  "discovered_at": "2026-03-12T20:04:08.837988",
+  "content_hash": "b2f23d5f8b6941970964f7a679f5f848",
+  "relevance_score": 0.7845341
+}

@@ -1,0 +1,15 @@
+{
+  "id": "61c22005-6da2-4cba-8787-2f1748da9b5d",
+  "detected_at": "2026-03-12T20:04:30.155080",
+  "timestamp": 1773345870.155081,
+  "discovery_id": "03db5059",
+  "title": "Press Release: Press Information Bureau - PIB",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2233187",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-12T20:03:57.123828",
+  "content_hash": "f2dc0c307966111b90fee0a424a4fa19",
+  "relevance_score": 0.77893573
+}

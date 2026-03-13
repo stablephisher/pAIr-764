@@ -1,0 +1,16 @@
+{
+  "id": "8b6f8020-da04-4e57-b536-30dab43ffc89",
+  "detected_at": "2026-03-12T20:04:30.214165",
+  "timestamp": 1773345870.2141654,
+  "discovery_id": "a7a5324d",
+  "title": "Press Note Details: Press Information Bureau - PIB",
+  "url": "https://www.pib.gov.in/PressNoteDetails.aspx?NoteId=157661&ModuleId=3&reg=3&lang=1",
+  "source": "GST Council",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T20:04:10.851170",
+  "content_hash": "4aaedfc31d0d25b29c6352177c1f62d0",
+  "relevance_score": 0.47709182
+}

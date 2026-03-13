@@ -1,0 +1,15 @@
+{
+  "id": "46340719-e967-4416-92f5-25dc47e54e00",
+  "detected_at": "2026-03-12T20:04:30.194221",
+  "timestamp": 1773345870.1942217,
+  "discovery_id": "7d370035",
+  "title": "Master Directions - RBI",
+  "url": "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=12799",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T20:04:06.378508",
+  "content_hash": "41636a3d8f520b5ae96b1ed1c3d7ac95",
+  "relevance_score": 0.6493346
+}

@@ -1,0 +1,16 @@
+{
+  "id": "d27b41ca-c53d-4c54-8604-ba4630cd7a88",
+  "detected_at": "2026-03-12T20:04:30.237834",
+  "timestamp": 1773345870.2378345,
+  "discovery_id": "a12a5e0d",
+  "title": "Make in India and Startup India - PIB",
+  "url": "https://www.pib.gov.in/pressreleaseshare.aspx?prid=1703787",
+  "source": "Startup India",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-12T20:04:20.981610",
+  "content_hash": "91a37818f55ba970b961eca0531c9ab2",
+  "relevance_score": 0.9989183
+}
