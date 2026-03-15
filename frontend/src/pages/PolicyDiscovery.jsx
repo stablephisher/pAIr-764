@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { Search, RefreshCw, Globe, Shield, TrendingUp, AlertCircle, CheckCircle2, ExternalLink, Mic, MicOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, apiClient } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function PolicyDiscovery() {
     const { user, language } = useAppContext();
@@ -23,7 +20,7 @@ export default function PolicyDiscovery() {
 
     // Fetch discovery status on mount
     useEffect(() => {
-        axios.get(`${API}/api/discover/status`)
+        apiClient.get(`/api/discover/status`)
             .then(res => setScanStatus(res.data))
             .catch(() => {});
     }, []);
@@ -32,7 +29,7 @@ export default function PolicyDiscovery() {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.post(`${API}/api/discover/policies`, {
+            const res = await apiClient.post(`/api/discover/policies`, {
                 user_uid: user?.uid,
             }, { timeout: 60000 });
             setPolicies(res.data.policies || []);
@@ -56,7 +53,7 @@ export default function PolicyDiscovery() {
         if (!searchQuery.trim()) return;
         setLoading(true);
         try {
-            const res = await axios.post(`${API}/api/search/policies`, {
+            const res = await apiClient.post(`/api/search/policies`, {
                 query: searchQuery,
                 top_k: 10,
             });
@@ -95,7 +92,7 @@ export default function PolicyDiscovery() {
 
     const analyzePolicy = async (policy) => {
         try {
-            const res = await axios.post(`${API}/api/discover/analyze`, {
+            const res = await apiClient.post(`/api/discover/analyze`, {
                 user_uid: user?.uid,
                 business_profile: null,
                 source_ids: null,

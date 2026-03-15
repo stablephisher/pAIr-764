@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { ArrowLeft, Zap, Moon, Sun, Settings, Loader2, CheckCircle, ArrowRight, Building2, Sparkles, MapPin, Users, TrendingUp, Factory, ShoppingBag, Briefcase, Heart } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { apiClient } from '../context/AppContext';
 
 export default function ProfileSetup({ user, onComplete, existingProfile, onCancel }) {
     const { theme, toggleTheme } = useTheme();
@@ -27,7 +25,7 @@ export default function ProfileSetup({ user, onComplete, existingProfile, onCanc
     const handleSave = async () => {
         setSaving(true);
         try {
-            await axios.post(`${API}/api/profile/${user.uid}`, profile);
+            await apiClient.post(`/api/profile/${user.uid}`, profile);
             localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(profile));
 
             if (!isEditing) {
@@ -36,7 +34,7 @@ export default function ProfileSetup({ user, onComplete, existingProfile, onCanc
                 setShowWelcome(true);
 
                 // Trigger smart-analysis in background (non-blocking, fire-and-forget)
-                axios.post(`${API}/api/smart-analysis`, {
+                apiClient.post(`/api/smart-analysis`, {
                     user_uid: user.uid,
                     profile: profile,
                 }).catch(() => { /* non-blocking */ });

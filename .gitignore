@@ -3,8 +3,10 @@ __pycache__/
 *.pyc
 .venv/
 .env
+.env.local
 dist/
 build/
 .DS_Store
 backend/monitored_policies/*.pdf
 history.json
+*.log

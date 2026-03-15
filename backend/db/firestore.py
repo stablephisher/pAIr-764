@@ -19,10 +19,18 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
 import time
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
+# Firestore direction constant — use string fallback if SDK not available
+try:
+    from google.cloud.firestore_v1 import Query
+    _DESC = Query.DESCENDING
+except Exception:
+    _DESC = "DESCENDING"
 
 
 class FirestoreDB:
@@ -172,7 +180,7 @@ class FirestoreDB:
                     self._firestore_client.collection("users")
                     .document(uid)
                     .collection("analyses")
-                    .order_by("timestamp", direction="DESCENDING")
+                    .order_by("timestamp", direction=_DESC)
                     .limit(limit)
                 )
                 docs = ref.stream()
@@ -368,7 +376,7 @@ class FirestoreDB:
                 )
                 if unread_only:
                     ref = ref.where("read", "==", False)
-                ref = ref.order_by("created_at", direction="DESCENDING").limit(limit)
+                ref = ref.order_by("created_at", direction=_DESC).limit(limit)
                 docs = ref.stream()
                 return [doc.to_dict() for doc in docs]
             except Exception as e:
@@ -523,13 +531,20 @@ class FirestoreDB:
     # ════════════════════════════════════════════════════════════
 
     def _save_local(self, collection: str, doc_id: str, data: Dict) -> bool:
-        """Save to local JSON file."""
+        """Save to local JSON file atomically (write to temp, then rename)."""
         try:
             path = os.path.join(self._local_dir, collection)
             os.makedirs(path, exist_ok=True)
             filepath = os.path.join(path, f"{doc_id}.json")
-            with open(filepath, "w") as f:
-                json.dump(data, f, indent=2, default=str)
+            fd, tmp_path = tempfile.mkstemp(dir=path, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w") as f:
+                    json.dump(data, f, indent=2, default=str)
+                os.replace(tmp_path, filepath)
+            except Exception:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                raise
             return True
         except Exception as e:
             print(f"[DB] Local save failed: {e}")
@@ -547,7 +562,7 @@ class FirestoreDB:
         return None
 
     def _append_local_history(self, record: Dict):
-        """Append analysis to local history file."""
+        """Append analysis to local history file atomically."""
         history_file = os.path.join(self._local_dir, "history.json")
         history = []
         if os.path.exists(history_file):
@@ -562,8 +577,15 @@ class FirestoreDB:
 
         try:
             os.makedirs(self._local_dir, exist_ok=True)
-            with open(history_file, "w") as f:
-                json.dump(history, f, indent=2, default=str)
+            fd, tmp_path = tempfile.mkstemp(dir=self._local_dir, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w") as f:
+                    json.dump(history, f, indent=2, default=str)
+                os.replace(tmp_path, history_file)
+            except Exception:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                raise
         except Exception as e:
             print(f"[DB] Local history append failed: {e}")
 

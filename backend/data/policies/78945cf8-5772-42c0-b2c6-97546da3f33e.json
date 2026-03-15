@@ -1,0 +1,15 @@
+{
+  "id": "78945cf8-5772-42c0-b2c6-97546da3f33e",
+  "detected_at": "2026-03-13T07:12:32.969314",
+  "timestamp": 1773385952.969314,
+  "discovery_id": "e30df6bc",
+  "title": "DPIIT recognises 1, 17254 startups as on 31st Dec 2023 - PIB",
+  "url": "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2002100",
+  "source": "Startup India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:11:58.308072",
+  "content_hash": "7bbac484ef81ec6e058c3f576da58225",
+  "relevance_score": 0.8377398
+}

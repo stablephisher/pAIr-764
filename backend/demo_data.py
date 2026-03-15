@@ -264,14 +264,14 @@ DEMO_ELIGIBLE_SCHEMES = [
         ]
     },
     {
-        "scheme_name": "Stand Up India",
+        "scheme_name": "Startup India",
         "eligibility_status": "PARTIALLY_ELIGIBLE",
         "matching_criteria": [
             "Women entrepreneur",
             "Manufacturing sector"
         ],
         "missing_criteria": [
-            "Stand Up India requires greenfield (new) project",
+            "Startup India requires greenfield (new) project",
             "Existing unit may not qualify"
         ],
         "potential_benefit": "If eligible, loan Rs. 10 lakh to Rs. 1 crore with credit guarantee",

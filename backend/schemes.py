@@ -116,7 +116,7 @@ GOVERNMENT_SCHEMES = [
     },
     {
         "scheme_id": "STANDUPINDIA",
-        "name": "Stand Up India",
+        "name": "Startup India",
         "ministry": "Ministry of Finance (SIDBI)",
         "description": "Bank loans between Rs. 10 lakh and Rs. 1 crore for SC/ST and Women entrepreneurs",
         "loan_amount": {
@@ -244,7 +244,7 @@ def get_applicable_schemes(business_profile: dict) -> list:
     if enterprise_type in ['micro', 'small']:
         applicable.append('MUDRA')
     
-    # Stand Up India - for SC/ST/Women
+    # Startup India - for SC/ST/Women
     if any(cat in owner_category for cat in ['sc', 'st', 'women', 'woman']):
         if business_profile.get('is_new_unit', False):
             applicable.append('STANDUPINDIA')

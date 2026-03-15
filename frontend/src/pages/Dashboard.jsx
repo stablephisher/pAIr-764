@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { BarChart3, Home, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AnalyticsView from '../components/AnalyticsView';
 import WelcomeModal from '../components/WelcomeModal';
 import { useAppContext } from '../context/AppContext';
+import { apiClient } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function Dashboard() {
     const { user, language } = useAppContext();
@@ -120,11 +118,11 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get(`${API}/api/analytics/${user.uid}`, { timeout: 10000 });
+            const res = await apiClient.get(`/api/analytics/${user.uid}`, { timeout: 10000 });
             setAnalytics(res.data);
         } catch (err) {
             try {
-                const fallback = await axios.get(`${API}/api/history`, { params: { user_uid: user.uid }, timeout: 10000 });
+                const fallback = await apiClient.get(`/api/history`, { params: { user_uid: user.uid }, timeout: 10000 });
                 const fallbackAnalytics = buildAnalyticsFromHistory(fallback?.data || []);
                 setAnalytics(fallbackAnalytics);
             } catch (_) {

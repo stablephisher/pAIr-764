@@ -33,7 +33,7 @@ class AIConfig:
 @dataclass
 class PolicyConfig:
     """Policy monitoring, discovery, and search configuration."""
-    tavily_api_key: str = os.getenv("TAVILY_API_KEY", "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")
+    tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
     serper_api_key: str = os.getenv("SERPER_API_KEY", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
     monitor_dir: str = "monitored_policies"
@@ -78,8 +78,8 @@ class ServerConfig:
     demo_mode: bool = os.getenv("DEMO_MODE", "FALSE").upper() == "TRUE"
     cors_origins: list = field(default_factory=lambda: [
         origin.strip() for origin in
-        os.getenv("CORS_ORIGINS", "*").split(",")
-    ] if os.getenv("CORS_ORIGINS") else ["*"])
+        os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,https://pair-msme.vercel.app").split(",")
+    ])
     history_max_items: int = 50
 
 

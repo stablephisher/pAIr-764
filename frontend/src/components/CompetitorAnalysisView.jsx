@@ -1,11 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { Briefcase, Globe, TrendingUp, TrendingDown, Target, Shield, Users, CheckCircle, AlertCircle, RefreshCw, Loader2, Clock, Zap, BarChart3, Building2, Lightbulb } from 'lucide-react';
 import MiniBarChart from './charts/MiniBarChart';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, apiClient } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Demo data when API fails
@@ -121,7 +119,7 @@ export default function CompetitorAnalysisView({ profile, onBack }) {
         });
 
         try {
-            const res = await axios.post(`${API}/api/competitor-analysis`, {
+            const res = await apiClient.post(`/api/competitor-analysis`, {
                 user_uid: user?.uid,
                 sector: activeBusiness?.sector || profile?.sector || 'MSME',
                 business_type: activeBusiness?.business_type || profile?.business_type || 'MSME',

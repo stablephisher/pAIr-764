@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Globe, Building2, Scale, Briefcase, BookOpen, ExternalLink, Loader2, Star, Sparkles, Zap, ArrowRight, ClipboardCheck, FileText, Rocket, Shield, CreditCard, Users, CheckCircle, Copy, Bot } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';

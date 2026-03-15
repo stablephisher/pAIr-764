@@ -1,0 +1,17 @@
+{
+  "id": "55618b48-d667-4c8f-9096-34e53e801873",
+  "detected_at": "2026-03-13T07:12:32.969314",
+  "timestamp": 1773385952.969314,
+  "discovery_id": "a25bad47",
+  "title": "Reserve Bank of India",
+  "url": "https://www.rbi.org.in/commonman/english/scripts/Notification.aspx?Id=1084",
+  "source": "e-Gazette of India",
+  "sectors": [
+    "manufacturing",
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T07:11:59.226704",
+  "content_hash": "457f616094170c4d81d93dfe5f33f694",
+  "relevance_score": 0.9885804
+}

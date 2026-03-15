@@ -1,0 +1,15 @@
+{
+  "id": "d7fb3ef1-1772-4aff-ba37-bd610ba6c789",
+  "detected_at": "2026-03-13T07:12:32.969314",
+  "timestamp": 1773385952.969314,
+  "discovery_id": "d3b04c1e",
+  "title": "Reserve Bank of India",
+  "url": "https://www.rbi.org.in/commonman/english/Scripts/Notification.aspx?Id=924",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:11:53.429025",
+  "content_hash": "92c0e22bf30bd483cecb13eee85f83a6",
+  "relevance_score": 0.8440111
+}

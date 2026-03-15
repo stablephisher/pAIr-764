@@ -1,0 +1,15 @@
+{
+  "id": "c29331b5-0b93-43d6-ac06-fbdd8ec7d7f7",
+  "detected_at": "2026-03-13T07:12:32.953598",
+  "timestamp": 1773385952.953598,
+  "discovery_id": "24a7d491",
+  "title": "MSME Ministry Upgrades National Small Industries Corporation ...",
+  "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2233187&reg=3&lang=3",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:11:47.916256",
+  "content_hash": "4b7e980fb708a76588d170bcbaf9c8ae",
+  "relevance_score": 0.9995956
+}

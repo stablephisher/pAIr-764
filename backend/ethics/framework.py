@@ -347,7 +347,7 @@ class EthicalAIFramework:
             plan = analysis.get("compliance_plan", {})
 
             if any(w in owner for w in ["women", "woman", "female"]):
-                # Should include Stand Up India or special CGTMSE coverage
+                # Should include Startup India or special CGTMSE coverage
                 plan_text = str(plan).lower()
                 if "stand" not in plan_text and "women" not in plan_text:
                     flags.append(

@@ -150,7 +150,7 @@ pAIr — **Policy AI Regulator** — solves this by deploying an autonomous mult
 | **CGTMSE** | Credit Guarantee Fund Trust | Collateral-free loans up to ₹5 crore |
 | **PMEGP** | PM Employment Generation Programme | Up to 35% subsidy for new units |
 | **MUDRA** | Pradhan Mantri MUDRA Yojana | Micro credit up to ₹10 lakhs |
-| **Stand Up India** | For SC/ST/Women | Loans ₹10 lakh - ₹1 crore |
+| **Startup India** | For SC/ST/Women | Loans ₹10 lakh - ₹1 crore |
 | **Udyam** | MSME Registration | Free registration, gateway to schemes |
 
 ---
@@ -495,7 +495,7 @@ print(response.json())
 ✅ **Ethical AI Governance** - Transparency cards, escalation alerts, bias detection  
 ✅ **15+ Languages** - Regional language support for accessibility  
 ✅ **MSME-Focused** - Built specifically for India's 63 million small businesses  
-✅ **Scheme Database** - CGTMSE, PMEGP, MUDRA, Stand Up India, Udyam, SFURTI  
+✅ **Scheme Database** - CGTMSE, PMEGP, MUDRA, Startup India, Udyam, SFURTI  
 ✅ **Real-time Policy Search** - Tavily + Serper APIs for live policy discovery  
 ✅ **Vector Search** - FAISS with Gemini embeddings for semantic policy matching  
 ✅ **Autonomous Monitoring** - Zero-touch policy file watching  

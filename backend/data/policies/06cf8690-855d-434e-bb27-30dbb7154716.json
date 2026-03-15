@@ -1,0 +1,16 @@
+{
+  "id": "06cf8690-855d-434e-bb27-30dbb7154716",
+  "detected_at": "2026-03-13T07:12:32.969314",
+  "timestamp": 1773385952.969314,
+  "discovery_id": "4bee2731",
+  "title": "Lending to Micro, Small & Medium Enterprises (MSME) Sector - RBI",
+  "url": "https://www.rbi.org.in/commonman/English/scripts/Notification.aspx?Id=1478",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "manufacturing",
+    "service"
+  ],
+  "discovered_at": "2026-03-13T07:11:53.429025",
+  "content_hash": "9f73e03b6163cd76ca9b04b9c7725b83",
+  "relevance_score": 0.8005209
+}

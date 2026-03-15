@@ -59,7 +59,7 @@ class PolicySearchAPI:
             "CGTMSE": "CGTMSE credit guarantee MSME latest notification 2025",
             "PMEGP": "PMEGP employment generation programme new guidelines",
             "MUDRA": "Pradhan Mantri MUDRA Yojana latest updates",
-            "STANDUPINDIA": "Stand Up India scheme latest circular",
+            "STANDUPINDIA": "Startup India scheme latest circular",
             "UDYAM": "Udyam registration new rules MSME",
             "SFURTI": "SFURTI scheme traditional industries update",
         }

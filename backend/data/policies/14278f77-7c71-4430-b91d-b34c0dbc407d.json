@@ -1,0 +1,16 @@
+{
+  "id": "14278f77-7c71-4430-b91d-b34c0dbc407d",
+  "detected_at": "2026-03-13T07:12:32.953598",
+  "timestamp": 1773385952.953598,
+  "discovery_id": "addabcf7",
+  "title": "Priority Sector Lending-Targets and Classification - RBI",
+  "url": "https://www.rbi.org.in/commonman/english/scripts/Notification.aspx?Id=2570",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T07:11:52.501481",
+  "content_hash": "7d62b1400837c4b5ce43240120c421a9",
+  "relevance_score": 0.7211353
+}

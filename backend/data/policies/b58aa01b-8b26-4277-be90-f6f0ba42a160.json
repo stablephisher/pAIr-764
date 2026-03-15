@@ -1,0 +1,15 @@
+{
+  "id": "b58aa01b-8b26-4277-be90-f6f0ba42a160",
+  "detected_at": "2026-03-13T07:12:32.985053",
+  "timestamp": 1773385952.9850535,
+  "discovery_id": "84935455",
+  "title": "[PDF] The Digital Blueprint for Ease of Doing Business",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/mar/doc202639816301.pdf",
+  "source": "Udyam Registration",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-13T07:12:02.455976",
+  "content_hash": "0273193e229edc2481a7b3a6907ed4b4",
+  "relevance_score": 0.9959299
+}

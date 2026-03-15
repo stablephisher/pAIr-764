@@ -1,0 +1,15 @@
+{
+  "id": "f18c67c0-1d77-42fa-9ee6-6c7d56c2388c",
+  "detected_at": "2026-03-13T07:12:32.969314",
+  "timestamp": 1773385952.969314,
+  "discovery_id": "7cbf8dd0",
+  "title": "One Nation-One Tax Goods and Services Tax - PIB",
+  "url": "https://www.pib.gov.in/FactsheetDetails.aspx?Id=148644",
+  "source": "GST Council",
+  "sectors": [
+    "service"
+  ],
+  "discovered_at": "2026-03-13T07:11:55.134679",
+  "content_hash": "bc117adba559343625bd00e49a0b2cc0",
+  "relevance_score": 0.6164054
+}

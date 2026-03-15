@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase';
 import { LANGUAGES } from '../constants';
@@ -6,6 +6,25 @@ import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const AppContext = createContext();
+
+// Create an axios instance with auth interceptor
+const apiClient = axios.create({ baseURL: API });
+
+// Auth interceptor: attach Firebase ID token to every request
+apiClient.interceptors.request.use(async (config) => {
+    try {
+        const currentUser = auth?.currentUser;
+        if (currentUser) {
+            const token = await currentUser.getIdToken();
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    } catch (e) {
+        // Proceed without token if auth is unavailable
+    }
+    return config;
+});
+
+export { apiClient, API };
 
 export function useAppContext() {
     return useContext(AppContext);
@@ -52,7 +71,7 @@ export function AppProvider({ children }) {
             if (currentUser) {
                 // 1. Fetch profile from Firestore via backend — SINGLE SOURCE OF TRUTH
                 try {
-                    const profileRes = await axios.get(`${API}/api/profile/${currentUser.uid}`);
+                    const profileRes = await apiClient.get(`/api/profile/${currentUser.uid}`);
                     if (profileRes.data && Object.keys(profileRes.data).length > 0 && profileRes.data.business_name) {
                         setProfileState(profileRes.data);
                     } else {
@@ -70,8 +89,8 @@ export function AppProvider({ children }) {
                 // 2. Fetch history & notifications in parallel
                 try {
                     const [histRes, notifRes] = await Promise.allSettled([
-                        axios.get(`${API}/api/history`, { params: { user_uid: currentUser.uid } }),
-                        axios.get(`${API}/api/notifications`, { params: { user_uid: currentUser.uid } }),
+                        apiClient.get(`/api/history`, { params: { user_uid: currentUser.uid } }),
+                        apiClient.get(`/api/notifications`, { params: { user_uid: currentUser.uid } }),
                     ]);
                     if (histRes.status === 'fulfilled' && Array.isArray(histRes.value.data)) setHistory(histRes.value.data);
                     if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value.data)) setNotifications(notifRes.value.data);
@@ -93,7 +112,7 @@ export function AppProvider({ children }) {
         if (!user) return;
         notifPollRef.current = setInterval(async () => {
             try {
-                const res = await axios.get(`${API}/api/notifications`, { params: { user_uid: user.uid } });
+                const res = await apiClient.get(`/api/notifications`, { params: { user_uid: user.uid } });
                 if (res.data && Array.isArray(res.data)) setNotifications(res.data);
             } catch (_) { /* silent */ }
         }, 60000);
@@ -104,7 +123,7 @@ export function AppProvider({ children }) {
     const saveProfile = useCallback(async (data) => {
         if (!user) return;
         try {
-            await axios.put(`${API}/api/profile/${user.uid}`, data);
+            await apiClient.put(`/api/profile/${user.uid}`, data);
             setProfileState(prev => {
                 const updated = { ...prev, ...data };
                 try { localStorage.setItem(`pair-profile-${user.uid}`, JSON.stringify(updated)); } catch (_) { /* */ }
@@ -121,7 +140,7 @@ export function AppProvider({ children }) {
     const translateContent = useCallback(async (data, targetLang) => {
         if (!targetLang) return data;
         try {
-            const res = await axios.post(`${API}/api/translate`, { data, target_language: targetLang });
+            const res = await apiClient.post(`/api/translate`, { data, target_language: targetLang });
             return res.data;
         } catch (e) { return data; }
     }, []);
@@ -129,7 +148,7 @@ export function AppProvider({ children }) {
     const refreshHistory = useCallback(async () => {
         if (!user) return;
         try {
-            const res = await axios.get(`${API}/api/history`, { params: { user_uid: user.uid } });
+            const res = await apiClient.get(`/api/history`, { params: { user_uid: user.uid } });
             if (res.data && Array.isArray(res.data)) setHistory(res.data);
         } catch (_) { /* */ }
     }, [user]);
@@ -137,7 +156,7 @@ export function AppProvider({ children }) {
     const refreshNotifications = useCallback(async () => {
         if (!user) return;
         try {
-            const res = await axios.get(`${API}/api/notifications`, { params: { user_uid: user.uid } });
+            const res = await apiClient.get(`/api/notifications`, { params: { user_uid: user.uid } });
             if (res.data && Array.isArray(res.data)) setNotifications(res.data);
         } catch (_) { /* */ }
     }, [user]);
@@ -145,20 +164,20 @@ export function AppProvider({ children }) {
     const deleteHistoryItem = useCallback(async (itemId) => {
         if (!user) return;
         try {
-            await axios.delete(`${API}/api/history/${itemId}`, { params: { user_uid: user.uid } });
+            await apiClient.delete(`/api/history/${itemId}`, { params: { user_uid: user.uid } });
             setHistory(prev => prev.filter(h => h.id !== itemId));
         } catch (_) { /* */ }
     }, [user]);
 
     const clearHistory = useCallback(async () => {
         if (!user) return;
-        try { await axios.delete(`${API}/api/history`, { params: { user_uid: user.uid } }); setHistory([]); } catch (_) { /* */ }
+        try { await apiClient.delete(`/api/history`, { params: { user_uid: user.uid } }); setHistory([]); } catch (_) { /* */ }
     }, [user]);
 
     const markAllNotificationsRead = useCallback(async () => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         if (user) {
-            try { await axios.post(`${API}/api/notifications/read-all`, null, { params: { user_uid: user.uid } }); } catch (_) { /* */ }
+            try { await apiClient.post(`/api/notifications/read-all`, null, { params: { user_uid: user.uid } }); } catch (_) { /* */ }
         }
     }, [user]);
 
@@ -169,7 +188,7 @@ export function AppProvider({ children }) {
             profile, setProfile, saveProfile,
             history, setHistory, refreshHistory, deleteHistoryItem, clearHistory,
             notifications, markAllNotificationsRead, refreshNotifications,
-            translateContent
+            translateContent, apiClient
         }}>
             {children}
         </AppContext.Provider>

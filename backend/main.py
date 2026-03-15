@@ -798,7 +798,7 @@ def health_check():
     """Health check endpoint with v4 monitoring data."""
     return HealthResponse(
         status="healthy",
-        version="4.0.0",
+        version="5.0.0",
         demo_mode=config.server.demo_mode,
         engines=[
             "risk_scorer", "sustainability", "profitability", "ethics",
@@ -1991,7 +1991,7 @@ CURATED_RESOURCES = {
         {"name": "CGTMSE", "url": "https://www.cgtmse.in/", "desc": "Credit Guarantee Fund Trust for collateral-free loans", "category": "Finance"},
         {"name": "PMEGP", "url": "https://www.kviconline.gov.in/pmegpeportal/", "desc": "Prime Minister's Employment Generation Programme", "category": "Finance"},
         {"name": "MUDRA Loans", "url": "https://www.mudra.org.in/", "desc": "Micro Units Development & Refinance Agency loans", "category": "Finance"},
-        {"name": "Stand Up India", "url": "https://www.standupmitra.in/", "desc": "Loans for SC/ST and women entrepreneurs", "category": "Finance"},
+        {"name": "Startup India", "url": "https://www.standupmitra.in/", "desc": "Loans for SC/ST and women entrepreneurs", "category": "Finance"},
         {"name": "National SC-ST Hub", "url": "https://www.scsthub.in/", "desc": "Scheme for SC/ST entrepreneur support", "category": "Support"},
     ],
     "compliance_resources": [

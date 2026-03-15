@@ -1,0 +1,15 @@
+{
+  "id": "6fda80dd-1ab9-4f2b-963f-ac28edad9753",
+  "detected_at": "2026-03-13T07:12:32.953598",
+  "timestamp": 1773385952.953598,
+  "discovery_id": "1da32675",
+  "title": "[PDF] Extension of Last Date for Receipt of Applications for the Post of ...",
+  "url": "https://msme.gov.in/sites/default/files/vacancies/Extension_Order.pdf",
+  "source": "Ministry of MSME",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:11:47.916256",
+  "content_hash": "ed43734d95b8ac533ae657f16e4e2ba8",
+  "relevance_score": 0.9951325
+}

@@ -1,5 +1,20 @@
 [
   {
+    "id": "4d4206dc-11cf-4391-a1ac-d20e9c84863e",
+    "type": "policy_discovery",
+    "title": "\ud83d\udd0d 34 New Policies Discovered",
+    "body": "Scanned 8 government sources. 34 relevant policies found.",
+    "metadata": {
+      "scan_id": "fbceed81",
+      "new_policies": 34,
+      "sources_scanned": 8
+    },
+    "read": false,
+    "created_at": "2026-03-13T08:55:23.381074",
+    "timestamp": 1773392123.381075,
+    "uid": "lvKHegAIDZRbY52ECwpbKURVbC63"
+  },
+  {
     "id": "f4d0fd22-c42f-4fe2-ab0f-100e382bf1af",
     "type": "policy_discovery",
     "title": "\ud83d\udd0d 52 New Policies Discovered",

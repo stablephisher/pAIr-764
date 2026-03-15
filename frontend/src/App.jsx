@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { Shield, Zap } from 'lucide-react';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ThemeProvider } from './context/ThemeContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Layouts & Pages
 import MainLayout from './layouts/MainLayout';
@@ -61,7 +62,7 @@ function LoadingScreen() {
 
 /* Guard wrapper — redirects to login for protected routes */
 function RequireAuth({ children }) {
-    const { user, profile, profileChecked, setProfile } = useAppContext();
+    const { user, profile, profileChecked } = useAppContext();
 
     if (!user) {
         return <Navigate to="/login" replace />;
@@ -135,12 +136,14 @@ function AppContent() {
 
 export default function App() {
     return (
-        <AppProvider>
-            <ThemeProvider>
-                <BrowserRouter>
-                    <AppContent />
-                </BrowserRouter>
-            </ThemeProvider>
-        </AppProvider>
+        <ErrorBoundary>
+            <AppProvider>
+                <ThemeProvider>
+                    <BrowserRouter>
+                        <AppContent />
+                    </BrowserRouter>
+                </ThemeProvider>
+            </AppProvider>
+        </ErrorBoundary>
     );
 }

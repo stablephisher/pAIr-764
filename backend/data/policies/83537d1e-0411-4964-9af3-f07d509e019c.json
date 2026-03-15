@@ -1,0 +1,16 @@
+{
+  "id": "83537d1e-0411-4964-9af3-f07d509e019c",
+  "detected_at": "2026-03-13T07:12:32.953598",
+  "timestamp": 1773385952.953598,
+  "discovery_id": "4039bdb0",
+  "title": "Revised guidelines on lending to Priority ... - Reserve Bank of India",
+  "url": "https://www.rbi.org.in/commonman/english/scripts/Notification.aspx?Id=2613",
+  "source": "Reserve Bank of India",
+  "sectors": [
+    "service",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T07:11:52.501481",
+  "content_hash": "1de50f2c7114751c4c975b4272e3112d",
+  "relevance_score": 0.7286136
+}

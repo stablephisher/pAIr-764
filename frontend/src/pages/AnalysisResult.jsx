@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Home, Plus, AlertCircle, Loader2 } from 'lucide-react';
 import ResultsView from '../components/ResultsView';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, apiClient } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Demo analysis data for when clicking demo policies
 const DEMO_ANALYSIS_DATA = {
@@ -242,7 +239,7 @@ export default function AnalysisResult() {
         const fetchAnalysis = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`${API}/api/history?user_uid=${user.uid}`);
+                const res = await apiClient.get(`/api/history?user_uid=${user.uid}`);
                 const all = Array.isArray(res.data) ? res.data : (res.data.analyses || []);
                 const found = all.find(item => item.id === id);
 

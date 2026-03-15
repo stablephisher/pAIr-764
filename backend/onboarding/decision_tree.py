@@ -214,7 +214,7 @@ class AdaptiveOnboardingEngine:
         if enterprise_type in ["Micro", "Small"]:
             schemes.append("MUDRA")
 
-        # Stand Up India: SC/ST/Women, new units
+        # Startup India: SC/ST/Women, new units
         if is_new and any(c in categories for c in ["women", "sc", "st"]):
             schemes.append("STANDUPINDIA")
 

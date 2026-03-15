@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import ProcessingView from '../components/ProcessingView';
 import ResultsView from '../components/ResultsView';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, apiClient } from '../context/AppContext';
 import useTranslate from '../hooks/useTranslate';
 import { Building2, Zap, AlertCircle, ArrowRight, CheckCircle } from 'lucide-react';
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function Analysis() {
     const { user, language, profile, refreshHistory } = useAppContext();
@@ -33,7 +30,7 @@ export default function Analysis() {
         setError(null);
 
         try {
-            const res = await axios.post(`${API}/api/smart-analysis`, {
+            const res = await apiClient.post(`/api/smart-analysis`, {
                 user_uid: user?.uid,
                 business_name: biz.business_name || '',
                 sector: biz.sector || '',

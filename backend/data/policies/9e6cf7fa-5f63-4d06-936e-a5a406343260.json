@@ -1,0 +1,15 @@
+{
+  "id": "9e6cf7fa-5f63-4d06-936e-a5a406343260",
+  "detected_at": "2026-03-13T07:12:32.953598",
+  "timestamp": 1773385952.953598,
+  "discovery_id": "72467e4b",
+  "title": "Union Minister of State for Commerce and Industry Shri Jitin Prasada",
+  "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2237169&reg=3&lang=1",
+  "source": "Press Information Bureau",
+  "sectors": [
+    "general"
+  ],
+  "discovered_at": "2026-03-13T07:11:51.576810",
+  "content_hash": "bc85d31822bb7022e1c760b0f6499898",
+  "relevance_score": 0.9981756
+}

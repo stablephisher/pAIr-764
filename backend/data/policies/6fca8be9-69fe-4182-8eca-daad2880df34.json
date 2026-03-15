@@ -1,0 +1,16 @@
+{
+  "id": "6fca8be9-69fe-4182-8eca-daad2880df34",
+  "detected_at": "2026-03-13T07:12:32.969314",
+  "timestamp": 1773385952.969314,
+  "discovery_id": "93b4473f",
+  "title": "[PDF] Circular No.08/2026-Customs F. No. 450/81/2016-Cus IV ...",
+  "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/mar/doc202631807301.pdf",
+  "source": "GST Council",
+  "sectors": [
+    "manufacturing",
+    "trading"
+  ],
+  "discovered_at": "2026-03-13T07:11:54.263643",
+  "content_hash": "9dd98d2041e7cc0b71509b3dddf3efc1",
+  "relevance_score": 0.99596137
+}
